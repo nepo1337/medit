@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 	m.setMesh(mh.getMeshInfo(0));
 	
 	sf::Event event;
-//test	
+
 	while (app.IsOpened())
 	{
 		while(app.GetEvent(event))
