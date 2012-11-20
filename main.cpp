@@ -12,7 +12,7 @@ using namespace glm;
 
 int width,height;
 mat4 projectionMatrix;
-
+//s
 int main(int argc, char **argv)
 {
 	//window options
