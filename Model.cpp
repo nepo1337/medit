@@ -50,18 +50,18 @@ vector<MeshInfo>* Model::getMeshInfo()
 
 void Model::rotateX(float x)
 {
-	this->rotx+=x;
+	this->rotx=x;
 	this->updateModelMatrix();
 }
 
 void Model::rotateY(float y)
 {
-	this->roty+=y;
+	this->roty=y;
 	this->updateModelMatrix();
 }
 
 void Model::rotateZ(float z)
 {
-	this->rotz+=z;
+	this->rotz=z;
 	this->updateModelMatrix();
 }

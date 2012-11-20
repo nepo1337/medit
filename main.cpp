@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	sf::Window app;
 	app.Create(sf::VideoMode(width, height, 32), "R-EDIT", sf::Style::Close|sf::Style::Resize, settings);
 	app.UseVerticalSync(true);
-	
+
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
@@ -71,6 +71,10 @@ int main(int argc, char **argv)
 	sf::Event event;
 	while (app.IsOpened())
 	{
+		//fps
+		float framerate = 1.f / app.GetFrameTime();
+		
+		//events
 		while(app.GetEvent(event))
 		{
 			if(event.Type==sf::Event::Closed)
@@ -87,15 +91,16 @@ int main(int argc, char **argv)
 				width = app.GetWidth();
 				glViewport(0,0,width,height);
 				rend.updateProjMatrix(width,height);
-				
 			}
 		}
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		rend.draw();
 		
-		f.rotateX(0.1);
-		f.rotateY(0.1);
+		f.rotateX(rot);
+		f.rotateY(rot);
+		m.rotateZ(rot);
+		rot+=0.5;
 		app.Display();
 	}
 
