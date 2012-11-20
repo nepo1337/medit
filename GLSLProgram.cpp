@@ -1,7 +1,6 @@
 #include "GLSLProgram.h"
 #include <fstream>
 #include <iostream>
-#include <GL/glu.h>
 
 GLSLProgram::GLSLProgram()
 {

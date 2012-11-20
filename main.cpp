@@ -5,14 +5,15 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform2.hpp"
-#include <Model.h>
+#include "Model.h"
+#include "Renderer.h"
 
 using namespace std;
 using namespace glm;
 
 int width,height;
 mat4 projectionMatrix;
-//s
+float rot=0;
 int main(int argc, char **argv)
 {
 	//window options
@@ -25,7 +26,6 @@ int main(int argc, char **argv)
 	sf::Window app;
 	app.Create(sf::VideoMode(width, height, 32), "R-EDIT", sf::Style::Close|sf::Style::Resize, settings);
 	app.UseVerticalSync(true);
-	
 	
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
@@ -53,19 +53,22 @@ int main(int argc, char **argv)
 	cout <<"GLSL version: "<<glslver<<endl;
 	cout <<"GL version, maj min: "<<major<<minor<<endl;
 	
+	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
+	Renderer rend;
+	rend.updateProjMatrix(width,height);
+	rend.updateCamera(vec3(50.0f,0.0f,0.0f));
 	glViewport(0,0,width,height);
-	float nearClip = 0.5f;
-	float farClip  = 100.0f;
-	float fov_deg = 45.0f;
-	float aspect = (float)width/(float)height;
-	projectionMatrix = perspective(fov_deg, aspect,nearClip,farClip);
 	
 	MeshHandler mh("./models/");
 	Model m;
+	Model f;
 	m.setMesh(mh.getMeshInfo(0));
+	f.setMesh(mh.getMeshInfo(0));
+	rend.addModel(&m);
+	rend.addModel(&f);
+	m.setPos(vec3(0.0f,10.0f,0.0f));
 	
 	sf::Event event;
-
 	while (app.IsOpened())
 	{
 		while(app.GetEvent(event))
@@ -83,11 +86,16 @@ int main(int argc, char **argv)
 				height = app.GetHeight();
 				width = app.GetWidth();
 				glViewport(0,0,width,height);
+				rend.updateProjMatrix(width,height);
+				
 			}
 		}
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		rend.draw();
+		
+		f.rotateX(0.1);
+		f.rotateY(0.1);
 		app.Display();
 	}
 

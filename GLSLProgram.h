@@ -1,8 +1,7 @@
 #ifndef GLSLPROGRAM_H
 #define GLSLPROGRAM_H
 
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include <glew.h>
 #include <string>
 #include "glm/glm.hpp"
 

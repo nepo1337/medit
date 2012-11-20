@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <MeshInfo.h>
+#include "SOIL/SOIL.h"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ private:
 	vector<MeshInfo> meshesInfo;
 	vector<GLuint> VBOH;
 	bool debug;
+	string path;
 public:
 	Mesh();
 	~Mesh();
