@@ -18,7 +18,7 @@ private:
 	mat4 modelMatrix;
 	mat3 normalMatrix;
 	void updateModelMatrix();
-	float rotx,roty,rotz;
+	float rotx,roty,rotz,scale;
 public:
 	Model();
 	~Model();
@@ -30,6 +30,7 @@ public:
 	void rotateX(float x);
 	void rotateY(float y);
 	void rotateZ(float z);
+	void scaleXYZ(float f);
 
 };
 
