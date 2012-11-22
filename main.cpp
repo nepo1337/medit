@@ -35,8 +35,8 @@ int main(int argc, char **argv)
 	}
 	glEnable(GL_DEPTH_TEST); // enable depth-testing
 	glDepthFunc(GL_LESS); // set depth-testing function type
-	//glEnable(GL_CULL_FACE); // enable culling of back-faces
-	//glCullFace(GL_BACK); // enable culling of back-faces
+	glEnable(GL_CULL_FACE); // enable culling of back-faces
+	glCullFace(GL_BACK); // enable culling of back-faces
 	//glFrontFace(GL_CCW);
 
 	//info
