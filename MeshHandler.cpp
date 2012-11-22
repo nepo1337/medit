@@ -9,10 +9,8 @@ MeshHandler::MeshHandler(string dir)
 		if(this->getFileExtension(files[i])=="obj")
 		{
 			Mesh m;
-			m.import(dir,files[i]);
-			m.setFilename(this->getFileName(files[i]));
-			m.uploadToGFX();
-			this->meshes.push_back(m);
+			if(m.import(dir,files[i]))
+				this->meshes.push_back(m);
 		}
 	}
 }

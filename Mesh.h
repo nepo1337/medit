@@ -16,18 +16,24 @@ class Mesh
 private:
 	OBJimporter objimp;
 	string fileName;
+	
+	//holds VAOS,TEXHs for each object
 	vector<MeshInfo> meshesInfo;
-	vector<GLuint> VBOH;
+	vector<GLuint> VBOH;		//for freeing GFX
 	bool debug;
 	string path;
+	void setFilename(string fn);
+	
+	//uploads vbos etc to gfx
+	void uploadToGFX();
 public:
 	Mesh();
 	~Mesh();
-	void import(string path,string filename);
-	void setFilename(string fn);
+	bool import(string path,string filename);
 	string getFilename();
-	void uploadToGFX();
 	void freeGFX();
+	
+	//returns pointer to the meshinfo vector, one for each object
 	vector<MeshInfo>* getMeshInfo();
 };
 

@@ -10,10 +10,18 @@ Mesh::~Mesh()
 {
 }
 
-void Mesh::import(string path,string filename)
+bool Mesh::import(string path,string filename)
 {
+	bool imported=false;
 	this->path=path;
 	this->objimp.import(path,filename);
+	imported = this->objimp.getNrOfObjects()>0;
+	if(imported)
+	{
+		this->setFilename(filename);
+		this->uploadToGFX();
+	}
+	return imported;
 }
 
 void Mesh::setFilename(string fn)

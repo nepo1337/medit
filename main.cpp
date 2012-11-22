@@ -14,7 +14,7 @@ using namespace glm;
 
 int width,height;
 mat4 projectionMatrix;
-float rot=0;
+
 int main(int argc, char **argv)
 {
 	//window options
@@ -63,12 +63,21 @@ int main(int argc, char **argv)
 	MeshHandler mh("./models/");
 	Model m;
 	Model f;
+	Model k;
 	m.setMesh(mh.getMeshInfo(0));
 	f.setMesh(mh.getMeshInfo(1));
+	k.setMesh(mh.getMeshInfo(2));
 	rend.addModel(&m);
 	rend.addModel(&f);
-	m.setPos(vec3(0.0f,10.0f,0.0f));
+	rend.addModel(&k);
+	m.rotateX(-90);
+	k.rotateX(-90);
+	f.rotateY(90);
+	f.setPos(vec3(-5,-10,5));
 
+	
+	m.setPos(vec3(0.0f,10.0f,0.0f));
+	f.scaleXYZ(2);
 	sf::Event event;
 	while (app.IsOpened())
 	{
@@ -98,10 +107,6 @@ int main(int argc, char **argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		rend.draw();
 
-		f.rotateX(rot);
-		f.rotateY(rot);
-		m.rotateZ(rot);
-		rot+=0.5;
 		app.Display();
 	}
 
