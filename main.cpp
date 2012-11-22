@@ -1,4 +1,5 @@
 #include <iostream>
+#define GLEW_STATIC
 #include <glew.h>
 #include <SFML/Window.hpp>
 #include <MeshHandler.h>

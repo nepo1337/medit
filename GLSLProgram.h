@@ -1,6 +1,6 @@
 #ifndef GLSLPROGRAM_H
 #define GLSLPROGRAM_H
-
+#define GLEW_STATIC
 #include <glew.h>
 #include <string>
 #include "glm/glm.hpp"

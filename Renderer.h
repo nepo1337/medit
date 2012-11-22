@@ -1,5 +1,6 @@
 #ifndef RENDERER_H
 #define RENDERER_H
+#define GLEW_STATIC
 #include <glew.h>
 #include <iostream>
 #include "Model.h"
