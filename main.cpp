@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 	Model m;
 	Model f;
 	m.setMesh(mh.getMeshInfo(0));
-	f.setMesh(mh.getMeshInfo(0));
+	f.setMesh(mh.getMeshInfo(1));
 	rend.addModel(&m);
 	rend.addModel(&f);
 	m.setPos(vec3(0.0f,10.0f,0.0f));
