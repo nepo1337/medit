@@ -8,7 +8,7 @@
 
 struct TerrainInfo
 {
-	GLuint vaoh,texH;
+	GLuint vaoh,texH,texB;
 	GLuint vbohs[3];
 };
 

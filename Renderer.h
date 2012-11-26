@@ -10,6 +10,7 @@
 #include "glm/gtx/transform2.hpp"
 #include <vector>
 #include "MeshInfo.h"
+#include "TA.h"
 
 using namespace std;
 using namespace glm;
@@ -17,9 +18,13 @@ class Renderer
 {
 private:
 	GLSLProgram modelShader;
+	GLSLProgram TerrainShader;
 	mat4 viewMatrix,projMatrix;
 	bool debug;
 	vector<Model*> models;
+	TerrainInfo *terrInf;
+	float test;
+	float fac;
 public:
 	Renderer();
 	~Renderer();
@@ -27,7 +32,7 @@ public:
 	void updateCamera(vec3 pos);
 	void updateProjMatrix(float width, float height);
 	void addModel(Model* m);
-
+	void setTerrainInfo(TerrainInfo *t);
 };
 
 #endif // RENDERER_H

@@ -8,6 +8,7 @@
 #include "glm/gtx/transform2.hpp"
 #include "Model.h"
 #include "Renderer.h"
+#include "Terrain.h"
 
 using namespace std;
 using namespace glm;
@@ -33,51 +34,25 @@ int main(int argc, char **argv)
 	{
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
-	glEnable(GL_DEPTH_TEST); // enable depth-testing
-	glDepthFunc(GL_LESS); // set depth-testing function type
-	//glEnable(GL_CULL_FACE); // enable culling of back-faces
-	//glCullFace(GL_BACK); // enable culling of back-faces
-	//glFrontFace(GL_CCW);
-
-	//info
-	const GLubyte *vendor = glGetString(GL_VENDOR);
-	const GLubyte *renderer = glGetString(GL_RENDERER);
-	const GLubyte *version = glGetString(GL_VERSION);
-	const GLubyte *glslver = glGetString(GL_SHADING_LANGUAGE_VERSION);
-	GLint major,minor;
-	glGetIntegerv(GL_MAJOR_VERSION,&major);
-	glGetIntegerv(GL_MINOR_VERSION,&minor);
-
-	cout <<"vendor: "<<vendor<<endl;
-	cout <<"renderer: "<<renderer<<endl;
-	cout <<"openGL version: "<<version<<endl;
-	cout <<"GLSL version: "<<glslver<<endl;
-	cout <<"GL version, maj min: "<<major<<minor<<endl;
 
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
+	Terrain terrain(1,1,1);
+	rend.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
-	rend.updateCamera(vec3(50.0f,0.0f,0.0f));
+	rend.updateCamera(vec3(1.0f,1.0f,2.0f));
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
 	Model m;
-	Model f;
-	Model k;
-	m.setMesh(mh.getMeshInfo(0));
-	f.setMesh(mh.getMeshInfo(1));
-	k.setMesh(mh.getMeshInfo(2));
-	rend.addModel(&m);
-	rend.addModel(&f);
-	rend.addModel(&k);
-	m.rotateX(-90);
-	k.rotateX(-90);
-	f.rotateY(90);
-	f.setPos(vec3(-5,-10,5));
-
 	
-	m.setPos(vec3(0.0f,10.0f,0.0f));
-	f.scaleXYZ(2);
+	m.setMesh(mh.getMeshInfo(0));
+	rend.addModel(&m);
+	m.rotateX(-90);
+	
+	m.setPos(vec3(0.8f,0.0f,0.0f));
+	m.scaleXYZ(0.02);
+	 
 	sf::Event event;
 	while (app.IsOpened())
 	{

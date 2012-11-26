@@ -6,6 +6,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform2.hpp"
 #include "SOIL/SOIL.h"
+#include "TA.h"
 #include <iostream>
 
 using namespace std;
@@ -19,10 +20,13 @@ private:
 	GLuint vaoh,texH;
 	GLuint vbohs[3];
 	bool debug;
+	TerrainInfo terrInf;
 public:
 	Terrain(float width, float height, int texScale);
 	~Terrain();
 	GLuint getVaoh();
+	GLuint getTexh();
+	TerrainInfo *getTerrInfo();
 
 };
 

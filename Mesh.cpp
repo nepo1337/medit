@@ -49,7 +49,13 @@ void Mesh::uploadToGFX()
 		
 		//textures
 		string p = this->path+o.getTextureNameKd().c_str();
+		glActiveTexture(GL_TEXTURE0);
 		GLuint texH = SOIL_load_OGL_texture(p.c_str(),SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+		if(debug)
+		{
+			if(texH==0)
+				cout<<"SOIL loading error: "<< SOIL_last_result()<<endl;
+		}
 		GLuint vaoH=0;
 		glGenVertexArrays(1,&vaoH);
 		MeshInfo mf;
