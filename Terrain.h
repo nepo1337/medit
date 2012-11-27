@@ -7,7 +7,9 @@
 #include "glm/gtx/transform2.hpp"
 #include "SOIL/SOIL.h"
 #include "TA.h"
+#include <SFML/Graphics.hpp>
 #include <iostream>
+#include <Intersection.h>
 
 using namespace std;
 using namespace glm;
@@ -15,18 +17,25 @@ using namespace glm;
 class Terrain
 {
 private:
+	Intersection intersect;
 	float width,height;
 	int texScale;
-	GLuint vaoh,texH;
+	GLuint vaoh;
 	GLuint vbohs[3];
 	bool debug;
 	TerrainInfo terrInf;
+	sf::Image blendmap1;
+	//handle gets filles with a handle to the tex in the GFX, uploads data from sf::Image
+	void makeBlendMap(GLuint& handle, sf::Image img);
 public:
 	Terrain(float width, float height, int texScale);
 	~Terrain();
 	GLuint getVaoh();
 	GLuint getTexh();
 	TerrainInfo *getTerrInfo();
+	//the sf::Image should be replaced with an array for ore indexes
+	//x and y represents the center,ex where someone clicked
+	void paint(int indexForblendMap,float radius,int whichTex,vec3 origin, vec3 ray);
 
 };
 

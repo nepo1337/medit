@@ -20,11 +20,10 @@ private:
 	GLSLProgram modelShader;
 	GLSLProgram TerrainShader;
 	mat4 viewMatrix,projMatrix;
+	int wwidth,wheight;
 	bool debug;
 	vector<Model*> models;
 	TerrainInfo *terrInf;
-	float test;
-	float fac;
 public:
 	Renderer();
 	~Renderer();
@@ -33,6 +32,7 @@ public:
 	void updateProjMatrix(float width, float height);
 	void addModel(Model* m);
 	void setTerrainInfo(TerrainInfo *t);
+	vec3 getClickRay(int x,int y);
 };
 
 #endif // RENDERER_H

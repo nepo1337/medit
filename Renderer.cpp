@@ -61,8 +61,6 @@ Renderer::Renderer()
 	
 	this->viewMatrix=mat4(0.0f);
 	this->projMatrix=mat4(0.0f);
-	test=0;
-	fac=1;
 }
 
 Renderer::~Renderer()
@@ -72,9 +70,6 @@ Renderer::~Renderer()
 
 void Renderer::draw()
 {
-	test+=0.001*fac;
-	if(test>=1||test<=0)
-		fac*=-1;
 	//renderin models
 	this->modelShader.use();
 	mat4 mvp=mat4(0.0f);
@@ -103,13 +98,14 @@ void Renderer::draw()
 	//terrain doesnt support any scaling etc
 	mat4 modelMatrix(1.0f);
 	this->TerrainShader.use();
-	this->TerrainShader.setUniform("test",test);
 	this->TerrainShader.setUniform("modelMatrix",modelMatrix);
 	this->TerrainShader.setUniform("MVP",mvp);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->texB);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->blendmap1H);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->texH);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->texA);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->texB);
 	glBindVertexArray(this->terrInf->vaoh);
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
@@ -132,6 +128,8 @@ void Renderer::updateCamera(vec3 pos)
 }
 void Renderer::updateProjMatrix(float width, float height)
 {
+	this->wheight=height;
+	this->wwidth=width;
 	float nearClip = 0.5f;
 	float farClip  = 100.0f;
 	float fov_deg = 45.0f;
@@ -154,7 +152,21 @@ void Renderer::setTerrainInfo(TerrainInfo *t)
 {
 	this->terrInf=t;
 	this->TerrainShader.use();
-	this->TerrainShader.setUniform("tex1", 0);
-	this->TerrainShader.setUniform("tex2", 1);
+	this->TerrainShader.setUniform("blendmap1", 0);
+	this->TerrainShader.setUniform("tex1", 1);
+	this->TerrainShader.setUniform("tex2", 2);
 	glUseProgram(0);
+}
+
+vec3 Renderer::getClickRay(int x, int y)
+{
+	float normalisedx = 2 * (float)x / this->wwidth - 1;
+	float normalisedy = 1 - 2 * (float)y / this->wheight;
+	mat4 unview = inverse(this->projMatrix*this->viewMatrix);
+	vec4 near_point = unview * vec4(normalisedx, normalisedy, 0, 1);
+	//the last vec3 is the pos of the camera
+	vec3 t = vec3(near_point.x/near_point.w,near_point.y/near_point.w,near_point.z/near_point.w)-vec3(1.0f,1.0f,2.0f);
+	vec3 rayd = normalize(t);
+	
+	return rayd;
 }
