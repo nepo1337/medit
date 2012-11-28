@@ -2,6 +2,7 @@
 #define GLEW_STATIC
 #include <glew.h>
 #include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 #include <MeshHandler.h>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -19,8 +20,8 @@ mat4 projectionMatrix;
 int main(int argc, char **argv)
 {
 	//window options
-	width=800;
-	height=600;
+	width=1280;
+	height=720;
 	sf::WindowSettings settings;
 	settings.DepthBits         = 24; // Request a 24 bits depth buffer
 	settings.StencilBits       = 8;  // Request a 8 bits stencil buffer
@@ -28,7 +29,7 @@ int main(int argc, char **argv)
 	sf::Window app;
 	app.Create(sf::VideoMode(width, height, 32), "R-EDIT", sf::Style::Close|sf::Style::Resize, settings);
 	app.UseVerticalSync(true);
-
+	
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{

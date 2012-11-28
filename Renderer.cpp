@@ -110,6 +110,8 @@ void Renderer::draw()
 	glBindTexture(GL_TEXTURE_2D,this->terrInf->texB);
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D,this->terrInf->texH);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->texC);
 	glBindVertexArray(this->terrInf->vaoh);
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
@@ -156,5 +158,6 @@ void Renderer::setTerrainInfo(TerrainInfo *t)
 	this->TerrainShader.use();
 	this->TerrainShader.setUniform("tex1", 0);
 	this->TerrainShader.setUniform("tex2", 1);
+	this->TerrainShader.setUniform("tex3", 2);
 	glUseProgram(0);
 }

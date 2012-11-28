@@ -42,6 +42,7 @@ Terrain::Terrain(float width, float height, int texScale)
 	//upload text
 
 	this->terrInf.texH = SOIL_load_OGL_texture("terrain/medalpha.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texC =SOIL_load_OGL_texture("terrain/mud.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 	if(debug)
 	{
 		if(texH==0)
@@ -83,6 +84,7 @@ Terrain::Terrain(float width, float height, int texScale)
 	this->terrInf.vbohs[0]=this->vbohs[0];
 	this->terrInf.vbohs[1]=this->vbohs[1];
 	this->terrInf.vbohs[2]=this->vbohs[2];
+	
 }
 
 Terrain::~Terrain()
