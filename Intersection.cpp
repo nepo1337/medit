@@ -12,7 +12,6 @@ vec3 Intersection::rayIntersectTriangle(vec3 origin, vec3 direction, vec3 vert1,
 {
 	bool pass=true;
 	bool found=false;
-	int c=0;
 	vec3 hit;
 	//for saving the closest target
 	float lowestY=999999.0f;
@@ -51,37 +50,15 @@ vec3 Intersection::rayIntersectTriangle(vec3 origin, vec3 direction, vec3 vert1,
 			if(pass)
 			{
 				float t=f*dot(e2,r);
-				cout<<"FUCKNIG T!! "<<v<<endl;
-				//c is for checking what triangle ur in. left or right
-				//if(c==0)
+				if(t<lowestY)
 				{
-					if(t<lowestY)
-					{
-						lowestY=t;
-						//if(u<=v)
-						{
-							hit=vec3(p0.x+v,p0.y+t,p0.z-u);
-							cout<<"SUCC"<<endl;
-						}
-						//else
-						//	hit=vec3(p0.x-v,p0.y+t,p0.z-u);
-					}
+						hit=vec3(v,t,u);
 				}
-				//else
-				/*{
-					if(t<lowestY)
-					{
-						lowestY=t;
-						hit=vec3(p0.x-v,p0.y+t,p0.z-u);
-					}
-				}*/
 				found=true;
 			}
 		}
-	}c++;
-	if(c==2)
-		c=0;
-		
+	}
+	
 	if(!found)
 		hit=vec3(1,1,1);
 	return hit;

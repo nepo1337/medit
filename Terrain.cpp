@@ -10,11 +10,11 @@ Terrain::Terrain(float width, float height, int texScale)
 	float planeVerts[]=
 	{
 		0.0f,0.0f,0.0f,
-		0.0f,0.0f,this->height,
+		0.0f,0.0f,-this->height,
 		this->width,0.0f,0.0f,
-		this->width,0.0f,this->height,
+		this->width,0.0f,-this->height,
 		this->width,0.0f,0.0f,
-		0.0f,0.0f,this->height,
+		0.0f,0.0f,-this->height,
 	};
 
 	float planeNorms[]=
@@ -120,23 +120,23 @@ void Terrain::paint(int indexForblendMap,float radius,int whichTex,vec3 origin, 
 {
 	//one of the triangles
 	vec3 v1= vec3(0.0f,0.0f,0.0f);
-	vec3 v2= vec3(0.0f,0.0f,this->height);
+	vec3 v2= vec3(0.0f,0.0f,-this->height);
 	vec3 v3= vec3(this->width,0.0f,0.0f);
 	vec3 hit = intersect.rayIntersectTriangle(origin,ray,v1,v2,v3);
 	//the other triangle
+	int x=hit.x*this->blendmap1.GetWidth();
+	int y=(hit.z*this->blendmap1.GetHeight());
 	if(hit.x==1)
 	{
-		v1= vec3(this->width,0.0f,this->height);
+		v1= vec3(this->width,0.0f,-this->height);
 		v2= vec3(this->width,0.0f,0.0f);
-		v3= vec3(0.0f,0.0f,this->height);
+		v3= vec3(0.0f,0.0f,-this->height);
 		hit=intersect.rayIntersectTriangle(origin,ray,v1,v2,v3);
+		x=this->blendmap1.GetWidth()-hit.x*this->blendmap1.GetWidth();
+		y=this->blendmap1.GetHeight()+(-hit.z*this->blendmap1.GetHeight());
 	}
-	cout<<"X"<<hit.x<<endl;
-	cout<<"Z"<<hit.z<<endl;
 	float rad=40;
-	int x=hit.x*this->blendmap1.GetWidth();
-	int y=-hit.z*this->blendmap1.GetHeight();
-	cout << x<<" " << y << endl;
+	
 	for(int i=y-rad;i<y+rad;i++)
 	{
 		for(int j=x-rad;j<x+rad;j++)
