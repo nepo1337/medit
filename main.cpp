@@ -5,20 +5,22 @@
 #include <SFML/Graphics.hpp>
 #include <MeshHandler.h>
 #include "glm/glm.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtx/transform2.hpp"
 #include "Model.h"
 #include "Renderer.h"
 #include "Terrain.h"
+#include "Camera.h"
+#include "Intersection.h"
 
 using namespace std;
 using namespace glm;
 
-int width,height;
-mat4 projectionMatrix;
+Intersection inters;
 
 int main(int argc, char **argv)
 {
+	int width,height;
+	Camera cam;
+
 	//window options
 	width=1280;
 	height=720;
@@ -38,10 +40,10 @@ int main(int argc, char **argv)
 
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
-	Terrain terrain(1,1,1);
+	Terrain terrain(10.0f,10.0f);
 	rend.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
-	rend.updateCamera(vec3(1.0f,1.0f,2.0f));
+	rend.updateViewMatrix(cam.getViewMatrix());
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
@@ -55,6 +57,7 @@ int main(int argc, char **argv)
 	m.scaleXYZ(0.02);
 	 
 	sf::Event event;
+
 	while (app.IsOpened())
 	{
 		//fps
@@ -78,11 +81,46 @@ int main(int argc, char **argv)
 				glViewport(0,0,width,height);
 				rend.updateProjMatrix(width,height);
 			}
+			if(event.Type == sf::Event::MouseWheelMoved)
+			{
+				if(event.MouseWheel.Delta>0)
+					cam.zoomIn(0.4);
+				else
+					cam.zoomOut(0.4);
+				rend.updateViewMatrix(cam.getViewMatrix());
+			}
+			
+		}
+		
+		//realtime input
+		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
+		{
+			terrain.paint(0,0,0,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+		}
+		if(app.GetInput().IsKeyDown(sf::Key::W))
+		{
+			cam.moveForeward(0.1);
+			rend.updateViewMatrix(cam.getViewMatrix());
+		}
+		if(app.GetInput().IsKeyDown(sf::Key::S))
+		{
+			cam.moveBackward(0.1);
+			rend.updateViewMatrix(cam.getViewMatrix());
+		}
+		if(app.GetInput().IsKeyDown(sf::Key::A))
+		{
+			cam.strafeLeft(0.1);
+			rend.updateViewMatrix(cam.getViewMatrix());
+		}
+		if(app.GetInput().IsKeyDown(sf::Key::D))
+		{
+			cam.strafeRight(0.1);
+			rend.updateViewMatrix(cam.getViewMatrix());
 		}
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		rend.draw();
-
+		//terrain.paint(0,0,0,0,0);
 		app.Display();
 	}
 

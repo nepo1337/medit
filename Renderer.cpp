@@ -25,6 +25,7 @@ Renderer::Renderer()
 	this->TerrainShader.bindAttribLocation(0,"vertexPosition");
 	this->TerrainShader.bindAttribLocation(1,"vertexNormal");
 	this->TerrainShader.bindAttribLocation(2,"vertexUv");
+	this->TerrainShader.bindAttribLocation(3,"vertexUvBM");
 	
 	
 	if(debug)
@@ -61,8 +62,6 @@ Renderer::Renderer()
 	
 	this->viewMatrix=mat4(0.0f);
 	this->projMatrix=mat4(0.0f);
-	test=0;
-	fac=1;
 }
 
 Renderer::~Renderer()
@@ -72,9 +71,6 @@ Renderer::~Renderer()
 
 void Renderer::draw()
 {
-	test+=0.001*fac;
-	if(test>=1||test<=0)
-		fac*=-1;
 	//renderin models
 	this->modelShader.use();
 	mat4 mvp=mat4(0.0f);
@@ -103,15 +99,14 @@ void Renderer::draw()
 	//terrain doesnt support any scaling etc
 	mat4 modelMatrix(1.0f);
 	this->TerrainShader.use();
-	this->TerrainShader.setUniform("test",test);
 	this->TerrainShader.setUniform("modelMatrix",modelMatrix);
 	this->TerrainShader.setUniform("MVP",mvp);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->texB);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->blendmap1H);
 	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->texH);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->texA);
 	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->texC);
+	glBindTexture(GL_TEXTURE_2D,this->terrInf->texB);
 	glBindVertexArray(this->terrInf->vaoh);
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
@@ -119,12 +114,9 @@ void Renderer::draw()
 	glBindVertexArray(0);
 }
 
-void Renderer::updateCamera(vec3 pos)
+void Renderer::updateViewMatrix(mat4 viewMatrix)
 {
-	vec3 eye=pos;
-	vec3 lookat(0.0f,0.0f,0.0f);
-	vec3 up(0.0f,1.0f,0.0f);
-	this->viewMatrix=glm::lookAt(eye,lookat,up);
+	this->viewMatrix=viewMatrix;
 	
 	this->modelShader.use();
 	this->modelShader.setUniform("viewMatrix",this->viewMatrix);
@@ -134,6 +126,8 @@ void Renderer::updateCamera(vec3 pos)
 }
 void Renderer::updateProjMatrix(float width, float height)
 {
+	this->wheight=height;
+	this->wwidth=width;
 	float nearClip = 0.5f;
 	float farClip  = 100.0f;
 	float fov_deg = 45.0f;
@@ -156,8 +150,13 @@ void Renderer::setTerrainInfo(TerrainInfo *t)
 {
 	this->terrInf=t;
 	this->TerrainShader.use();
-	this->TerrainShader.setUniform("tex1", 0);
-	this->TerrainShader.setUniform("tex2", 1);
-	this->TerrainShader.setUniform("tex3", 2);
+	this->TerrainShader.setUniform("blendmap1", 0);
+	this->TerrainShader.setUniform("tex1", 1);
+	this->TerrainShader.setUniform("tex2", 2);
 	glUseProgram(0);
+}
+
+mat4 Renderer::getProjMatrix()
+{
+	return this->projMatrix;
 }
