@@ -4,6 +4,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform2.hpp"
 #include <iostream>
+#include <math.h>
 
 using namespace std;
 using namespace glm;
@@ -26,6 +27,8 @@ public:
 	void strafeRight(float a);
 	void zoomOut(float a);
 	void zoomIn(float a);
+	void rotateLeft(float deg);
+	void rotateUp(float deg);
 
 };
 

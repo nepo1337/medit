@@ -20,6 +20,8 @@ int main(int argc, char **argv)
 {
 	int width,height;
 	Camera cam;
+	int mousedx=0;
+	int mousedy=0;
 
 	//window options
 	width=1280;
@@ -84,12 +86,11 @@ int main(int argc, char **argv)
 			if(event.Type == sf::Event::MouseWheelMoved)
 			{
 				if(event.MouseWheel.Delta>0)
-					cam.zoomIn(0.4);
+					cam.zoomIn(event.MouseWheel.Delta*0.5);
 				else
-					cam.zoomOut(0.4);
+					cam.zoomOut(-event.MouseWheel.Delta*0.5);
 				rend.updateViewMatrix(cam.getViewMatrix());
-			}
-			
+			}		
 		}
 		
 		//realtime input
@@ -117,10 +118,21 @@ int main(int argc, char **argv)
 			cam.strafeRight(0.1);
 			rend.updateViewMatrix(cam.getViewMatrix());
 		}
+		
+		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Middle))
+		{
+			cam.rotateLeft(mousedx-app.GetInput().GetMouseX());
+			cam.rotateUp(mousedy-app.GetInput().GetMouseY());
+			rend.updateViewMatrix(cam.getViewMatrix());
+		}
+		//saves the position of the mouse, used for rotation
+		mousedx=app.GetInput().GetMouseX();
+		mousedy=app.GetInput().GetMouseY();
+
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		rend.draw();
-		//terrain.paint(0,0,0,0,0);
+
 		app.Display();
 	}
 
