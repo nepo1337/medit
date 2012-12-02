@@ -4,7 +4,7 @@
 
 Camera::Camera()
 {
-	this->eye=vec3(1.0f,1.0f,0.0f);
+	this->eye=vec3(2.0f,1.0f,0.0f);
 	this->lookat=vec3(0.0f,0.0f,0.0f);
 	this->up=vec3(0.0f,1.0f,0.0f);
 	this->viewMatrix=mat4(1.0f);
@@ -67,7 +67,7 @@ void Camera::strafeRight(float a)
 void Camera::zoomIn(float a)
 {
 	vec3 dir= normalize((this->eye-this->lookat));
-	if(this->eye.y-dir.y*a>1.0f)
+	//if(this->eye.y-dir.y*a>0.4f)
 		this->eye-=dir*a;
 	this->calcViewMatrix();
 }
@@ -84,7 +84,7 @@ void Camera::rotateLeft(float deg)
 	vec3 dir= ((this->eye-this->lookat));
 	mat4 rot(1.0f);
 	rot*=scale(dir);
-	rot*=rotate(deg*0.3f,vec3(0,1,0));
+	rot*=rotate(deg*0.2f,vec3(0,1,0));
 
 	vec4 t(1.0);
 	t=t*rot;
