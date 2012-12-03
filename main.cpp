@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
-	Terrain terrain(10.0f,10.0f);
+	Terrain terrain(75.0f,75.0f);
 	rend.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
 	rend.updateViewMatrix(cam.getViewMatrix());

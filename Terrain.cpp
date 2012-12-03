@@ -47,7 +47,7 @@ Terrain::Terrain(float width, float height)
 	};
 	
 	//creating blendmaps
-	this->blendmap1.Create(512,512,sf::Color(255,0,0,0));
+	this->blendmap1.Create(1024,1024,sf::Color(255,0,0,0));
 
 	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
 	
@@ -153,7 +153,7 @@ void Terrain::paint(int indexForblendMap,float radius,int whichTex,vec3 origin, 
 		x=this->blendmap1.GetWidth()-hit.x*this->blendmap1.GetWidth();
 		y=this->blendmap1.GetHeight()+(-hit.z*this->blendmap1.GetHeight());
 	}
-	float rad=10;
+	float rad=1;
 	
 	for(int i=y-rad;i<y+rad;i++)
 	{
