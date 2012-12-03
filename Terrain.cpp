@@ -77,16 +77,16 @@ Terrain::Terrain(int size)
 	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
 	
 	//for blendmap 1
-	this->terrInf.texH[0] = SOIL_load_OGL_texture("terrain/textures/set1/grass.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
-	this->terrInf.texH[1] = SOIL_load_OGL_texture("terrain/textures/set1/grass2.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
-	this->terrInf.texH[2] = SOIL_load_OGL_texture("terrain/textures/set1/grass3.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
-	this->terrInf.texH[3] = SOIL_load_OGL_texture("terrain/textures/set1/snow.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[0] = SOIL_load_OGL_texture("terrain/textures/set1/1.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[1] = SOIL_load_OGL_texture("terrain/textures/set1/2.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[2] = SOIL_load_OGL_texture("terrain/textures/set1/3.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[3] = SOIL_load_OGL_texture("terrain/textures/set1/4.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 
 	//for blendmap 2
-	this->terrInf.tex2H[0] = SOIL_load_OGL_texture("terrain/textures/set1/dirt.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
-	this->terrInf.tex2H[1] = SOIL_load_OGL_texture("terrain/textures/set1/dirt2.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
-	this->terrInf.tex2H[2] = SOIL_load_OGL_texture("terrain/textures/set1/sand.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
-	this->terrInf.tex2H[3] = SOIL_load_OGL_texture("terrain/textures/set1/stone.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[0] = SOIL_load_OGL_texture("terrain/textures/set1/5.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[1] = SOIL_load_OGL_texture("terrain/textures/set1/6.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[2] = SOIL_load_OGL_texture("terrain/textures/set1/7.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[3] = SOIL_load_OGL_texture("terrain/textures/set1/8.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 	
 	/*if(debug)
 >>>>>>> d9861b4941551f94d383b9eeda8221bae5399f4f
@@ -178,6 +178,8 @@ void Terrain::paint(float radius,int whichTex,vec3 origin, vec3 ray)
 	//the other triangle
 	int x=hit.x*256*this->blendsc;
 	int y=(hit.z*256*this->blendsc);
+	
+	//if the first ray missed the first triangle, try the other one
 	if(hit.x==1)
 	{
 		v1= vec3(this->width,0.0f,-this->height);
@@ -187,25 +189,28 @@ void Terrain::paint(float radius,int whichTex,vec3 origin, vec3 ray)
 		x=256*this->blendsc-hit.x*256*this->blendsc;
 		y=256*this->blendsc+(-hit.z*256*this->blendsc);
 	}
-	float rad=1;
+	float rad=5;
 	
-	for(int i=y-rad;i<y+rad;i++)
-	{
-		
-		for(int j=x-rad;j<x+rad;j++)
+	//if the the ray hit any of the triangles
+	//go through the blendmaps and update blend values
+	if(hit.x!=1)
+		for(int i=y-rad;i<y+rad;i++)
 		{
-			if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
+			for(int j=x-rad;j<x+rad;j++)
 			{
-				sf::Color pix1=this->blendmap1.GetPixel(j,i);
-				sf::Color pix2=this->blendmap2.GetPixel(j,i);
-				this->increasePixelPaint(pix1,pix2,whichTex,10);
-				
-				this->blendmap1.SetPixel(j,i,pix1);
-				this->blendmap2.SetPixel(j,i,pix2);
+				if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
+				{
+					sf::Color pix1=this->blendmap1.GetPixel(j,i);
+					sf::Color pix2=this->blendmap2.GetPixel(j,i);
+					this->increasePixelPaint(pix1,pix2,whichTex,0.1);
+					
+					this->blendmap1.SetPixel(j,i,pix1);
+					this->blendmap2.SetPixel(j,i,pix2);
+				}
 			}
 		}
-	}
 	
+	//should be changes to upload just the data changed and not the whole blendmap
 	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
 	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
 }
@@ -213,6 +218,7 @@ void Terrain::paint(float radius,int whichTex,vec3 origin, vec3 ray)
 //gets two pixels, calculates if the  choosen blendindex can increase, and in that case, increases it and decreses another pixels blend value
 void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float strength)
 {
+	//translates pixels color data to array for convinience
 	int pixBlends[]=
 	{
 		pix1.r,pix1.g,pix1.b,pix1.a,
@@ -227,11 +233,13 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		if(pixBlends[i]>0)
 			nrOfBlends++;
 	}
+	if(pixBlends[blendIndex]==0)
+		nrOfBlends++;
 
 	//increase as long as ur not going over 255
 	//cout<<pixBlends[blendIndex]+255/strength<<endl;
-	if(pixBlends[blendIndex]+255/strength<=255)
-		pixBlends[blendIndex]+=(255/strength);
+	if(pixBlends[blendIndex]+255*strength<=255)
+		pixBlends[blendIndex]+=(255*strength);
 	//if you are going beyond 255
 	else
 	{
@@ -240,16 +248,22 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		pixBlends[blendIndex]=255;
 	}
 	
-	float resultBlendFac=(255/strength)/nrOfBlends;
+	//the amount the other blendfactors should lower with
+	float blendFac=(255*strength)/nrOfBlends;
+
+	//calculates the blends that should lower
 	for(int i=0;i<8;i++)
 	{
 		if(blendIndex!=i)
 		{
-			if(pixBlends[i]-resultBlendFac>0)
-				pixBlends[i]-=resultBlendFac;
+			if(pixBlends[i]-blendFac>0)
+				pixBlends[i]-=blendFac;
+			else
+				pixBlends[i]=0;
 		}
 	}
 	
+	//translates the array back to pixs
 	pix1.r=pixBlends[0];
 	pix1.g=pixBlends[1];
 	pix1.b=pixBlends[2];
