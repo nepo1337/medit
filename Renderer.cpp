@@ -102,25 +102,6 @@ void Renderer::draw()
 	this->TerrainShader.setUniform("modelMatrix",modelMatrix);
 	this->TerrainShader.setUniform("MVP",mvp);
 	
-	//binds blendmaps
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->blendmap1H);
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D,this->terrInf->blendmap2H);
-	
-	//binds ground textures
-	for(int i=0;i<4;i++)
-	{
-		glActiveTexture(GL_TEXTURE2+i);
-		glBindTexture(GL_TEXTURE_2D,this->terrInf->texH[i]);
-	}
-	//2nd
-	for(int i=0;i<4;i++)
-	{
-		glActiveTexture(GL_TEXTURE6+i);
-		glBindTexture(GL_TEXTURE_2D,this->terrInf->tex2H[i]);
-	}
-	
 	//draws ground plane
 	glBindVertexArray(this->terrInf->vaoh);
 	glDrawArrays(GL_TRIANGLES,0,6);
@@ -165,16 +146,16 @@ void Renderer::setTerrainInfo(TerrainInfo *t)
 {
 	this->terrInf=t;
 	this->TerrainShader.use();
-	this->TerrainShader.setUniform("blendmap1", 0);
-	this->TerrainShader.setUniform("blendmap2", 1);
-	this->TerrainShader.setUniform("tex1", 2);
-	this->TerrainShader.setUniform("tex2", 3);
-	this->TerrainShader.setUniform("tex3", 4);
-	this->TerrainShader.setUniform("tex4", 5);
-	this->TerrainShader.setUniform("tex5", 6);
-	this->TerrainShader.setUniform("tex6", 7);
-	this->TerrainShader.setUniform("tex7", 8);
-	this->TerrainShader.setUniform("tex8", 9);
+	this->TerrainShader.setUniform("blendmap1", 1);
+	this->TerrainShader.setUniform("blendmap2", 2);
+	this->TerrainShader.setUniform("tex1", 3);
+	this->TerrainShader.setUniform("tex2", 4);
+	this->TerrainShader.setUniform("tex3", 5);
+	this->TerrainShader.setUniform("tex4", 6);
+	this->TerrainShader.setUniform("tex5", 7);
+	this->TerrainShader.setUniform("tex6", 8);
+	this->TerrainShader.setUniform("tex7", 9);
+	this->TerrainShader.setUniform("tex8", 10);
 	glUseProgram(0);
 }
 

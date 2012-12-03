@@ -3,6 +3,9 @@
 Terrain::Terrain(int size)
 {
 	this->mapsize=size;
+	this->width=64;
+	this->height=64;
+	
 	if(this->mapsize>2)
 		this->mapsize=2;
 		
@@ -67,25 +70,38 @@ Terrain::Terrain(int size)
 		0.0f,1.0f
 	};
 	
+	this->terrInf.blendmap1H=0;
+	this->terrInf.blendmap2H=0;
+	
 	
 	//creating blendmaps
 	this->blendmap1.Create(256*this->blendsc,256*this->blendsc,sf::Color(255,0,0,0));
 	this->blendmap2.Create(256*this->blendsc,256*this->blendsc,sf::Color(0,0,0,0));
 
 	//uploads the blendmaps, filing the handle
+	glActiveTexture(GL_TEXTURE1);
 	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+	glActiveTexture(GL_TEXTURE2);
 	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
 	
 	//for blendmap 1
+	glActiveTexture(GL_TEXTURE3);
 	this->terrInf.texH[0] = SOIL_load_OGL_texture("terrain/textures/set1/1.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	glActiveTexture(GL_TEXTURE4);
 	this->terrInf.texH[1] = SOIL_load_OGL_texture("terrain/textures/set1/2.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	glActiveTexture(GL_TEXTURE5);
 	this->terrInf.texH[2] = SOIL_load_OGL_texture("terrain/textures/set1/3.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	glActiveTexture(GL_TEXTURE6);
 	this->terrInf.texH[3] = SOIL_load_OGL_texture("terrain/textures/set1/4.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 
 	//for blendmap 2
+	glActiveTexture(GL_TEXTURE7);
 	this->terrInf.tex2H[0] = SOIL_load_OGL_texture("terrain/textures/set1/5.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	glActiveTexture(GL_TEXTURE8);
 	this->terrInf.tex2H[1] = SOIL_load_OGL_texture("terrain/textures/set1/6.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	glActiveTexture(GL_TEXTURE9);
 	this->terrInf.tex2H[2] = SOIL_load_OGL_texture("terrain/textures/set1/7.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	glActiveTexture(GL_TEXTURE10);
 	this->terrInf.tex2H[3] = SOIL_load_OGL_texture("terrain/textures/set1/8.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 	
 	/*if(debug)
@@ -156,6 +172,8 @@ Terrain::~Terrain()
 	glDeleteVertexArrays(1, &this->vaoh);
 	glDeleteTextures(4,this->terrInf.texH);
 	glDeleteTextures(4,this->terrInf.tex2H);
+	glDeleteTextures(1,&this->terrInf.blendmap1H);
+	glDeleteTextures(1,&this->terrInf.blendmap2H);
 }
 
 GLuint Terrain::getVaoh()
@@ -211,7 +229,9 @@ void Terrain::paint(float radius,int whichTex,vec3 origin, vec3 ray)
 		}
 	
 	//should be changes to upload just the data changed and not the whole blendmap
+	glActiveTexture(GL_TEXTURE1);
 	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+	glActiveTexture(GL_TEXTURE2);
 	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
 }
 
