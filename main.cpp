@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
-	Terrain terrain(75.0f,75.0f);
+	Terrain terrain(0);
 	rend.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
 	rend.updateViewMatrix(cam.getViewMatrix());
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-			terrain.paint(0,0,0,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+			terrain.paint(0,7,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
 		}
 		if(app.GetInput().IsKeyDown(sf::Key::W))
 		{

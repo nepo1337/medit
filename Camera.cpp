@@ -4,8 +4,8 @@
 
 Camera::Camera()
 {
-	this->eye=vec3(2.0f,1.0f,0.0f);
-	this->lookat=vec3(0.0f,0.0f,0.0f);
+	this->eye=vec3(2.0f,2.0f,0.0f);
+	this->lookat=vec3(0.0f,1.0f,0.0f);
 	this->up=vec3(0.0f,1.0f,0.0f);
 	this->viewMatrix=mat4(1.0f);
 	this->rotx=this->roty=this->rotz=0;

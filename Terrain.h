@@ -25,17 +25,25 @@ private:
 	bool debug;
 	TerrainInfo terrInf;
 	sf::Image blendmap1;
+	sf::Image blendmap2;
 	//handle gets filles with a handle to the tex in the GFX, uploads data from sf::Image
 	void makeBlendMap(GLuint& handle, sf::Image img);
+	
+	//0,1,2
+	int mapsize;
+	//modifiner for scaling blendmap
+	int blendsc;
+	void increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float strength);
 public:
-	Terrain(float width, float height);
+	//the terrain has predefined sizes,0 small, 1 medium, 2 large
+	Terrain(int size);
 	~Terrain();
 	GLuint getVaoh();
 	GLuint getTexh();
 	TerrainInfo *getTerrInfo();
 	//the sf::Image should be replaced with an array for ore indexes
 	//x and y represents the center,ex where someone clicked
-	void paint(int indexForblendMap,float radius,int whichTex,vec3 origin, vec3 ray);
+	void paint(float radius,int whichTex,vec3 origin, vec3 ray);
 
 };
 
