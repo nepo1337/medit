@@ -23,6 +23,7 @@ private:
 	GLuint vaoh;
 	GLuint vbohs[4];
 	bool debug;
+	float radius;
 	TerrainInfo terrInf;
 	sf::Image blendmap1;
 	sf::Image blendmap2;
@@ -34,6 +35,9 @@ private:
 	//modifiner for scaling blendmap
 	int blendsc;
 	void increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float strength);
+	bool inCircle(float cx, float cy, float x, float y);
+	void replacePartTexture(GLint xoffset, GLint yoffset, sf::Image img,GLuint handle);
+	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
 	Terrain(int size);
@@ -43,7 +47,8 @@ public:
 	TerrainInfo *getTerrInfo();
 	//the sf::Image should be replaced with an array for ore indexes
 	//x and y represents the center,ex where someone clicked
-	void paint(float radius,int whichTex,vec3 origin, vec3 ray);
+	void paint(int whichTex,vec3 origin, vec3 ray);
+	void setRadius(float rad);
 
 };
 

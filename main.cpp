@@ -45,6 +45,7 @@ int main(int argc, char **argv)
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	Terrain terrain(0);
+	terrain.setRadius(10);
 	rend.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
 	rend.updateViewMatrix(cam.getViewMatrix());
@@ -108,11 +109,11 @@ int main(int argc, char **argv)
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-			terrain.paint(0,test,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+			terrain.paint(test,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
-			terrain.paint(0,test+1,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+			terrain.paint(test+1,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
 		}
 		if(app.GetInput().IsKeyDown(sf::Key::W))
 		{

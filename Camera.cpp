@@ -84,7 +84,7 @@ void Camera::rotateLeft(float deg)
 	vec3 dir= ((this->eye-this->lookat));
 	mat4 rot(1.0f);
 	rot*=scale(dir);
-	rot*=rotate(deg*0.2f,vec3(0,1,0));
+	rot*=rotate(deg*-0.2f,vec3(0,1,0));
 
 	vec4 t(1.0);
 	t=t*rot;

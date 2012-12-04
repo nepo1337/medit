@@ -9,24 +9,27 @@ Terrain::Terrain(int size)
 	if(this->mapsize>2)
 		this->mapsize=2;
 		
+	if(this->mapsize<0)
+		this->mapsize=0;
+		
 	this->blendsc=1;
 	if(size==2)
 	{
 		this->width=256;
 		this->height=256;
-		this->blendsc=4;
+		this->blendsc=16;
 	}
 	else if(size==1)
 	{
 		this->width=128;
 		this->height=128;
-		this->blendsc=2;
+		this->blendsc=8;
 	}
 	else
 	{
 		this->width=64;
 		this->height=64;
-		this->blendsc=1;
+		this->blendsc=4;
 	}
 	this->debug=true;
 	
@@ -166,6 +169,12 @@ void Terrain::makeBlendMap(GLuint& handle, sf::Image img)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
+void Terrain::replacePartTexture(GLint xoffset, GLint yoffset, sf::Image img,GLuint handle)
+{
+	glBindTexture(GL_TEXTURE_2D,handle);
+	glTexSubImage2D(GL_TEXTURE_2D,0,xoffset,yoffset,img.GetWidth(),img.GetHeight(),GL_RGBA,GL_UNSIGNED_BYTE,img.GetPixelsPtr());
+}
+
 Terrain::~Terrain()
 {
 	glDeleteBuffers(4,&this->vbohs[4]);
@@ -186,7 +195,7 @@ TerrainInfo *Terrain::getTerrInfo()
 	return &this->terrInf;
 }
 
-void Terrain::paint(float radius,int whichTex,vec3 origin, vec3 ray)
+void Terrain::paint(int whichTex,vec3 origin, vec3 ray)
 {
 	//one of the triangles
 	vec3 v1= vec3(0.0f,0.0f,0.0f);
@@ -207,32 +216,79 @@ void Terrain::paint(float radius,int whichTex,vec3 origin, vec3 ray)
 		x=256*this->blendsc-hit.x*256*this->blendsc;
 		y=256*this->blendsc+(-hit.z*256*this->blendsc);
 	}
-	float rad=5;
 	
-	//if the the ray hit any of the triangles
+		//if the the ray hit any of the triangles
 	//go through the blendmaps and update blend values
 	if(hit.x!=1)
-		for(int i=y-rad;i<y+rad;i++)
-		{
-			for(int j=x-rad;j<x+rad;j++)
+	{
+		//lowest x,y values, in case of drawing partially outside
+		//used to create a new image which can replace parts of the texture on the GFX side
+		int lowestY=y-this->radius;
+		int lowestX=x-this->radius;
+		int highestY=y+this->radius;
+		int highestX=x+this->radius;
+		
+		if(lowestY<0)
+			lowestY=0;
+		if(lowestX<0)
+			lowestX=0;
+		if(highestX>256*this->blendsc)
+			highestX=256*this->blendsc;
+		if(highestY>256*this->blendsc)
+			highestY=256*this->blendsc;
+		
+		sf::Image bmp1;
+		sf::Image bmp2;
+		
+		bmp1.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
+		bmp2.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
+		
+		//counter for the sub image
+		int subX=0;
+		int subY=0;
+		
+			//creates a area to look through the blendmap to inrease speed
+			for(int i=y-this->radius;i<y+this->radius;i++)
 			{
-				if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
+				for(int j=x-this->radius;j<x+this->radius;j++)
 				{
-					sf::Color pix1=this->blendmap1.GetPixel(j,i);
-					sf::Color pix2=this->blendmap2.GetPixel(j,i);
-					this->increasePixelPaint(pix1,pix2,whichTex,0.1);
-					
-					this->blendmap1.SetPixel(j,i,pix1);
-					this->blendmap2.SetPixel(j,i,pix2);
+					//if the cordinats are inside the bounds
+					if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
+					{
+						//first updates the pixel in the part texture that will replace
+						//the texture on the gfx, with the "global blendmap"
+						sf::Color pix1=this->blendmap1.GetPixel(j,i);
+						sf::Color pix2=this->blendmap2.GetPixel(j,i);
+						bmp1.SetPixel(subX,subY,pix1);
+						bmp2.SetPixel(subX,subY,pix2);
+						if(this->inCircle(x,y,j,i))
+						{
+							this->increasePixelPaint(pix1,pix2,whichTex,0.1);
+							
+							//updates the small texture thats going to replace pixels in the GFX tex
+							bmp1.SetPixel(subX,subY,pix1);
+							bmp2.SetPixel(subX,subY,pix2);
+							//and updates the global blendmap
+							this->blendmap1.SetPixel(j,i,pix1);
+							this->blendmap2.SetPixel(j,i,pix2);
+						}
+						subX++;
+					}
 				}
+				//if inside volume, counter y is increase so the sub img(bmp1/2) is correct
+				if(i>=0&&i<=256*this->blendsc)
+					subY++;
+				subX=0;
 			}
-		}
-	
-	//should be changes to upload just the data changed and not the whole blendmap
-	glActiveTexture(GL_TEXTURE1);
-	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
-	glActiveTexture(GL_TEXTURE2);
-	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+
+		//should be changes to upload just the data changed and not the whole blendmap
+		//glActiveTexture(GL_TEXTURE1);
+		this->replacePartTexture(lowestX,lowestY,bmp1,this->terrInf.blendmap1H);
+		//this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+		//glActiveTexture(GL_TEXTURE2);
+		this->replacePartTexture(lowestX,lowestY,bmp2,this->terrInf.blendmap2H);
+		//this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+	}
 }
 
 //gets two pixels, calculates if the  choosen blendindex can increase, and in that case, increases it and decreses another pixels blend value
@@ -245,52 +301,35 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		pix2.r,pix2.g,pix2.b,pix2.a
 	};
 	
-	//counts the number of blends, say, if red is above 1, and alpha is over one, there is 2 nrofblends
-	int nrOfBlends=-1; //OBS, MY CAUSE ERROR
+	pixBlends[blendIndex]+=(255*strength);
 	
-	for(int i=0;i<8;i++)
-	{
-		if(pixBlends[i]>0)
-			nrOfBlends++;
-	}
-	if(pixBlends[blendIndex]==0)
-		nrOfBlends++;
-
-	//increase as long as ur not going over 255
-	//cout<<pixBlends[blendIndex]+255/strength<<endl;
-	if(pixBlends[blendIndex]+255*strength<=255)
-		pixBlends[blendIndex]+=(255*strength);
-	//if you are going beyond 255
-	else
-	{
-		for(int i=0;i<8;i++)
-			pixBlends[i]=0;
-		pixBlends[blendIndex]=255;
-	}
+	float sum = 0;
 	
-	//the amount the other blendfactors should lower with
-	float blendFac=(255*strength)/nrOfBlends;
-
-	//calculates the blends that should lower
-	for(int i=0;i<8;i++)
+	for(int i = 0; i < 8; i++)
 	{
-		if(blendIndex!=i)
-		{
-			if(pixBlends[i]-blendFac>0)
-				pixBlends[i]-=blendFac;
-			else
-				pixBlends[i]=0;
-		}
+		sum += pixBlends[i];
 	}
 	
 	//translates the array back to pixs
-	pix1.r=pixBlends[0];
-	pix1.g=pixBlends[1];
-	pix1.b=pixBlends[2];
-	pix1.a=pixBlends[3];
+	pix1.r=(pixBlends[0] / sum) * 255;
+	pix1.g=(pixBlends[1] / sum) * 255;
+	pix1.b=(pixBlends[2] / sum) * 255;
+	pix1.a=(pixBlends[3] / sum) * 255;
 	
-	pix2.r=pixBlends[4];
-	pix2.g=pixBlends[5];
-	pix2.b=pixBlends[6];
-	pix2.a=pixBlends[7];
+	pix2.r=(pixBlends[4] / sum) * 255;
+	pix2.g=(pixBlends[5] / sum) * 255;
+	pix2.b=(pixBlends[6] / sum) * 255;
+	pix2.a=(pixBlends[7] / sum) * 255;
+}
+
+bool Terrain::inCircle(float cx, float cy, float x, float y)
+{
+	float dist;
+	dist = (cx-x)*(cx-x)+(cy-y)*(cy-y);
+	return dist<this->radius*this->radius;
+}
+
+void Terrain::setRadius(float rad)
+{
+	this->radius = rad;
 }
