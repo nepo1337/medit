@@ -2,6 +2,7 @@
 
 Terrain::Terrain(int size)
 {
+	this->activeTex=0;
 	this->mapsize=size;
 	this->width=64;
 	this->height=64;
@@ -195,7 +196,7 @@ TerrainInfo *Terrain::getTerrInfo()
 	return &this->terrInf;
 }
 
-void Terrain::paint(int whichTex,vec3 origin, vec3 ray)
+void Terrain::paint(vec3 origin, vec3 ray)
 {
 	//one of the triangles
 	vec3 v1= vec3(0.0f,0.0f,0.0f);
@@ -263,7 +264,7 @@ void Terrain::paint(int whichTex,vec3 origin, vec3 ray)
 						bmp2.SetPixel(subX,subY,pix2);
 						if(this->inCircle(x,y,j,i))
 						{
-							this->increasePixelPaint(pix1,pix2,whichTex,0.1);
+							this->increasePixelPaint(pix1,pix2,this->activeTex,0.1);
 							
 							//updates the small texture thats going to replace pixels in the GFX tex
 							bmp1.SetPixel(subX,subY,pix1);
@@ -332,4 +333,9 @@ bool Terrain::inCircle(float cx, float cy, float x, float y)
 void Terrain::setRadius(float rad)
 {
 	this->radius = rad;
+}
+
+void Terrain::setActiveTex(int tex)
+{
+	this->activeTex=tex;
 }

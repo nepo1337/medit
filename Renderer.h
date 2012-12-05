@@ -11,6 +11,7 @@
 #include <vector>
 #include "MeshInfo.h"
 #include "TA.h"
+#include "GUI.h"
 
 using namespace std;
 using namespace glm;

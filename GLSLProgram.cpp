@@ -14,12 +14,7 @@ GLSLProgram::GLSLProgram()
   tessEShadHandle=0;
 }
 
-void GLSLProgram::printShaderCode()
-{
-  cout << this->shaderCode;
-}
-
-void GLSLProgram::destroy()
+GLSLProgram::~GLSLProgram()
 {
 	glDetachShader(handle, vertShadHandle);
 	glDetachShader(handle, fragShadHandle);
@@ -32,6 +27,11 @@ void GLSLProgram::destroy()
 	glDeleteShader(tessCShadHandle);
 	glDeleteShader(tessEShadHandle);
 	glDeleteProgram(handle);
+}
+
+void GLSLProgram::printShaderCode()
+{
+  cout << this->shaderCode;
 }
 
 

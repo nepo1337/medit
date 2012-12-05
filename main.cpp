@@ -10,6 +10,7 @@
 #include "Terrain.h"
 #include "Camera.h"
 #include "Intersection.h"
+#include "GUI.h"
 
 using namespace std;
 using namespace glm;
@@ -44,9 +45,11 @@ int main(int argc, char **argv)
 
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
+	GUI gui;
 	Terrain terrain(0);
 	terrain.setRadius(10);
 	rend.setTerrainInfo(terrain.getTerrInfo());
+	gui.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
 	rend.updateViewMatrix(cam.getViewMatrix());
 	glViewport(0,0,width,height);
@@ -81,12 +84,14 @@ int main(int argc, char **argv)
 			}
 			if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::E))
 			{
-				test--;
+				gui.decActiveTex();
+				terrain.setActiveTex(gui.getActiveTex());
 			}
 			
 			if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::R))
 			{
-				test++;
+				gui.incActiveTex();
+				terrain.setActiveTex(gui.getActiveTex());
 			}
 
 			if(event.Type == sf::Event::Resized)
@@ -109,11 +114,13 @@ int main(int argc, char **argv)
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-			terrain.paint(test,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+			terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
-			terrain.paint(test+1,cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+				float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
+				float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
 		if(app.GetInput().IsKeyDown(sf::Key::W))
 		{
@@ -149,6 +156,7 @@ int main(int argc, char **argv)
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		rend.draw();
+		gui.draw();
 
 		app.Display();
 	}

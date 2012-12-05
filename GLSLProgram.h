@@ -35,6 +35,7 @@ private:
     
 public:
     GLSLProgram();
+	~GLSLProgram();
     bool compileShaderFromFile(const char* fileName,GLSLShader::GLSLShaderType type);
     bool link();
     void use();
@@ -60,7 +61,6 @@ public:
     void printActiveAttribs();
     
     void printShaderCode();
-    void destroy();
 };
 
 #endif // GLSLPROGRAM_H

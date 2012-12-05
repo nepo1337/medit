@@ -66,7 +66,6 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-	this->modelShader.destroy();
 }
 
 void Renderer::draw()
