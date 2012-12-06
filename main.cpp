@@ -108,18 +108,53 @@ int main(int argc, char **argv)
 				else
 					cam.zoomOut(-event.MouseWheel.Delta*0.5);
 				rend.updateViewMatrix(cam.getViewMatrix());
-			}		
+			}
+			
+			if(event.Type == sf::Event::MouseButtonPressed)
+			{
+				if(event.MouseButton.Button==sf::Mouse::Right)
+				{
+					gui.showMenu(true);
+					float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
+					float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+					gui.setRightClickXY(normalisedx,normalisedy);
+				}
+			}
+			
+			if(event.Type == sf::Event::MouseButtonPressed)
+			{
+				if(event.MouseButton.Button==sf::Mouse::Left)
+				{
+					float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
+					float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+					gui.setLeftClick(normalisedx,normalisedy);
+					terrain.setActiveTex(gui.getActiveTex());
+				}
+			}
+
+			if(event.Type == sf::Event::MouseButtonReleased)
+			{
+				if(event.MouseButton.Button==sf::Mouse::Right)
+				{
+					gui.showMenu(false);
+				}
+			}
 		}
 		
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-			terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+			float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
+			float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+			if(gui.isInDrawWindow(normalisedx,normalisedy))
+				if(gui.getState()==GUIstate::PAINT)
+					terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
 				float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
 				float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+				gui.setMouseXY(normalisedx,normalisedy);
 				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
 		if(app.GetInput().IsKeyDown(sf::Key::W))
@@ -148,6 +183,11 @@ int main(int argc, char **argv)
 			cam.rotateLeft(mousedx-app.GetInput().GetMouseX());
 			cam.rotateUp(mousedy-app.GetInput().GetMouseY());
 			rend.updateViewMatrix(cam.getViewMatrix());
+		}
+		
+		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
+		{
+			gui.showMenu(true);
 		}
 		//saves the position of the mouse, used for rotation
 		mousedx=app.GetInput().GetMouseX();
