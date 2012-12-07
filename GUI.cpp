@@ -2,305 +2,49 @@
 
 GUI::GUI()
 {
-	this->menuPosMM=mat4(1.0f);
 	this->menuUp=false;
 	this->state = GUIstate::NONE;
-	this->vaoHmain=0;
-	this->vaoHpanel=0;
-	this->vaoHmainTex=0;
-	this->vaohsmalltp1=0;
-	this->vaohsmalltp2=0;
-	this->vaohsmalltp3=0;
-	this->vaohsmalltp4=0;
-	this->vaohrcp=0;
-	for(int i=0;i<9;i++)
-		this->vbohs[i]=0;
-	
-	this->nrOfTex=15;
-	for(int i=0;i<this->nrOfTex;i++)
-		this->textureH[i]=0;
 		
-	this->activeTex=0;
-	
-	//defines the plane for drawing the main GUI (clipspace)
-	//all positions are hardcoded :/:/:/
-	
-	//uv cords
-	float mainGUIUV[]=
-	{
-		0.0f,0.0f,
-		0.0f,1.0f,
-		1.0f,0.0f,
-		1.0f,1.0f,
-		1.0f,0.0f,
-		0.0f,1.0f
-	};
-	
-	//the front GUI
-	float mainGUI[]=
-	{
-		-1.0f,-1.0f,0.0f,
-		-1.0f,1.0f,0.0f,
-		1.0f,-1.0f,0.0f,
-		1.0f,1.0f,0.0f,
-		1.0f,-1.0f,0.0f,
-		-1.0f,1.0f,0.0f
-	};
-	
-	//the panel to the right
-	float panelBackground[]=
-	{
-		0.41f,-1.0f,0.0f,
-		0.41f,1.0f,0.0f,
-		1.0f,-1.0f,0.0f,
-		1.0f,1.0f,0.0f,
-		1.0f,-1.0f,0.0f,
-		0.41f,1.0f,0.0f
-	};
-	
-	//main texture plane
-	float mainTexPlane[]=
-	{
-		0.53f,0.23f,0.0f,
-		0.53f,0.83f,0.0f,
-		0.875f, 0.23f,0.0f,
-		0.875f, 0.83f,0.0f,
-		0.875f, 0.23f,0.0f,
-		0.53f,0.83f,0.0f
-	};
-	
-	//the small texplane (1)
-	float stp1[]=
-	{
-		0.48f,-0.03f,0.0f,
-		0.48f, 0.11f,0.0f,
-		0.56f,-0.03f,0.0f,
-		0.56f, 0.11f,0.0f,
-		0.56f,-0.03f,0.0f,
-		0.48f, 0.11f,0.0f
-	};
-	
-	//the small texplane (2)
-	float stp2[]=
-	{
-		0.58f,-0.03f,0.0f,
-		0.58f, 0.11f,0.0f,
-		0.67f,-0.03f,0.0f,
-		0.67f, 0.11f,0.0f,
-		0.67f,-0.03f,0.0f,
-		0.58f, 0.11f,0.0f
-	};
-	
-	//the small texplane (3)
-	float stp3[]=
-	{
-		0.73f,-0.03f,0.0f,
-		0.73f, 0.11f,0.0f,
-		0.825f,-0.03f,0.0f,
-		0.825f, 0.11f,0.0f,
-		0.825f,-0.03f,0.0f,
-		0.73f, 0.11f,0.0f
-	};
-	
-	//the small texplane (4)
-	float stp4[]=
-	{
-		0.84f,-0.03f,0.0f,
-		0.84f, 0.11f,0.0f,
-		0.93f,-0.03f,0.0f,
-		0.93f, 0.11f,0.0f,
-		0.93f,-0.03f,0.0f,
-		0.84f, 0.11f,0.0f
-	};
-	
-	//the right click plane, defined in the middle so model matrix can easily be applied
-	float rcp[]=
-	{
-		-0.2f,-0.29f,0.0f,
-		-0.2f, 0.29f,0.0f,
-		0.2f, -0.29f,0.0f,
-		0.2f, 0.29f,0.0f,
-		0.2f,-0.29f,0.0f,
-		-0.2f, 0.29f,0.0f
-	};
-	
-	glGenVertexArrays(1,&vaoHmain);
-	glGenVertexArrays(1,&vaoHpanel);
-	glGenVertexArrays(1,&vaoHmainTex);
-	glGenVertexArrays(1,&vaohsmalltp1);
-	glGenVertexArrays(1,&vaohsmalltp2);
-	glGenVertexArrays(1,&vaohsmalltp3);
-	glGenVertexArrays(1,&vaohsmalltp4);
-	glGenVertexArrays(1,&vaohrcp);
-	glGenBuffers(9,vbohs);
-	
-	//front
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mainGUI),mainGUI,GL_STATIC_DRAW);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mainGUIUV), mainGUIUV, GL_STATIC_DRAW);
-	
-	//right panel
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[2]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(panelBackground),panelBackground,GL_STATIC_DRAW);
-	
-	//main tex plane
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[3]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mainTexPlane),mainTexPlane,GL_STATIC_DRAW);
-	
-	//small texplane 1
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[4]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(stp1),stp1,GL_STATIC_DRAW);
-	
-	//small texplane 2
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[5]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(stp2),stp2,GL_STATIC_DRAW);
-	
-	//small texplane 3
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[6]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(stp3),stp3,GL_STATIC_DRAW);
-	
-	//small texplane 4
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[7]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(stp4),stp4,GL_STATIC_DRAW);
-	
-	//the panel when rightclicking
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[8]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(rcp),rcp,GL_STATIC_DRAW);
-	
-	//front vao
-	glBindVertexArray(vaoHmain);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[0]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//panel vao
-	glBindVertexArray(vaoHpanel);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[2]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//main tex vao
-	glBindVertexArray(vaoHmainTex);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[3]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	
-	//small texplane 1
-	glBindVertexArray(vaohsmalltp1);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[4]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//small teplane 2
-	glBindVertexArray(vaohsmalltp2);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[5]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//small teplane 3
-	glBindVertexArray(vaohsmalltp3);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[6]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//small teplane 3
-	glBindVertexArray(vaohsmalltp4);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[7]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//the right click plane
-	glBindVertexArray(this->vaohrcp);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[8]);
-	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
-	glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,NULL);
-	
-	//loads all gui textures in to textureslot 0
-	glActiveTexture(GL_TEXTURE0);
-	this->textureH[0] = SOIL_load_OGL_texture("gui/GUI-Front.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[1] = SOIL_load_OGL_texture("gui/GUI-Back.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[2] = SOIL_load_OGL_texture("gui/GUI-Draw.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[3] = SOIL_load_OGL_texture("gui/GUI-Model.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[4] = SOIL_load_OGL_texture("gui/GUI-Light.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[5] = SOIL_load_OGL_texture("gui/GUI-Particle.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[6] = SOIL_load_OGL_texture("gui/GUI-Path.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[7] = SOIL_load_OGL_texture("gui/GUI-Quest.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[8] = SOIL_load_OGL_texture("gui/C-off.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[9] = SOIL_load_OGL_texture("gui/C-Draw.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[10] = SOIL_load_OGL_texture("gui/C-Light.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[11] = SOIL_load_OGL_texture("gui/C-Model.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[12] = SOIL_load_OGL_texture("gui/C-Particle.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[13] = SOIL_load_OGL_texture("gui/C-Path.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
-	this->textureH[14] = SOIL_load_OGL_texture("gui/C-Quest.png",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT);
+	this->activeTex=0;	
 
-	//the standard static gui
+	//the gui
 	this->GUIshader.compileShaderFromFile("gui.vsh",GLSLShader::VERTEX);
 	this->GUIshader.compileShaderFromFile("gui.fsh",GLSLShader::FRAGMENT);
 	this->GUIshader.bindAttribLocation(0,"vertexPosition");
 	this->GUIshader.bindAttribLocation(1,"vertexUv");
 	this->GUIshader.link();
 	this->GUIshader.setUniform("guiTex", 0);
-	this->GUIshader.setUniform("modelMatrix", this->menuPosMM);
 	
-	//moveable gui parts
-	this->GUImoveable.compileShaderFromFile("guiMoveable.vsh",GLSLShader::VERTEX);
-	this->GUImoveable.compileShaderFromFile("guiMoveable.fsh",GLSLShader::FRAGMENT);
-	this->GUImoveable.bindAttribLocation(0,"vertexPosition");
-	this->GUImoveable.bindAttribLocation(1,"vertexUv");
-	this->GUImoveable.link();
-	this->GUImoveable.setUniform("guiTex", 0);
-	this->GUImoveable.setUniform("modelMatrix", this->menuPosMM);
+	//the panels to the right side
+	this->frontPanel.init(vec3(0.0f),1.0f,1.0f,"gui/GUI-Front.png");
+	this->backPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Back.png");
+	this->drawPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Draw.png");
+	this->pathPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Path.png");
+	this->particlePanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Particle.png");
+	this->lightPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Light.png");
+	this->questPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Quest.png");
+	this->modelPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Model.png");
+	
+	//the right click menu
+	this->menuOff.init(vec3(0.0f),0.21,0.29,"gui/C-off.png");
+	this->menuDraw.init(vec3(0.0f),0.21,0.29,"gui/C-Draw.png");
+	this->menuLight.init(vec3(0.0f),0.21,0.29,"gui/C-Light.png");
+	this->menuModel.init(vec3(0.0f),0.21,0.29,"gui/C-Model.png");
+	this->menuParticle.init(vec3(0.0f),0.21,0.29,"gui/C-Particle.png");
+	this->menuPath.init(vec3(0.0f),0.21,0.29,"gui/C-Path.png");
+	this->menuQuest.init(vec3(0.0f),0.21,0.29,"gui/C-Quest.png");
+	
+	//the textures you can browse thorugh
+	this->mainTex.init(vec3(0.7f,0.53f,0),0.15,0.27);
+	this->stp1.init(vec3(0.521,0.043,0),0.04,0.07);
+	this->stp2.init(vec3(0.621,0.043,0),0.04,0.07);
+	this->stp3.init(vec3(0.771,0.043,0),0.04,0.07);
+	this->stp4.init(vec3(0.871,0.043,0),0.04,0.07);
 }
 
 GUI::~GUI()
 {
-	glDeleteTextures(this->nrOfTex,textureH);
-	glDeleteBuffers(9,this->vbohs);
-	glDeleteVertexArrays(1, &this->vaoHmain);
-	glDeleteVertexArrays(1, &this->vaoHpanel);
+
 }
 
 void GUI::draw()
@@ -313,8 +57,9 @@ void GUI::draw()
 	
 	//OBS! need to take the depth test disabled in mind and draw in the correct order
 	//draws the empty panel
-	glBindTexture(GL_TEXTURE_2D, this->textureH[1]);
-	glBindVertexArray(this->vaoHpanel);
+	glBindTexture(GL_TEXTURE_2D, this->backPanel.getTextureHandle());
+	glBindVertexArray(this->backPanel.getVaoHandle());
+	this->GUIshader.setUniform("modelMatrix",backPanel.getModelMatrix());
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
 	//if you are not using any tools
@@ -323,36 +68,40 @@ void GUI::draw()
 
 	}
 	
-	this->GUIshader.use();
 	//if you are painting textures
 	if(this->state == GUIstate::PAINT)
 	{
 		//draws the texture planes first
 		//the texture planes
 		glBindTexture(GL_TEXTURE_2D, this->texHandels[(this->activeTex+6)%8]);
-		glBindVertexArray(this->vaohsmalltp1);
+		glBindVertexArray(this->stp1.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp1.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
-		this->menuPosMM=mat4(1.0f);
 		
 		glBindTexture(GL_TEXTURE_2D, this->texHandels[(this->activeTex+7)%8]);
-		glBindVertexArray(this->vaohsmalltp2);
+		glBindVertexArray(this->stp2.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp2.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		glBindTexture(GL_TEXTURE_2D, this->texHandels[(this->activeTex)%8]);
-		glBindVertexArray(this->vaoHmainTex);
+		glBindVertexArray(this->mainTex.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->mainTex.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		glBindTexture(GL_TEXTURE_2D, this->texHandels[(this->activeTex+1)%8]);
-		glBindVertexArray(this->vaohsmalltp3);
+		glBindVertexArray(this->stp3.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp3.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		glBindTexture(GL_TEXTURE_2D, this->texHandels[(this->activeTex+2)%8]);
-		glBindVertexArray(this->vaohsmalltp4);
+		glBindVertexArray(this->stp4.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp4.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		//draws the panels in the right slot
-		glBindTexture(GL_TEXTURE_2D, this->textureH[2]);
-		glBindVertexArray(this->vaoHpanel);
+		glBindTexture(GL_TEXTURE_2D, this->drawPanel.getTextureHandle());
+		glBindVertexArray(this->drawPanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",drawPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -360,8 +109,9 @@ void GUI::draw()
 	if(this->state == GUIstate::MODEL)
 	{
 		//draws the panels in the right slot
-		glBindTexture(GL_TEXTURE_2D, this->textureH[3]);
-		glBindVertexArray(this->vaoHpanel);
+		glBindTexture(GL_TEXTURE_2D, this->modelPanel.getTextureHandle());
+		glBindVertexArray(this->modelPanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",modelPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -369,8 +119,9 @@ void GUI::draw()
 	if(this->state == GUIstate::LIGHT)
 	{
 		//draws the panels in the right slot
-		glBindTexture(GL_TEXTURE_2D, this->textureH[4]);
-		glBindVertexArray(this->vaoHpanel);
+		glBindTexture(GL_TEXTURE_2D, this->lightPanel.getTextureHandle());
+		glBindVertexArray(this->lightPanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",lightPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -378,8 +129,9 @@ void GUI::draw()
 	if(this->state == GUIstate::PARTICLE)
 	{
 		//draws the panels in the right slot
-		glBindTexture(GL_TEXTURE_2D, this->textureH[5]);
-		glBindVertexArray(this->vaoHpanel);
+		glBindTexture(GL_TEXTURE_2D, this->particlePanel.getTextureHandle());
+		glBindVertexArray(this->particlePanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",particlePanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -387,8 +139,9 @@ void GUI::draw()
 	if(this->state == GUIstate::PATH)
 	{
 		//draws the panels in the right slot
-		glBindTexture(GL_TEXTURE_2D, this->textureH[6]);
-		glBindVertexArray(this->vaoHpanel);
+		glBindTexture(GL_TEXTURE_2D, this->pathPanel.getTextureHandle());
+		glBindVertexArray(this->pathPanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",pathPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -396,68 +149,75 @@ void GUI::draw()
 	if(this->state == GUIstate::QUEST)
 	{
 		//draws the panels in the right slot
-		glBindTexture(GL_TEXTURE_2D, this->textureH[7]);
-		glBindVertexArray(this->vaoHpanel);
+		glBindTexture(GL_TEXTURE_2D, this->questPanel.getTextureHandle());
+		glBindVertexArray(this->questPanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",questPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
 	//draws the front
-	glBindTexture(GL_TEXTURE_2D, this->textureH[0]);
-	glBindVertexArray(this->vaoHmain);
+	this->GUIshader.setUniform("modelMatrix",frontPanel.getModelMatrix());
+	glBindTexture(GL_TEXTURE_2D, this->frontPanel.getTextureHandle());
+	glBindVertexArray(this->frontPanel.getVaoHandle());
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
 	//draws  the front above everything
 	if(this->menuUp)
 	{
-		this->GUImoveable.use();
 		if(this->state == GUIstate::NONE)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[8]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuOff.getTextureHandle());
+			glBindVertexArray(this->menuOff.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuOff.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
-			this->menuPosMM=mat4(1.0f);
 		}
 		if(this->state==GUIstate::PAINT)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[9]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuDraw.getTextureHandle());
+			glBindVertexArray(this->menuDraw.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuDraw.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
 		if(this->state==GUIstate::MODEL)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[11]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuModel.getTextureHandle());
+			glBindVertexArray(this->menuModel.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuModel.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
 		if(this->state==GUIstate::LIGHT)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[10]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuLight.getTextureHandle());
+			glBindVertexArray(this->menuLight.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuLight.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
 		if(this->state==GUIstate::PARTICLE)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[12]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuParticle.getTextureHandle());
+			glBindVertexArray(this->menuParticle.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuParticle.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
 		if(this->state==GUIstate::PATH)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[13]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuPath.getTextureHandle());
+			glBindVertexArray(this->menuPath.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuPath.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
 		if(this->state==GUIstate::QUEST)
 		{
 			//draws the right click panel
-			glBindTexture(GL_TEXTURE_2D, this->textureH[14]);
-			glBindVertexArray(this->vaohrcp);
+			glBindTexture(GL_TEXTURE_2D, this->menuQuest.getTextureHandle());
+			glBindVertexArray(this->menuQuest.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuQuest.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
 	}
@@ -511,10 +271,15 @@ void GUI::setRightClickXY(float x, float y)
 {
 	this->rightClickX=x;
 	this->rightClickY=y;
-	this->menuPosMM=mat4(1.0f);
-	this->menuPosMM*=translate(vec3(x,y,0));
-	this->GUImoveable.use();
-	this->GUImoveable.setUniform("modelMatrix", this->menuPosMM);
+	//this->menuPosMM=mat4(1.0f);
+	//this->menuPosMM*=translate(vec3(x,y,0));
+	this->menuOff.setPosition(vec3(x,y,0));
+	this->menuDraw.setPosition(vec3(x,y,0));
+	this->menuLight.setPosition(vec3(x,y,0));
+	this->menuModel.setPosition(vec3(x,y,0));
+	this->menuParticle.setPosition(vec3(x,y,0));
+	this->menuPath.setPosition(vec3(x,y,0));
+	this->menuQuest.setPosition(vec3(x,y,0));
 }
 
 void GUI::setLeftClick(float x, float y)

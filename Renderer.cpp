@@ -4,8 +4,8 @@ Renderer::Renderer()
 {
 	//the shader used for rendering models
 	this->debug=true;
-	this->modelShader.compileShaderFromFile("basic.vsh",GLSLShader::VERTEX);
-	this->modelShader.compileShaderFromFile("basic.fsh",GLSLShader::FRAGMENT);
+	this->modelShader.compileShaderFromFile("model.vsh",GLSLShader::VERTEX);
+	this->modelShader.compileShaderFromFile("model.fsh",GLSLShader::FRAGMENT);
 	this->modelShader.bindAttribLocation(0,"vertexPosition");
 	this->modelShader.bindAttribLocation(1,"vertexNormal");
 	this->modelShader.bindAttribLocation(2,"vertexUv");
