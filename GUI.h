@@ -30,6 +30,11 @@ private:
 	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,menuModel,menuParticle,menuPath,menuQuest;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;
+	
+	//sprites/data drag thiny
+	Sprite dragArrow;
+	vec3 dragOp, dragSize, dragDo;
+	
 	GLSLProgram GUIshader;
 	//textur handles to paintable textures
 	GLuint texHandels[8];

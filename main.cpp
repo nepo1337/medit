@@ -146,6 +146,7 @@ int main(int argc, char **argv)
 		{
 			float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
 			float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+			cout << normalisedx <<" " << normalisedy<<endl;
 			if(gui.isInDrawWindow(normalisedx,normalisedy))
 				if(gui.getState()==GUIstate::PAINT)
 					terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));

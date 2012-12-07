@@ -4,6 +4,9 @@ GUI::GUI()
 {
 	this->menuUp=false;
 	this->state = GUIstate::NONE;
+	this->dragSize=vec3(0.675f,-0.39f,0.0f);
+	this->dragDo=vec3(0.675f,-0.635f,0.0f);
+	this->dragOp=vec3(0.675f,-0.88f,0.0f);
 		
 	this->activeTex=0;	
 
@@ -40,6 +43,9 @@ GUI::GUI()
 	this->stp2.init(vec3(0.621,0.043,0),0.04,0.07);
 	this->stp3.init(vec3(0.771,0.043,0),0.04,0.07);
 	this->stp4.init(vec3(0.871,0.043,0),0.04,0.07);
+	
+	//the dragesr
+	this->dragArrow.init(vec3(0.0f),0.015,0.02,"gui/GUI-Arrow.png");
 }
 
 GUI::~GUI()
@@ -102,6 +108,24 @@ void GUI::draw()
 		glBindTexture(GL_TEXTURE_2D, this->drawPanel.getTextureHandle());
 		glBindVertexArray(this->drawPanel.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",drawPanel.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		//draws the dragers, same sprite used
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		mat4 modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->dragSize);
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->dragDo);
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->dragOp);
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
