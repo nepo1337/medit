@@ -2,6 +2,7 @@
 
 Terrain::Terrain(int size)
 {
+	this->opacity=0.5;
 	this->activeTex=0;
 	this->mapsize=size;
 	this->width=64;
@@ -244,56 +245,60 @@ void Terrain::paint(vec3 origin, vec3 ray)
 		bmp1.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
 		bmp2.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
 		
-		//counter for the sub image
-		int subX=0;
-		int subY=0;
-		
-			//creates a area to look through the blendmap to inrease speed
-			for(int i=y-this->radius;i<y+this->radius;i++)
-			{
-				for(int j=x-this->radius;j<x+this->radius;j++)
+		//so you cant change the map with close to 0 radius
+		if(bmp1.GetWidth()>0)
+		{
+			//counter for the sub image
+			int subX=0;
+			int subY=0;
+			
+				//creates a area to look through the blendmap to inrease speed
+				for(int i=y-this->radius;i<y+this->radius;i++)
 				{
-					//if the cordinats are inside the bounds
-					if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
+					for(int j=x-this->radius;j<x+this->radius;j++)
 					{
-						//first updates the pixel in the part texture that will replace
-						//the texture on the gfx, with the "global blendmap"
-						sf::Color pix1=this->blendmap1.GetPixel(j,i);
-						sf::Color pix2=this->blendmap2.GetPixel(j,i);
-						bmp1.SetPixel(subX,subY,pix1);
-						bmp2.SetPixel(subX,subY,pix2);
-						if(this->inCircle(x,y,j,i))
+						//if the cordinats are inside the bounds
+						if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
 						{
-							this->increasePixelPaint(pix1,pix2,this->activeTex,0.1);
-							
-							//updates the small texture thats going to replace pixels in the GFX tex
+							//first updates the pixel in the part texture that will replace
+							//the texture on the gfx, with the "global blendmap"
+							sf::Color pix1=this->blendmap1.GetPixel(j,i);
+							sf::Color pix2=this->blendmap2.GetPixel(j,i);
 							bmp1.SetPixel(subX,subY,pix1);
 							bmp2.SetPixel(subX,subY,pix2);
-							//and updates the global blendmap
-							this->blendmap1.SetPixel(j,i,pix1);
-							this->blendmap2.SetPixel(j,i,pix2);
+							if(this->inCircle(x,y,j,i))
+							{
+								this->increasePixelPaint(pix1,pix2,this->activeTex);
+								
+								//updates the small texture thats going to replace pixels in the GFX tex
+								bmp1.SetPixel(subX,subY,pix1);
+								bmp2.SetPixel(subX,subY,pix2);
+								//and updates the global blendmap
+								this->blendmap1.SetPixel(j,i,pix1);
+								this->blendmap2.SetPixel(j,i,pix2);
+							}
+							subX++;
 						}
-						subX++;
 					}
+					//if inside volume, counter y is increase so the sub img(bmp1/2) is correct
+					if(i>=0&&i<=256*this->blendsc)
+						subY++;
+					subX=0;
 				}
-				//if inside volume, counter y is increase so the sub img(bmp1/2) is correct
-				if(i>=0&&i<=256*this->blendsc)
-					subY++;
-				subX=0;
-			}
 
-		//should be changes to upload just the data changed and not the whole blendmap
-		//glActiveTexture(GL_TEXTURE1);
-		this->replacePartTexture(lowestX,lowestY,bmp1,this->terrInf.blendmap1H);
-		//this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
-		//glActiveTexture(GL_TEXTURE2);
-		this->replacePartTexture(lowestX,lowestY,bmp2,this->terrInf.blendmap2H);
-		//this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+			//should be changes to upload just the data changed and not the whole blendmap
+			//glActiveTexture(GL_TEXTURE1);
+			this->replacePartTexture(lowestX,lowestY,bmp1,this->terrInf.blendmap1H);
+			//this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+			//glActiveTexture(GL_TEXTURE2);
+			this->replacePartTexture(lowestX,lowestY,bmp2,this->terrInf.blendmap2H);
+			//this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+		}
 	}
 }
 
 //gets two pixels, calculates if the  choosen blendindex can increase, and in that case, increases it and decreses another pixels blend value
-void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float strength)
+void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex)
 {
 	//translates pixels color data to array for convinience
 	int pixBlends[]=
@@ -302,25 +307,47 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		pix2.r,pix2.g,pix2.b,pix2.a
 	};
 	
-	pixBlends[blendIndex]+=(255*strength);
-	
-	float sum = 0;
-	
-	for(int i = 0; i < 8; i++)
+	//needed to hardcode this, otherwise there would still be some opacity when opacity is 1
+	if(this->opacity>0.95)
 	{
-		sum += pixBlends[i];
+		for(int i=0;i<8;i++)
+		{
+			pixBlends[i]=0;
+		}
+		pixBlends[blendIndex]=255;
+		pix1.r=pixBlends[0];
+		pix1.g=pixBlends[1];
+		pix1.b=pixBlends[2];
+		pix1.a=pixBlends[3];
+		
+		pix2.r=pixBlends[4];
+		pix2.g=pixBlends[5];
+		pix2.b=pixBlends[6];
+		pix2.a=pixBlends[7];
 	}
-	
-	//translates the array back to pixs
-	pix1.r=(pixBlends[0] / sum) * 255;
-	pix1.g=(pixBlends[1] / sum) * 255;
-	pix1.b=(pixBlends[2] / sum) * 255;
-	pix1.a=(pixBlends[3] / sum) * 255;
-	
-	pix2.r=(pixBlends[4] / sum) * 255;
-	pix2.g=(pixBlends[5] / sum) * 255;
-	pix2.b=(pixBlends[6] / sum) * 255;
-	pix2.a=(pixBlends[7] / sum) * 255;
+	//else, increase/decrease blend factors
+	else
+	{
+		pixBlends[blendIndex]+=(255*this->opacity);
+		
+		float sum = 0;
+		
+		for(int i = 0; i < 8; i++)
+		{
+			sum += pixBlends[i];
+		}
+		
+		//translates the array back to pixs
+		pix1.r=(pixBlends[0] / sum) * 255;
+		pix1.g=(pixBlends[1] / sum) * 255;
+		pix1.b=(pixBlends[2] / sum) * 255;
+		pix1.a=(pixBlends[3] / sum) * 255;
+		
+		pix2.r=(pixBlends[4] / sum) * 255;
+		pix2.g=(pixBlends[5] / sum) * 255;
+		pix2.b=(pixBlends[6] / sum) * 255;
+		pix2.a=(pixBlends[7] / sum) * 255;
+	}
 }
 
 bool Terrain::inCircle(float cx, float cy, float x, float y)
@@ -332,7 +359,11 @@ bool Terrain::inCircle(float cx, float cy, float x, float y)
 
 void Terrain::setRadius(float rad)
 {
-	this->radius = rad;
+	this->radius=rad*50;
+}
+void Terrain::setOpacity(float opa)
+{
+	this->opacity=opa;
 }
 
 void Terrain::setActiveTex(int tex)

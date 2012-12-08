@@ -5,7 +5,7 @@
 #include "GLSLProgram.h"
 #include <iostream>
 #include "Sprite.h"
-
+#include "Slider.h"
 #include "SOIL/SOIL.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
@@ -33,14 +33,14 @@ private:
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
-	vec3 dragOp, dragSize, dragDo;
+	Slider sliderOpacity,sliderSize,sliderDropoff;
 	
 	GLSLProgram GUIshader;
 	//textur handles to paintable textures
 	GLuint texHandels[8];
 	int activeTex;
 	bool menuUp;
-	float rightClickX, rightClickY, mouseX,mouseY;
+	float rightClickX, rightClickY;
 	bool inCircle(float cx, float cy, float x, float y,float rad);
 public:
 	GUI();
@@ -58,6 +58,9 @@ public:
 	void setLeftClick(float x, float y);
 	GUIstate::GUIstates getState();
 	bool isInDrawWindow(float x, float y);
+	float getSliderRadius();
+	float getSliderOpacity();
+	void moveSliders(float x, float y);
 	
 };
 

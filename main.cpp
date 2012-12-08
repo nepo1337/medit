@@ -46,9 +46,14 @@ int main(int argc, char **argv)
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
+	//sets up the terrain
 	Terrain terrain(0);
-	terrain.setRadius(10);
+	terrain.setRadius(gui.getSliderRadius());
+	terrain.setOpacity(gui.getSliderOpacity());
+	
+	//sends texture handels etc to the renderer
 	rend.setTerrainInfo(terrain.getTerrInfo());
+	//also the gui needs the textures for browsing
 	gui.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
 	rend.updateViewMatrix(cam.getViewMatrix());
@@ -146,10 +151,20 @@ int main(int argc, char **argv)
 		{
 			float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
 			float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
-			cout << normalisedx <<" " << normalisedy<<endl;
+			//cout << normalisedx <<" " << normalisedy<<endl;
 			if(gui.isInDrawWindow(normalisedx,normalisedy))
+			{
 				if(gui.getState()==GUIstate::PAINT)
 					terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+			}
+			else
+			{
+				gui.moveSliders(normalisedx,normalisedy);
+				{
+					terrain.setRadius(gui.getSliderRadius());
+					terrain.setOpacity(gui.getSliderOpacity());
+				}
+			}
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{

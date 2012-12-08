@@ -23,7 +23,7 @@ private:
 	GLuint vaoh;
 	GLuint vbohs[4];
 	bool debug;
-	float radius;
+	int radius;
 	TerrainInfo terrInf;
 	sf::Image blendmap1;
 	sf::Image blendmap2;
@@ -34,11 +34,11 @@ private:
 	int mapsize;
 	//modifiner for scaling blendmap
 	int blendsc;
-	void increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float strength);
+	void increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex);
 	bool inCircle(float cx, float cy, float x, float y);
 	void replacePartTexture(GLint xoffset, GLint yoffset, sf::Image img,GLuint handle);
 	
-	float activeTex;
+	float activeTex,opacity;
 	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
@@ -52,6 +52,7 @@ public:
 	void paint(vec3 origin, vec3 ray);
 	void setRadius(float rad);
 	void setActiveTex(int tex);
+	void setOpacity(float opa);
 
 };
 

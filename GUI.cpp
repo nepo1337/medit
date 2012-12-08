@@ -4,9 +4,16 @@ GUI::GUI()
 {
 	this->menuUp=false;
 	this->state = GUIstate::NONE;
-	this->dragSize=vec3(0.675f,-0.39f,0.0f);
-	this->dragDo=vec3(0.675f,-0.635f,0.0f);
-	this->dragOp=vec3(0.675f,-0.88f,0.0f);
+	this->sliderSize=Slider(vec3(0.675f,-0.39f,0.0f));
+	this->sliderDropoff=Slider(vec3(0.675f,-0.635f,0.0f));
+	this->sliderOpacity=Slider(vec3(0.675f,-0.88f,0.0f));
+	
+	this->sliderSize.setMaxPos(0.786,-0.36f);
+	this->sliderSize.setMinPos(0.56,-0.42f);
+	this->sliderDropoff.setMaxPos(0.786,-0.60f);
+	this->sliderDropoff.setMinPos(0.56,-0.66f);
+	this->sliderOpacity.setMaxPos(0.786,-0.85f);
+	this->sliderOpacity.setMinPos(0.56,-0.91f);
 		
 	this->activeTex=0;	
 
@@ -114,17 +121,17 @@ void GUI::draw()
 		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
 		glBindVertexArray(this->dragArrow.getVaoHandle());
 		mat4 modelMatrix=mat4(1.0f);
-		modelMatrix*=translate(this->dragSize);
+		modelMatrix*=translate(this->sliderSize.getPosition());
 		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		modelMatrix=mat4(1.0f);
-		modelMatrix*=translate(this->dragDo);
+		modelMatrix*=translate(this->sliderDropoff.getPosition());
 		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		modelMatrix=mat4(1.0f);
-		modelMatrix*=translate(this->dragOp);
+		modelMatrix*=translate(this->sliderOpacity.getPosition());
 		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
@@ -306,33 +313,41 @@ void GUI::setRightClickXY(float x, float y)
 	this->menuQuest.setPosition(vec3(x,y,0));
 }
 
-void GUI::setLeftClick(float x, float y)
+void GUI::moveSliders(float x, float y)
 {
-	this->mouseX=x;
-	this->mouseY=y;
-	
+		//move the sliders
+		if(this->sliderSize.isInsideSliderSpace(x,y))
+			this->sliderSize.setPositionX(x);
+
+		if(this->sliderDropoff.isInsideSliderSpace(x,y))
+			this->sliderDropoff.setPositionX(x);
+
+		if(this->sliderOpacity.isInsideSliderSpace(x,y))
+			this->sliderOpacity.setPositionX(x);
+}
+
+void GUI::setLeftClick(float x, float y)
+{	
 	//when clicking on menus
 	if(this->state==GUIstate::PAINT)
 	{
-		if(this->inCircle(this->mouseX,this->mouseY, 0.5,0.52,0.03))
+		//for browsing textures, could be replaced with a button class
+		if(this->inCircle(x,y, 0.5,0.52,0.03))
 			this->incActiveTex();
-		if(this->inCircle(this->mouseX,this->mouseY, 0.9,0.52,0.03))
+		if(this->inCircle(x,y, 0.9,0.52,0.03))
 			this->decActiveTex();
 	}
 }
 
 void GUI::setMouseXY(float x, float y)
-{
-	this->mouseX=x;
-	this->mouseY=y;
-	
+{	
 	//if using the menu, updates what is hovered
 	if(this->menuUp)
 	{
 		//calculates the differences where the mouse where right clicked
 		float ax,ay;
-		ax=this->mouseX-this->rightClickX;
-		ay=this->mouseY-this->rightClickY;
+		ax=x-this->rightClickX;
+		ay=y-this->rightClickY;
 		//so we can count on that 0,0 is in the middle
 		
 		//ax,ay is the difference from the click, the other parameters are the middle point of the circle
@@ -383,4 +398,13 @@ GUIstate::GUIstates GUI::getState()
 bool GUI::isInDrawWindow(float x, float y)
 {
 	return (x>-0.94&&x<0.4&&y>-0.9&&y<0.9);
+}
+
+float GUI::getSliderRadius()
+{
+	return this->sliderSize.getSliderValueX();
+}
+float GUI::getSliderOpacity()
+{
+	return this->sliderOpacity.getSliderValueX();
 }
