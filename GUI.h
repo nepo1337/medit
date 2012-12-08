@@ -60,6 +60,7 @@ public:
 	bool isInDrawWindow(float x, float y);
 	float getSliderRadius();
 	float getSliderOpacity();
+	float getSliderDropoff();
 	void moveSliders(float x, float y);
 	
 };

@@ -3,6 +3,7 @@
 Terrain::Terrain(int size)
 {
 	this->opacity=0.5;
+	this->dropoff=0.5;
 	this->activeTex=0;
 	this->mapsize=size;
 	this->width=64;
@@ -268,8 +269,7 @@ void Terrain::paint(vec3 origin, vec3 ray)
 							bmp2.SetPixel(subX,subY,pix2);
 							if(this->inCircle(x,y,j,i))
 							{
-								this->increasePixelPaint(pix1,pix2,this->activeTex);
-								
+								this->increasePixelPaint(pix1,pix2,this->activeTex,sqrt((float)((j-x)*(j-x)+(i-y)*(i-y))));
 								//updates the small texture thats going to replace pixels in the GFX tex
 								bmp1.SetPixel(subX,subY,pix1);
 								bmp2.SetPixel(subX,subY,pix2);
@@ -298,7 +298,7 @@ void Terrain::paint(vec3 origin, vec3 ray)
 }
 
 //gets two pixels, calculates if the  choosen blendindex can increase, and in that case, increases it and decreses another pixels blend value
-void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex)
+void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float distance)
 {
 	//translates pixels color data to array for convinience
 	int pixBlends[]=
@@ -306,29 +306,12 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		pix1.r,pix1.g,pix1.b,pix1.a,
 		pix2.r,pix2.g,pix2.b,pix2.a
 	};
-	
-	//needed to hardcode this, otherwise there would still be some opacity when opacity is 1
-	if(this->opacity>0.95)
-	{
-		for(int i=0;i<8;i++)
-		{
-			pixBlends[i]=0;
-		}
-		pixBlends[blendIndex]=255;
-		pix1.r=pixBlends[0];
-		pix1.g=pixBlends[1];
-		pix1.b=pixBlends[2];
-		pix1.a=pixBlends[3];
-		
-		pix2.r=pixBlends[4];
-		pix2.g=pixBlends[5];
-		pix2.b=pixBlends[6];
-		pix2.a=pixBlends[7];
-	}
-	//else, increase/decrease blend factors
-	else
-	{
-		pixBlends[blendIndex]+=(255*this->opacity);
+
+		//if the distance was small(t), it resulten in a pixel that got more color then the others
+		float dist=distance;
+		if(dist<1)
+			dist=1;
+		pixBlends[blendIndex]+=(255*this->opacity/(dist*this->dropoff));
 		
 		float sum = 0;
 		
@@ -347,7 +330,6 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		pix2.g=(pixBlends[5] / sum) * 255;
 		pix2.b=(pixBlends[6] / sum) * 255;
 		pix2.a=(pixBlends[7] / sum) * 255;
-	}
 }
 
 bool Terrain::inCircle(float cx, float cy, float x, float y)
@@ -359,11 +341,15 @@ bool Terrain::inCircle(float cx, float cy, float x, float y)
 
 void Terrain::setRadius(float rad)
 {
-	this->radius=rad*50;
+	this->radius=rad*100;
 }
 void Terrain::setOpacity(float opa)
 {
 	this->opacity=opa;
+}
+void Terrain::setDropoff(float d)
+{
+	this->dropoff=d;
 }
 
 void Terrain::setActiveTex(int tex)

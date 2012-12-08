@@ -408,3 +408,7 @@ float GUI::getSliderOpacity()
 {
 	return this->sliderOpacity.getSliderValueX();
 }
+float GUI::getSliderDropoff()
+{
+	return this->sliderDropoff.getSliderValueX();
+}

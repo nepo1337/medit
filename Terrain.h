@@ -34,11 +34,12 @@ private:
 	int mapsize;
 	//modifiner for scaling blendmap
 	int blendsc;
-	void increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex);
+	//the distance is for calculating the dropoff
+	void increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex,float distance);
 	bool inCircle(float cx, float cy, float x, float y);
 	void replacePartTexture(GLint xoffset, GLint yoffset, sf::Image img,GLuint handle);
 	
-	float activeTex,opacity;
+	float activeTex,opacity,dropoff;
 	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
@@ -53,6 +54,7 @@ public:
 	void setRadius(float rad);
 	void setActiveTex(int tex);
 	void setOpacity(float opa);
+	void setDropoff(float d);
 
 };
 

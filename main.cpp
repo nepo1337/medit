@@ -163,6 +163,7 @@ int main(int argc, char **argv)
 				{
 					terrain.setRadius(gui.getSliderRadius());
 					terrain.setOpacity(gui.getSliderOpacity());
+					terrain.setDropoff(gui.getSliderDropoff());
 				}
 			}
 		}
