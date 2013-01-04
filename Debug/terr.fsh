@@ -25,23 +25,23 @@ void main()
 	vec4 texColor;
 	
 	//first blendmap
-	if(blendColors1.r>0)
+	//if(blendColors1.r>0)
 		texColor = texture(tex1,texCoord)*blendColors1.r;
-	if(blendColors1.g>0)	
+	//if(blendColors1.g>0)	
 		texColor += texture(tex2,texCoord)*blendColors1.g;
-	if(blendColors1.b>0)
+	//if(blendColors1.b>0)
 		texColor += texture(tex3,texCoord)*blendColors1.b;
-	if(blendColors1.a>0)
+	//if(blendColors1.a>0)
 		texColor += texture(tex4,texCoord)*blendColors1.a;
 		
 	//2nd blendmap
-	if(blendColors2.r>0)
+	//if(blendColors2.r>0)
 		texColor += texture(tex5,texCoord)*blendColors2.r;
-	if(blendColors2.g>0)	
+	//if(blendColors2.g>0)	
 		texColor += texture(tex6,texCoord)*blendColors2.g;
-	if(blendColors2.b>0)
+	//if(blendColors2.b>0)
 		texColor += texture(tex7,texCoord)*blendColors2.b;
-	if(blendColors2.a>0)
+	//if(blendColors2.a>0)
 		texColor += texture(tex8,texCoord)*blendColors2.a;
 
   

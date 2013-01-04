@@ -16,6 +16,7 @@ private:
 	vec3 lookat, eye,up;
 	void calcViewMatrix();
 	float rotx,roty,rotz;
+	float distance;
 public:
 	Camera();
 	~Camera();

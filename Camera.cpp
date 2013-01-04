@@ -8,7 +8,14 @@ Camera::Camera()
 	this->lookat=vec3(0.0f,1.0f,0.0f);
 	this->up=vec3(0.0f,1.0f,0.0f);
 	this->viewMatrix=mat4(1.0f);
-	this->rotx=this->roty=this->rotz=0;
+	this->rotx=0;
+	this->roty=0;
+	this->rotz=80;
+	this->distance=5;
+	
+	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
 	this->calcViewMatrix();
 }
 
@@ -66,20 +73,37 @@ void Camera::strafeRight(float a)
 }
 void Camera::zoomIn(float a)
 {
-	vec3 dir= normalize((this->eye-this->lookat));
+	this->distance-=a;
+	//vec3 dir= normalize((this->eye-this->lookat));
 	//if(this->eye.y-dir.y*a>0.4f)
-		this->eye-=dir*a;
+		//this->eye+=this->distance;
+		
+	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
+	
 	this->calcViewMatrix();
 }
 void Camera::zoomOut(float a)
 {
+	this->distance+=a;
 	vec3 dir= normalize((this->eye-this->lookat));
-	this->eye+=dir*a;
+	//this->eye+=this->distance;
+	
+	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
 	
 	this->calcViewMatrix();
 }
 void Camera::rotateLeft(float deg)
 {
+	this->roty+=deg;
+	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
+	this->calcViewMatrix();
+	/*
 	//calculates a vector for rotating around the lookat point
 	vec3 dir= ((this->eye-this->lookat));
 	mat4 rot(1.0f);
@@ -95,11 +119,20 @@ void Camera::rotateLeft(float deg)
 	this->eye.z=(this->lookat.z+f.z);
 
 	this->calcViewMatrix();
+	 */
 }
 
 void Camera::rotateUp(float deg)
 {
+	
+	this->rotz+=deg;
+	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
+	this->calcViewMatrix();
+	/*
 	this->eye.y+=deg*-0.04;
 
 	this->calcViewMatrix();
+	 */
 }
