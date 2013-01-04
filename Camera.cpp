@@ -124,8 +124,17 @@ void Camera::rotateLeft(float deg)
 
 void Camera::rotateUp(float deg)
 {
-	
 	this->rotz+=deg;
+	cout<<rotz<<endl;
+	//a few if to avoid angle 0
+	if(rotz==0)
+		rotz=1;
+	if(rotz==180)
+		rotz=181;
+	if(rotz>=360)
+		rotz=1;
+	if(rotz<=-180)
+		rotz=181;
 	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
 	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
 	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
