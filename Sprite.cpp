@@ -55,7 +55,7 @@ bool Sprite::init(vec3 pos, float width, float height, string textureName)
 		0.0f+width,0.0f-height,0.0f,
 		0.0f-width,0.0f+height,0.0f
 	};
-	
+
 	glGenVertexArrays(1,&this->vaoHandle);
 	glGenBuffers(2,this->vboHandle);
 	

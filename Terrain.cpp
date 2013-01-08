@@ -78,17 +78,27 @@ Terrain::Terrain(int size)
 	
 	this->terrInf.blendmap1H=0;
 	this->terrInf.blendmap2H=0;
-	
+	this->gridTexHandle=0;
 	
 	//creating blendmaps
 	this->blendmap1.Create(256*this->blendsc,256*this->blendsc,sf::Color(255,0,0,0));
 	this->blendmap2.Create(256*this->blendsc,256*this->blendsc,sf::Color(0,0,0,0));
+	
+	//creates a gridmap
+	this->gridMap.Create(512*this->blendsc/4,512*this->blendsc/4,sf::Color(0,0,0,0));
 
+	this->gridMap.SetPixel(10,6,sf::Color(0,0,0,255));
+	this->gridMap.SetPixel(0,0,sf::Color(0,0,0,255));
+	this->gridMap.SetPixel(1,1,sf::Color(0,0,0,255));
+	
 	//uploads the blendmaps, filing the handle
 	glActiveTexture(GL_TEXTURE1);
 	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
 	glActiveTexture(GL_TEXTURE2);
 	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+
+	glActiveTexture(GL_TEXTURE11);
+	this->makeBlendMap(this->gridTexHandle,this->gridMap);
 	
 	//for blendmap 1
 	glActiveTexture(GL_TEXTURE3);

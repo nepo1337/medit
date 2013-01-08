@@ -1,6 +1,6 @@
 #ifndef SLIDER_H
 #define SLIDER_H
-
+#define GLEW_STATIC
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform2.hpp"

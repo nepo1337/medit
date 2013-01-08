@@ -36,13 +36,13 @@ int main(int argc, char **argv)
 	sf::Window app;
 	app.Create(sf::VideoMode(width, height, 32), "R-EDIT", sf::Style::Close|sf::Style::Resize, settings);
 	app.UseVerticalSync(true);
-	
+
 	GLenum err = glewInit();
 	if (GLEW_OK != err)
 	{
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
-
+		
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;

@@ -155,6 +155,7 @@ void Renderer::setTerrainInfo(TerrainInfo *t)
 	this->TerrainShader.setUniform("tex6", 8);
 	this->TerrainShader.setUniform("tex7", 9);
 	this->TerrainShader.setUniform("tex8", 10);
+	this->TerrainShader.setUniform("gridMap",11);
 	glUseProgram(0);
 }
 

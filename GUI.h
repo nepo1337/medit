@@ -1,5 +1,7 @@
 #ifndef GUI_H
 #define GUI_H
+#define GLEW_STATIC
+#include "Spritetext.h"
 #include <glew.h>
 #include "TA.h"
 #include "GLSLProgram.h"
@@ -10,6 +12,7 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform2.hpp"
+
 
 using namespace std;
 using namespace glm;
@@ -26,7 +29,8 @@ class GUI
 {
 private:
 	GUIstate::GUIstates state;
-	
+	Spritetext text;
+	GLuint k;
 	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,menuModel,menuParticle,menuPath,menuQuest;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;

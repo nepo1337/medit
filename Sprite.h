@@ -1,6 +1,6 @@
 #ifndef SPRITE_H
 #define SPRITE_H
-
+#define GLEW_STATIC
 #include "SOIL/SOIL.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"

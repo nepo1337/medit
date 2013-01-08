@@ -53,6 +53,8 @@ GUI::GUI()
 	
 	//the dragesr
 	this->dragArrow.init(vec3(0.0f),0.015,0.02,"gui/GUI-Arrow.png");
+	
+	text=Spritetext("A", 0, 0,2,1280,720,"gui/Text100.png",100,100);
 }
 
 GUI::~GUI()
@@ -68,6 +70,7 @@ void GUI::draw()
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	this->GUIshader.use();
 	
+	
 	//OBS! need to take the depth test disabled in mind and draw in the correct order
 	//draws the empty panel
 	glBindTexture(GL_TEXTURE_2D, this->backPanel.getTextureHandle());
@@ -78,7 +81,11 @@ void GUI::draw()
 	//if you are not using any tools
 	if(this->state == GUIstate::NONE)
 	{
-
+		glBindTexture(GL_TEXTURE_2D, text.getTexHandle());
+		glBindVertexArray(text.getVaoHandle());
+		mat4 mm=mat4(1.0f);
+		this->GUIshader.setUniform("modelMatrix",mm);
+		glDrawArrays(GL_TRIANGLES,0,this->text.getNrOfVerts());
 	}
 	
 	//if you are painting textures
@@ -186,13 +193,15 @@ void GUI::draw()
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
+	
 	//draws the front
 	this->GUIshader.setUniform("modelMatrix",frontPanel.getModelMatrix());
 	glBindTexture(GL_TEXTURE_2D, this->frontPanel.getTextureHandle());
 	glBindVertexArray(this->frontPanel.getVaoHandle());
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
-	//draws  the front above everything
+	
+	//draws  the menu above everything
 	if(this->menuUp)
 	{
 		if(this->state == GUIstate::NONE)

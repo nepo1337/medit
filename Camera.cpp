@@ -5,7 +5,7 @@
 Camera::Camera()
 {
 	this->eye=vec3(2.0f,2.0f,0.0f);
-	this->lookat=vec3(0.0f,1.0f,0.0f);
+	this->lookat=vec3(0.0f,0.0f,0.0f);
 	this->up=vec3(0.0f,1.0f,0.0f);
 	this->viewMatrix=mat4(1.0f);
 	this->rotx=0;
@@ -73,28 +73,34 @@ void Camera::strafeRight(float a)
 }
 void Camera::zoomIn(float a)
 {
-	this->distance-=a;
-	//vec3 dir= normalize((this->eye-this->lookat));
-	//if(this->eye.y-dir.y*a>0.4f)
-		//this->eye+=this->distance;
+	if(length(this->eye-this->lookat)-a>0.5)
+	{
+		this->distance-=a;
+		//vec3 dir= normalize((this->eye-this->lookat));
+		//if(this->eye.y-dir.y*a>0.4f)
+			//this->eye+=this->distance;
+			
+		this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+		this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+		this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
 		
-	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
-	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
-	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
-	
-	this->calcViewMatrix();
+		this->calcViewMatrix();
+	}
 }
 void Camera::zoomOut(float a)
 {
-	this->distance+=a;
-	vec3 dir= normalize((this->eye-this->lookat));
-	//this->eye+=this->distance;
-	
-	this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
-	this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
-	this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
-	
-	this->calcViewMatrix();
+	if(length(this->eye-this->lookat)+a>0.5)
+	{
+		this->distance+=a;
+		//vec3 dir= normalize((this->eye-this->lookat));
+		//this->eye+=this->distance;
+		
+		this->eye.x=sin(rotz*PI/180)*sin(roty*PI/180)*this->distance+this->lookat.x;
+		this->eye.y=cos(rotz*PI/180)*this->distance+this->lookat.y;
+		this->eye.z=sin(rotz*PI/180)*cos(roty*PI/180)*this->distance+this->lookat.z;
+		
+		this->calcViewMatrix();
+	}
 }
 void Camera::rotateLeft(float deg)
 {
@@ -125,7 +131,6 @@ void Camera::rotateLeft(float deg)
 void Camera::rotateUp(float deg)
 {
 	this->rotz+=deg;
-	cout<<rotz<<endl;
 	//a few if to avoid angle 0
 	if(rotz==0)
 		rotz=1;

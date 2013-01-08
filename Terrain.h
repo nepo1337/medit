@@ -20,13 +20,14 @@ class Terrain
 private:
 	Intersection intersect;
 	float width,height;
-	GLuint vaoh;
+	GLuint vaoh, gridTexHandle;
 	GLuint vbohs[4];
 	bool debug;
 	int radius;
 	TerrainInfo terrInf;
 	sf::Image blendmap1;
 	sf::Image blendmap2;
+	sf::Image gridMap;
 	//handle gets filles with a handle to the tex in the GFX, uploads data from sf::Image
 	void makeBlendMap(GLuint& handle, sf::Image img);
 	
