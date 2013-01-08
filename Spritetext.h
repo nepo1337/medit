@@ -30,7 +30,8 @@ public:
 	int getYPos();
 	void setSize(float size);
 	float getSize();
-	Spritetext(string text, int posX, int posY,float size,int screenResX,int screenResY,string spriteFile,int charWidth,int charHeight);
+	void init(string text, int posX, int posY,float size,int screenResX,int screenResY,string spriteName,int charWidth,int charHeight);
+	//Spritetext();
 	Spritetext();
 	~Spritetext();
 	

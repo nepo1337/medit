@@ -54,7 +54,7 @@ GUI::GUI()
 	//the dragesr
 	this->dragArrow.init(vec3(0.0f),0.015,0.02,"gui/GUI-Arrow.png");
 	
-	text=Spritetext("A", 0, 0,2,1280,720,"gui/Text100.png",100,100);
+	text.init("Hej", 50, 360,0.5,1280,720,"gui/Text100.png",100,100);
 }
 
 GUI::~GUI()
