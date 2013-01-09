@@ -24,8 +24,13 @@ private:
 	GLuint vboH[2];
 	sf::Image spriteFile;
 	int nrOfVerts;
+	float charHeightNormalized, charWidthNormalized;
+	int nrOfLettersInSprite;
+	bool initialized;
 public:
 	string getText();
+	void addText(string text);
+	bool removeLastChar();
 	int getXPos();
 	int getYPos();
 	void setSize(float size);

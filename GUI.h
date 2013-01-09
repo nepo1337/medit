@@ -49,6 +49,7 @@ private:
 public:
 	GUI();
 	~GUI();
+	void init();
 	void draw();
 	void setTerrainInfo(TerrainInfo *t);
 	void incActiveTex();

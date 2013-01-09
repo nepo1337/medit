@@ -2,6 +2,9 @@
 
 GUI::GUI()
 {
+}
+void GUI::init()
+{
 	this->menuUp=false;
 	this->state = GUIstate::NONE;
 	this->sliderSize=Slider(vec3(0.675f,-0.39f,0.0f));
@@ -55,6 +58,7 @@ GUI::GUI()
 	this->dragArrow.init(vec3(0.0f),0.015,0.02,"gui/GUI-Arrow.png");
 	
 	text.init("Hej", 50, 360,0.5,1280,720,"gui/Text100.png",100,100);
+	text.addText("JAN");
 }
 
 GUI::~GUI()

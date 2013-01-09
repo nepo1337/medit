@@ -46,6 +46,7 @@ int main(int argc, char **argv)
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
+	gui.init();
 	//sets up the terrain
 	Terrain terrain(0);
 	terrain.setRadius(gui.getSliderRadius());
