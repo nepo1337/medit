@@ -54,9 +54,9 @@ void Spritetext::init(string text, int posX, int posY, float size,int screenResX
 		vector<float> uvs;
 		
 		//calcs the verts and uvs cords for a string
-		for(int i=0;i<this->text.length();i++)
+		for(unsigned int i=0;i<this->text.length();i++)
 		{
-			if(int(this->text[i])>=65&&int(this->text[i])<=90 || int(this->text[i])>=97&&int(this->text[i])<=122)
+			if((int(this->text[i])>=65&&int(this->text[i])<=90) || (int(this->text[i])>=97&&int(this->text[i])<=122))
 			{
 				verts.push_back(this->x+charWidthNormalized*i*this->size);
 				verts.push_back(this->y);
@@ -140,9 +140,9 @@ void Spritetext::addText(string text)
 	vector<float> uvs;
 	
 	//calcs the verts and uvs cords for a string
-	for(int i=0;i<this->text.length();i++)
+	for(unsigned int i=0;i<this->text.length();i++)
 	{
-		if(int(this->text[i])>=65&&int(this->text[i])<=90 || int(this->text[i])>=97&&int(this->text[i])<=122)
+		if((int(this->text[i])>=65&&int(this->text[i])<=90) || (int(this->text[i])>=97&&int(this->text[i])<=122))
 		{
 			verts.push_back(this->x+charWidthNormalized*i*this->size);
 			verts.push_back(this->y);
@@ -237,9 +237,9 @@ bool Spritetext::removeLastChar()
 		vector<float> uvs;
 		
 		//calcs the verts and uvs cords for a string
-		for(int i=0;i<this->text.length();i++)
+		for(unsigned int i=0;i<this->text.length();i++)
 		{
-			if(int(this->text[i])>=65&&int(this->text[i])<=90 || int(this->text[i])>=97&&int(this->text[i])<=122)
+			if((int(this->text[i])>=65&&int(this->text[i])<=90) || (int(this->text[i])>=97&&int(this->text[i])<=122))
 			{
 				verts.push_back(this->x+charWidthNormalized*i*this->size);
 				verts.push_back(this->y);
