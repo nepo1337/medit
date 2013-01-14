@@ -76,6 +76,9 @@ public:
 	bool addChar(char c);
 	bool removeChar();
 	bool isInTextMode();
+	string getInputText();
+	void hideSaveMapDialog();
+	bool isSaveMapDialogUp();
 	
 };
 

@@ -11,6 +11,7 @@
 #include "Camera.h"
 #include "Intersection.h"
 #include "GUI.h"
+#include <fstream>
 
 using namespace std;
 using namespace glm;
@@ -24,9 +25,14 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 	y = 1 - 2 * (float)mouseY / height;
 }
 
-void save(string filename, &Terrain terr)
+void save(string filename, Terrain& terr)
 {
-	
+	terr.saveBlendmaps(path,filename);
+	string fullName=path+filename+".txt";
+	ofstream out(fullName.c_str());
+	out << "bmp1: " <<filename<<"bmp1.png"<<endl;
+	out << "bmp2: " <<filename<<"bmp2.png"<<endl;
+	out.close();
 }
 
 
@@ -140,6 +146,12 @@ int main(int argc, char **argv)
 					gui.setLeftClick(normalisedx,normalisedy);
 					//cout<<normalisedx<< " " << normalisedy<<endl;
 					terrain.setActiveTex(gui.getActiveTex());
+					if(gui.isSaveMapDialogUp())
+						if(gui.checkDialogAnswer())
+						{
+							save(gui.getInputText(),terrain);
+							gui.hideSaveMapDialog();
+						}
 				}
 			}
 

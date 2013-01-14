@@ -472,14 +472,14 @@ void GUI::setLeftClick(float x, float y)
 		if(x>-0.39&&x<-0.232&&y>-0.088&&y<-0.033)
 		{
 			this->ans=true;
-			this->showSaveMapSprite=false;
+			//this->showSaveMapSprite=false;
 			this->textMode=false;
 		}
 		//if cancel
 		if(x>-0.2&&x<-0.045&&y>-0.09&&y<-0.02)
 		{
 			this->ans=false;
-			this->showSaveMapSprite=false;
+			//this->showSaveMapSprite=false;
 			this->textMode=false;
 		}
 	}
@@ -594,4 +594,17 @@ bool GUI::removeChar()
 bool GUI::isInTextMode()
 {
 	return this->textMode;
+}
+
+string GUI::getInputText()
+{
+	return this->text.getText();
+}
+void GUI::hideSaveMapDialog()
+{
+	showSaveMapSprite=false;
+}
+bool GUI::isSaveMapDialogUp()
+{
+	return showSaveMapSprite;
 }
