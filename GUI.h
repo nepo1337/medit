@@ -31,7 +31,9 @@ private:
 	GUIstate::GUIstates state;
 	Spritetext text;
 	GLuint k;
-	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,menuModel,menuParticle,menuPath,menuQuest;
+	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,
+	questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,
+	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;
 	
@@ -46,6 +48,9 @@ private:
 	bool menuUp;
 	float rightClickX, rightClickY;
 	bool inCircle(float cx, float cy, float x, float y,float rad);
+	bool showNewMapSprite,showLoadMapSprite,showSaveMapSprite;
+	bool ans;
+	bool textMode;
 public:
 	GUI();
 	~GUI();
@@ -67,6 +72,10 @@ public:
 	float getSliderOpacity();
 	float getSliderDropoff();
 	void moveSliders(float x, float y);
+	bool checkDialogAnswer();
+	bool addChar(char c);
+	bool removeChar();
+	bool isInTextMode();
 	
 };
 

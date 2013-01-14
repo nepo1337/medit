@@ -5,7 +5,12 @@ GUI::GUI()
 }
 void GUI::init()
 {
+	this->ans=false;
 	this->menuUp=false;
+	this->showNewMapSprite=false;
+	this->showSaveMapSprite=false;
+	this->showLoadMapSprite=false;
+	this->textMode=false;
 	this->state = GUIstate::NONE;
 	this->sliderSize=Slider(vec3(0.675f,-0.39f,0.0f));
 	this->sliderDropoff=Slider(vec3(0.675f,-0.635f,0.0f));
@@ -50,15 +55,22 @@ void GUI::init()
 	//the textures you can browse thorugh
 	this->mainTex.init(vec3(0.7f,0.53f,0),0.15,0.27);
 	this->stp1.init(vec3(0.521,0.043,0),0.04,0.07);
-	this->stp2.init(vec3(0.621,0.043,0),0.04,0.07);
+	this->stp2.init(vec3(0.624,0.043,0),0.04,0.07);
 	this->stp3.init(vec3(0.771,0.043,0),0.04,0.07);
 	this->stp4.init(vec3(0.871,0.043,0),0.04,0.07);
 	
 	//the dragesr
 	this->dragArrow.init(vec3(0.0f),0.015,0.02,"gui/GUI-Arrow.png");
 	
-	text.init("Hej", 50, 360,0.5,1280,720,"gui/Text100.png",100,100);
-	text.addText("JAN");
+	//le new map panel
+	this->newMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-New.png");
+	
+	//saveMap panel
+	this->saveMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Save.png");
+	//loadMap panel
+	
+	this->loadMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Load.png");
+	text.init("", 350, 360,0.25,1280,720,"gui/Text100.png",100,100);
 }
 
 GUI::~GUI()
@@ -85,11 +97,7 @@ void GUI::draw()
 	//if you are not using any tools
 	if(this->state == GUIstate::NONE)
 	{
-		glBindTexture(GL_TEXTURE_2D, text.getTexHandle());
-		glBindVertexArray(text.getVaoHandle());
-		mat4 mm=mat4(1.0f);
-		this->GUIshader.setUniform("modelMatrix",mm);
-		glDrawArrays(GL_TRIANGLES,0,this->text.getNrOfVerts());
+		
 	}
 	
 	//if you are painting textures
@@ -203,6 +211,41 @@ void GUI::draw()
 	glBindTexture(GL_TEXTURE_2D, this->frontPanel.getTextureHandle());
 	glBindVertexArray(this->frontPanel.getVaoHandle());
 	glDrawArrays(GL_TRIANGLES,0,6);
+	
+	//if you press new map, show sprite
+	if(this->showNewMapSprite)
+	{
+		glBindTexture(GL_TEXTURE_2D, this->newMap.getTextureHandle());
+		glBindVertexArray(this->newMap.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",newMap.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+	}
+	
+	//if you want to load a map  show sprite
+	if(this->showLoadMapSprite)
+	{
+		glBindTexture(GL_TEXTURE_2D, this->loadMap.getTextureHandle());
+		glBindVertexArray(this->loadMap.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",loadMap.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+	}
+	
+	//if you want to save show sprite
+	if(this->showSaveMapSprite)
+	{
+		glBindTexture(GL_TEXTURE_2D, this->saveMap.getTextureHandle());
+		glBindVertexArray(this->saveMap.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",saveMap.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+	}
+	if(this->textMode)
+	{
+		glBindTexture(GL_TEXTURE_2D, text.getTexHandle());
+		glBindVertexArray(text.getVaoHandle());
+		mat4 mm=mat4(1.0f);
+		this->GUIshader.setUniform("modelMatrix",mm);
+		glDrawArrays(GL_TRIANGLES,0,this->text.getNrOfVerts());
+	}
 	
 	
 	//draws  the menu above everything
@@ -341,6 +384,7 @@ void GUI::moveSliders(float x, float y)
 
 void GUI::setLeftClick(float x, float y)
 {	
+	this->ans=false;
 	//when clicking on menus
 	if(this->state==GUIstate::PAINT)
 	{
@@ -350,6 +394,99 @@ void GUI::setLeftClick(float x, float y)
 		if(this->inCircle(x,y, 0.9,0.52,0.03))
 			this->decActiveTex();
 	}
+	//when clicking on the top bar
+	if(y>0.9)
+	{
+		//the position of the grid le button
+		if(x>-0.75&&x<-0.7)
+		{
+			cout<<"GRID"<<endl;
+		}
+		//exit
+		if(x>-0.685&&x<-0.64)
+		{
+			cout<<"EXIT"<<endl;
+		}
+		//new
+		if(x>-0.94&&x<-0.9)
+		{
+			this->showNewMapSprite=true;
+			this->showLoadMapSprite=false;
+			this->showSaveMapSprite=false;
+		}
+		//load
+		if(x>-0.881&&x<-0.835)
+		{
+			this->showLoadMapSprite=true;
+			this->showSaveMapSprite=false;
+			this->showNewMapSprite=false;
+			this->textMode=true;
+		}
+		//save
+		if(x>-0.817&&x<-0.77)
+		{
+			this->showSaveMapSprite=true;
+			this->showLoadMapSprite=false;
+			this->showNewMapSprite=false;
+			this->textMode=true;
+		}
+	}
+	//if new map sprite is up
+	if(showNewMapSprite)
+	{
+		//if ok
+		if(x>-0.367&&x<-0.212&&y>-0.16&&y<-0.09)
+		{
+			this->ans=true;
+			this->showNewMapSprite=false;
+		}
+		//if cancel
+		if(x>-0.181&&x<-0.02&&y>-0.16&&y<-0.09)
+		{
+			this->ans=false;
+			this->showNewMapSprite=false;
+		}
+	}
+	
+	//if show load sprite is up
+	if(showLoadMapSprite)
+	{
+		if(x>-0.39&&x<-0.232&&y>-0.088&&y<-0.033)
+		{
+			this->ans=true;
+			this->showLoadMapSprite=false;
+			this->textMode=false;
+		}
+		//if cancel
+		if(x>-0.2&&x<-0.045&&y>-0.09&&y<-0.02)
+		{
+			this->ans=false;
+			this->showLoadMapSprite=false;
+			this->textMode=false;
+		}
+	}
+	
+	//if save sprite is up
+	if(showSaveMapSprite)
+	{
+		if(x>-0.39&&x<-0.232&&y>-0.088&&y<-0.033)
+		{
+			this->ans=true;
+			this->showSaveMapSprite=false;
+			this->textMode=false;
+		}
+		//if cancel
+		if(x>-0.2&&x<-0.045&&y>-0.09&&y<-0.02)
+		{
+			this->ans=false;
+			this->showSaveMapSprite=false;
+			this->textMode=false;
+		}
+	}
+}
+bool GUI::checkDialogAnswer()
+{
+	return this->ans;
 }
 
 void GUI::setMouseXY(float x, float y)
@@ -424,4 +561,37 @@ float GUI::getSliderOpacity()
 float GUI::getSliderDropoff()
 {
 	return this->sliderDropoff.getSliderValueX();
+}
+
+bool GUI::addChar(char c)
+{
+	if(textMode)
+	{
+		
+		{
+			string tmp="";
+			tmp+=c;
+			this->text.addText(tmp);
+			
+
+			if(showLoadMapSprite)
+			{
+
+			}
+			if(showSaveMapSprite)
+			{
+
+			}
+		}
+	}
+	return textMode;
+}
+bool GUI::removeChar()
+{
+	this->text.removeLastChar();
+	return this->textMode;
+}
+bool GUI::isInTextMode()
+{
+	return this->textMode;
 }

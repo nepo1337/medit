@@ -16,6 +16,18 @@ using namespace std;
 using namespace glm;
 
 Intersection inters;
+string path="maps/";
+
+void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, float &y)
+{
+	x = 2 * (float)mouseX / width - 1;
+	y = 1 - 2 * (float)mouseY / height;
+}
+
+void save(string filename, &Terrain terr)
+{
+	
+}
 
 
 int main(int argc, char **argv)
@@ -88,17 +100,7 @@ int main(int argc, char **argv)
 			{
 				app.Close();
 			}
-			if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::E))
-			{
-				gui.decActiveTex();
-				terrain.setActiveTex(gui.getActiveTex());
-			}
-			
-			if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::R))
-			{
-				gui.incActiveTex();
-				terrain.setActiveTex(gui.getActiveTex());
-			}
+
 
 			if(event.Type == sf::Event::Resized)
 			{
@@ -121,8 +123,9 @@ int main(int argc, char **argv)
 				if(event.MouseButton.Button==sf::Mouse::Right)
 				{
 					gui.showMenu(true);
-					float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
-					float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+					float normalisedx = 0;
+					float normalisedy = 0;
+					getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 					gui.setRightClickXY(normalisedx,normalisedy);
 				}
 			}
@@ -131,9 +134,11 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
-					float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+					float normalisedx = 0;
+					float normalisedy = 0;
+					getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 					gui.setLeftClick(normalisedx,normalisedy);
+					//cout<<normalisedx<< " " << normalisedy<<endl;
 					terrain.setActiveTex(gui.getActiveTex());
 				}
 			}
@@ -145,14 +150,28 @@ int main(int argc, char **argv)
 					gui.showMenu(false);
 				}
 			}
+			//if the gui excpects text input
+			if(gui.isInTextMode())
+			{
+				if(event.Type == sf::Event::KeyPressed)
+				{
+					if(int(event.Key.Code)>=97&&event.Key.Code<=122)
+						gui.addChar(char(event.Key.Code));
+				}
+				if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::Back))
+				{
+					gui.removeChar();
+				}
+			}
 		}
 		
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-			float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
-			float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
-			//cout << normalisedx <<" " << normalisedy<<endl;
+			float normalisedx = 0;
+			float normalisedy = 0;
+			getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
+					
 			if(gui.isInDrawWindow(normalisedx,normalisedy))
 			{
 				if(gui.getState()==GUIstate::PAINT)
@@ -170,32 +189,39 @@ int main(int argc, char **argv)
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
-				float normalisedx = 2 * (float)app.GetInput().GetMouseX() / width - 1;
-				float normalisedy = 1 - 2 * (float)app.GetInput().GetMouseY() / height;
+				float normalisedx = 0;
+				float normalisedy = 0;
+				getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
+				
 				gui.setMouseXY(normalisedx,normalisedy);
 				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
-		if(app.GetInput().IsKeyDown(sf::Key::W))
-		{
-			cam.moveForeward(0.1);
-			rend.updateViewMatrix(cam.getViewMatrix());
-		}
-		if(app.GetInput().IsKeyDown(sf::Key::S))
-		{
-			cam.moveBackward(0.1);
-			rend.updateViewMatrix(cam.getViewMatrix());
-		}
-		if(app.GetInput().IsKeyDown(sf::Key::A))
-		{
-			cam.strafeLeft(0.1);
-			rend.updateViewMatrix(cam.getViewMatrix());
-		}
-		if(app.GetInput().IsKeyDown(sf::Key::D))
-		{
-			cam.strafeRight(0.1);
-			rend.updateViewMatrix(cam.getViewMatrix());
-		}
 		
+		
+		//if the user isnt in text mode, it should be able to move
+		if(!gui.isInTextMode())
+		{
+			if(app.GetInput().IsKeyDown(sf::Key::W))
+			{
+				cam.moveForeward(0.1);
+				rend.updateViewMatrix(cam.getViewMatrix());
+			}
+			if(app.GetInput().IsKeyDown(sf::Key::S))
+			{
+				cam.moveBackward(0.1);
+				rend.updateViewMatrix(cam.getViewMatrix());
+			}
+			if(app.GetInput().IsKeyDown(sf::Key::A))
+			{
+				cam.strafeLeft(0.1);
+				rend.updateViewMatrix(cam.getViewMatrix());
+			}
+			if(app.GetInput().IsKeyDown(sf::Key::D))
+			{
+				cam.strafeRight(0.1);
+				rend.updateViewMatrix(cam.getViewMatrix());
+			}
+		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Middle))
 		{
 			cam.rotateLeft(mousedx-app.GetInput().GetMouseX());

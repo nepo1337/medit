@@ -56,6 +56,7 @@ public:
 	void setActiveTex(int tex);
 	void setOpacity(float opa);
 	void setDropoff(float d);
+	void saveBlendmaps(string path, string filename);
 
 };
 

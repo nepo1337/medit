@@ -366,3 +366,9 @@ void Terrain::setActiveTex(int tex)
 {
 	this->activeTex=tex;
 }
+
+void Terrain::saveBlendmaps(string path, string filename)
+{
+	this->blendmap1.SaveToFile(filename.c_str()+"bmp1");
+	this->blendmap1.SaveToFile(filename.c_str()+"bmp2");
+}
