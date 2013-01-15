@@ -5,7 +5,7 @@ GUI::GUI()
 }
 void GUI::init()
 {
-	this->ans=false;
+	this->ans="";
 	this->menuUp=false;
 	this->showNewMapSprite=false;
 	this->showSaveMapSprite=false;
@@ -384,7 +384,7 @@ void GUI::moveSliders(float x, float y)
 
 void GUI::setLeftClick(float x, float y)
 {	
-	this->ans=false;
+	this->ans="";
 	//when clicking on menus
 	if(this->state==GUIstate::PAINT)
 	{
@@ -437,13 +437,13 @@ void GUI::setLeftClick(float x, float y)
 		//if ok
 		if(x>-0.367&&x<-0.212&&y>-0.16&&y<-0.09)
 		{
-			this->ans=true;
+			this->ans="nmOK";
 			this->showNewMapSprite=false;
 		}
 		//if cancel
 		if(x>-0.181&&x<-0.02&&y>-0.16&&y<-0.09)
 		{
-			this->ans=false;
+			this->ans="nmC";
 			this->showNewMapSprite=false;
 		}
 	}
@@ -453,14 +453,14 @@ void GUI::setLeftClick(float x, float y)
 	{
 		if(x>-0.39&&x<-0.232&&y>-0.088&&y<-0.033)
 		{
-			this->ans=true;
+			this->ans="lmOK";
 			this->showLoadMapSprite=false;
 			this->textMode=false;
 		}
 		//if cancel
 		if(x>-0.2&&x<-0.045&&y>-0.09&&y<-0.02)
 		{
-			this->ans=false;
+			this->ans="loC";
 			this->showLoadMapSprite=false;
 			this->textMode=false;
 		}
@@ -471,20 +471,20 @@ void GUI::setLeftClick(float x, float y)
 	{
 		if(x>-0.39&&x<-0.232&&y>-0.088&&y<-0.033)
 		{
-			this->ans=true;
+			this->ans="svOK";
 			//this->showSaveMapSprite=false;
 			this->textMode=false;
 		}
 		//if cancel
 		if(x>-0.2&&x<-0.045&&y>-0.09&&y<-0.02)
 		{
-			this->ans=false;
+			this->ans="svC";
 			//this->showSaveMapSprite=false;
 			this->textMode=false;
 		}
 	}
 }
-bool GUI::checkDialogAnswer()
+string GUI::checkDialogAnswer()
 {
 	return this->ans;
 }
@@ -607,4 +607,13 @@ void GUI::hideSaveMapDialog()
 bool GUI::isSaveMapDialogUp()
 {
 	return showSaveMapSprite;
+}
+bool GUI::isLoadMapDialogUp()
+{
+	return showLoadMapSprite;
+}
+
+bool GUI::isNewMapDialogUp()
+{
+	return this->showNewMapSprite;
 }

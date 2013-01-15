@@ -28,8 +28,17 @@ private:
 	sf::Image blendmap1;
 	sf::Image blendmap2;
 	sf::Image gridMap;
+	sf::Image minimap;
+	sf::Color tex1Avg,tex2Avg,tex3Avg,tex4Avg,tex5Avg,tex6Avg,tex7Avg,tex8Avg;
+	
+	//textures
+	sf::Image tex1,tex2,tex3,tex4,tex5,tex6,tex7,tex8;
 	//handle gets filles with a handle to the tex in the GFX, uploads data from sf::Image
 	void makeBlendMap(GLuint& handle, sf::Image img);
+	
+	//instead of using soil, witch takes the picture, uploads it, then removes the data from the ram
+	//ill use a own function so the data is still left, used to look up colors in the minimap
+	GLuint uploadTextureGFX(sf::Image img);
 	
 	//0,1,2
 	int mapsize;
@@ -41,7 +50,10 @@ private:
 	void replacePartTexture(GLint xoffset, GLint yoffset, sf::Image img,GLuint handle);
 	
 	float activeTex,opacity,dropoff;
-	
+	void makeMiniMap();
+	sf::Color getSample(int x, int y,float xratio,float yratio);
+	sf::Color getAverageTexColor(sf::Image &img);
+	void swapImg(sf::Image &img);
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
 	Terrain(int size);
@@ -56,7 +68,7 @@ public:
 	void setActiveTex(int tex);
 	void setOpacity(float opa);
 	void setDropoff(float d);
-	void saveBlendmaps(string path, string filename);
+	void save(string path, string filename);
 
 };
 

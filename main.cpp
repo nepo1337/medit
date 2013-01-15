@@ -27,11 +27,12 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 
 void save(string filename, Terrain& terr)
 {
-	terr.saveBlendmaps(path,filename);
+	terr.save(path,filename);
 	string fullName=path+filename+".txt";
 	ofstream out(fullName.c_str());
 	out << "bmp1: " <<filename<<"bmp1.png"<<endl;
 	out << "bmp2: " <<filename<<"bmp2.png"<<endl;
+	out << "minimap: " << filename << "minimap.png"<<endl;
 	out.close();
 }
 
@@ -147,11 +148,15 @@ int main(int argc, char **argv)
 					//cout<<normalisedx<< " " << normalisedy<<endl;
 					terrain.setActiveTex(gui.getActiveTex());
 					if(gui.isSaveMapDialogUp())
-						if(gui.checkDialogAnswer())
+					{
+						if(gui.checkDialogAnswer()=="svOK")
 						{
 							save(gui.getInputText(),terrain);
 							gui.hideSaveMapDialog();
 						}
+						if(gui.checkDialogAnswer()=="svC")
+							gui.hideSaveMapDialog();
+					}
 				}
 			}
 
@@ -184,6 +189,7 @@ int main(int argc, char **argv)
 			float normalisedy = 0;
 			getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 					
+			if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 			if(gui.isInDrawWindow(normalisedx,normalisedy))
 			{
 				if(gui.getState()==GUIstate::PAINT)

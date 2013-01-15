@@ -86,6 +86,9 @@ Terrain::Terrain(int size)
 	
 	//creates a gridmap
 	this->gridMap.Create(512*this->blendsc/4,512*this->blendsc/4,sf::Color(0,0,0,0));
+	
+	//the minimap
+	this->minimap.Create(256,256,sf::Color(0,0,0,0));
 
 	this->gridMap.SetPixel(10,6,sf::Color(0,0,0,255));
 	this->gridMap.SetPixel(0,0,sf::Color(0,0,0,255));
@@ -101,24 +104,32 @@ Terrain::Terrain(int size)
 	this->makeBlendMap(this->gridTexHandle,this->gridMap);
 	
 	//for blendmap 1
+	this->tex1.LoadFromFile("terrain/textures/set1/1.jpg");
+	this->tex2.LoadFromFile("terrain/textures/set1/2.jpg");
+	this->tex3.LoadFromFile("terrain/textures/set1/3.jpg");
+	this->tex4.LoadFromFile("terrain/textures/set1/4.jpg");
+	this->tex5.LoadFromFile("terrain/textures/set1/5.jpg");
+	this->tex6.LoadFromFile("terrain/textures/set1/6.jpg");
+	this->tex7.LoadFromFile("terrain/textures/set1/7.jpg");
+	this->tex8.LoadFromFile("terrain/textures/set1/8.jpg");
 	glActiveTexture(GL_TEXTURE3);
-	this->terrInf.texH[0] = SOIL_load_OGL_texture("terrain/textures/set1/1.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[0] = this->uploadTextureGFX(this->tex1);
 	glActiveTexture(GL_TEXTURE4);
-	this->terrInf.texH[1] = SOIL_load_OGL_texture("terrain/textures/set1/2.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[1] = this->uploadTextureGFX(this->tex2);
 	glActiveTexture(GL_TEXTURE5);
-	this->terrInf.texH[2] = SOIL_load_OGL_texture("terrain/textures/set1/3.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[2] = this->uploadTextureGFX(this->tex3);
 	glActiveTexture(GL_TEXTURE6);
-	this->terrInf.texH[3] = SOIL_load_OGL_texture("terrain/textures/set1/4.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.texH[3] = this->uploadTextureGFX(this->tex4);
 
 	//for blendmap 2
 	glActiveTexture(GL_TEXTURE7);
-	this->terrInf.tex2H[0] = SOIL_load_OGL_texture("terrain/textures/set1/5.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[0] = this->uploadTextureGFX(this->tex5);
 	glActiveTexture(GL_TEXTURE8);
-	this->terrInf.tex2H[1] = SOIL_load_OGL_texture("terrain/textures/set1/6.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[1] = this->uploadTextureGFX(this->tex6);
 	glActiveTexture(GL_TEXTURE9);
-	this->terrInf.tex2H[2] = SOIL_load_OGL_texture("terrain/textures/set1/7.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[2] = this->uploadTextureGFX(this->tex7);
 	glActiveTexture(GL_TEXTURE10);
-	this->terrInf.tex2H[3] = SOIL_load_OGL_texture("terrain/textures/set1/8.jpg",SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	this->terrInf.tex2H[3] = this->uploadTextureGFX(this->tex8);
 	
 	/*if(debug)
 >>>>>>> d9861b4941551f94d383b9eeda8221bae5399f4f
@@ -367,10 +378,136 @@ void Terrain::setActiveTex(int tex)
 	this->activeTex=tex;
 }
 
-void Terrain::saveBlendmaps(string path, string filename)
+void Terrain::save(string path, string filename)
 {
 	string p1 = path+filename+"bmp1"+".png";
 	string p2 = path+filename+"bmp2"+".png";
+	string p3 = path+filename+"minimap"+".png";
 	this->blendmap1.SaveToFile(p1.c_str());
 	this->blendmap2.SaveToFile(p2.c_str());
+	this->makeMiniMap();
+	this->swapImg(this->minimap);
+	this->minimap.SaveToFile(p3);
+}
+
+void Terrain::makeMiniMap()
+{
+	float ratioX=0;
+	float ratioY=0;
+	
+	
+	ratioX=this->blendmap1.GetWidth()/this->minimap.GetWidth();
+	ratioY=this->blendmap1.GetWidth()/this->minimap.GetHeight();
+	
+	tex1Avg = this->getAverageTexColor(tex1);
+	tex2Avg = this->getAverageTexColor(tex2);
+	tex3Avg = this->getAverageTexColor(tex3);
+	tex4Avg = this->getAverageTexColor(tex4);
+	tex5Avg = this->getAverageTexColor(tex5);
+	tex6Avg = this->getAverageTexColor(tex6);
+	tex7Avg = this->getAverageTexColor(tex7);
+	tex8Avg = this->getAverageTexColor(tex8);
+	
+
+	for(int i=0;i<this->minimap.GetHeight();i++)
+	{
+		for(int j=0;j<this->minimap.GetWidth();j++)
+		{
+			this->minimap.SetPixel(i,j,this->getSample(i,j,ratioX,ratioY));
+		}
+	}
+}
+
+GLuint Terrain::uploadTextureGFX(sf::Image img)
+{
+	GLuint handle;
+	glGenTextures(1,&handle);
+	glBindTexture(GL_TEXTURE_2D,handle);
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,img.GetWidth(),img.GetHeight(),0,GL_RGBA,GL_UNSIGNED_BYTE,img.GetPixelsPtr());
+	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_NEAREST  );
+	glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glGenerateMipmap( GL_TEXTURE_2D);
+	
+	return handle;
+}
+
+sf::Color Terrain::getSample(int x, int y,float xrat, float yrat)
+{
+	sf::Color outColor;
+	outColor.r=int(this->tex1Avg.r)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).r))/255;
+	outColor.g=int(this->tex1Avg.g)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).r))/255;
+	outColor.b=int(this->tex1Avg.b)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).r)/255);
+	
+	outColor.r+=int(this->tex2Avg.r)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).g))/255;
+	outColor.g+=int(this->tex2Avg.g)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).g))/255;
+	outColor.b+=int(this->tex2Avg.b)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).g))/255;
+	
+	outColor.r+=int(this->tex3Avg.r)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).b))/255;
+	outColor.g+=int(this->tex3Avg.g)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).b))/255;
+	outColor.b+=int(this->tex3Avg.b)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).b))/255;
+	
+	outColor.r+=int(this->tex4Avg.r)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).a))/255;
+	outColor.g+=int(this->tex4Avg.g)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).a))/255;
+	outColor.b+=int(this->tex4Avg.b)*(int(this->blendmap1.GetPixel(x*xrat,y*yrat).a))/255;
+	
+	outColor.r+=int(this->tex5Avg.r)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).r))/255;
+	outColor.g+=int(this->tex5Avg.g)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).r))/255;
+	outColor.b+=int(this->tex5Avg.b)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).r)/255);
+	
+	outColor.r+=int(this->tex6Avg.r)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).g))/255;
+	outColor.g+=int(this->tex6Avg.g)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).g))/255;
+	outColor.b+=int(this->tex6Avg.b)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).g))/255;
+	
+	outColor.r+=int(this->tex7Avg.r)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).b))/255;
+	outColor.g+=int(this->tex7Avg.g)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).b))/255;
+	outColor.b+=int(this->tex7Avg.b)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).b))/255;
+	
+	outColor.r+=int(this->tex8Avg.r)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).a))/255;
+	outColor.g+=int(this->tex8Avg.g)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).a))/255;
+	outColor.b+=int(this->tex8Avg.b)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).a))/255;
+
+	/*for(int i=x;i<x*xrat;i++)
+	{
+		for(int y=0;j<y*yrat;j++)
+		{
+			
+		}
+	}*/
+	return outColor;
+}
+
+sf::Color Terrain::getAverageTexColor(sf::Image &img)
+{
+	unsigned long r=0;
+	unsigned long g=0;
+	unsigned long b=0;
+	for(int i=0;i<img.GetHeight();i++)
+	{
+		for(int j=0;j<img.GetWidth();j++)
+		{
+			r+=long(img.GetPixel(j,i).r);
+			g+=long(img.GetPixel(j,i).g);
+			b+=long(img.GetPixel(j,i).b);
+		}
+	}
+	r=r/(img.GetHeight()*img.GetWidth());
+	g=g/(img.GetHeight()*img.GetWidth());
+	b=b/(img.GetHeight()*img.GetWidth());
+
+	return sf::Color(r,g,b,0);
+}
+
+void Terrain::swapImg(sf::Image &img)
+{
+	for(int i=0;i<img.GetWidth();i++)
+	{
+		for(int j=0;j<img.GetHeight()/2;j++)
+		{
+			sf::Color tmp = img.GetPixel(i,img.GetHeight()-1-j);
+			img.SetPixel(i,img.GetHeight()-1-j,img.GetPixel(i,j));
+			img.SetPixel(i,j,tmp);
+		}
+	}
 }

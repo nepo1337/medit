@@ -49,7 +49,7 @@ private:
 	float rightClickX, rightClickY;
 	bool inCircle(float cx, float cy, float x, float y,float rad);
 	bool showNewMapSprite,showLoadMapSprite,showSaveMapSprite;
-	bool ans;
+	string ans;
 	bool textMode;
 public:
 	GUI();
@@ -72,13 +72,15 @@ public:
 	float getSliderOpacity();
 	float getSliderDropoff();
 	void moveSliders(float x, float y);
-	bool checkDialogAnswer();
+	string checkDialogAnswer();
 	bool addChar(char c);
 	bool removeChar();
 	bool isInTextMode();
 	string getInputText();
 	void hideSaveMapDialog();
 	bool isSaveMapDialogUp();
+	bool isLoadMapDialogUp();
+	bool isNewMapDialogUp();
 	
 };
 
