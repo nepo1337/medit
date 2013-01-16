@@ -20,21 +20,6 @@ Renderer::Renderer()
 		
 	//the shader used for rendering the terrain
 	this->debug=true;
-	this->TerrainShader.compileShaderFromFile("terr.vsh",GLSLShader::VERTEX);
-	this->TerrainShader.compileShaderFromFile("terr.fsh",GLSLShader::FRAGMENT);
-	this->TerrainShader.bindAttribLocation(0,"vertexPosition");
-	this->TerrainShader.bindAttribLocation(1,"vertexNormal");
-	this->TerrainShader.bindAttribLocation(2,"vertexUv");
-	this->TerrainShader.bindAttribLocation(3,"vertexUvBM");
-	
-	
-	if(debug)
-		cout<<this->TerrainShader.log();
-		
-	this->TerrainShader.link();
-	
-	if(debug)
-		cout<<this->TerrainShader.log();
 		
 	if(debug)
 	{
@@ -92,19 +77,6 @@ void Renderer::draw()
 		}
 	}
 	
-	//rendering terrain
-	//add modelmatrix if needed(should not be needed)
-	mvp=this->projMatrix*this->viewMatrix;
-	//terrain doesnt support any scaling etc
-	mat4 modelMatrix(1.0f);
-	this->TerrainShader.use();
-	this->TerrainShader.setUniform("modelMatrix",modelMatrix);
-	this->TerrainShader.setUniform("MVP",mvp);
-	
-	//draws ground plane
-	glBindVertexArray(this->terrInf->vaoh);
-	glDrawArrays(GL_TRIANGLES,0,6);
-	
 	glUseProgram(0);
 	glBindVertexArray(0);
 }
@@ -115,8 +87,6 @@ void Renderer::updateViewMatrix(mat4 viewMatrix)
 	
 	this->modelShader.use();
 	this->modelShader.setUniform("viewMatrix",this->viewMatrix);
-	this->TerrainShader.use();
-	this->TerrainShader.setUniform("viewMatrix",this->viewMatrix);
 	glUseProgram(0);
 }
 void Renderer::updateProjMatrix(float width, float height)
@@ -131,32 +101,12 @@ void Renderer::updateProjMatrix(float width, float height)
 	
 	this->modelShader.use();
 	this->modelShader.setUniform("projectionMatrix",this->projMatrix);
-	this->TerrainShader.use();
-	this->TerrainShader.setUniform("projectionMatrix",this->projMatrix);
 	glUseProgram(0);
 }
 
 void Renderer::addModel(Model* m)
 {
 	this->models.push_back(m);
-}
-
-void Renderer::setTerrainInfo(TerrainInfo *t)
-{
-	this->terrInf=t;
-	this->TerrainShader.use();
-	this->TerrainShader.setUniform("blendmap1", 1);
-	this->TerrainShader.setUniform("blendmap2", 2);
-	this->TerrainShader.setUniform("tex1", 3);
-	this->TerrainShader.setUniform("tex2", 4);
-	this->TerrainShader.setUniform("tex3", 5);
-	this->TerrainShader.setUniform("tex4", 6);
-	this->TerrainShader.setUniform("tex5", 7);
-	this->TerrainShader.setUniform("tex6", 8);
-	this->TerrainShader.setUniform("tex7", 9);
-	this->TerrainShader.setUniform("tex8", 10);
-	this->TerrainShader.setUniform("gridMap",11);
-	glUseProgram(0);
 }
 
 mat4 Renderer::getProjMatrix()

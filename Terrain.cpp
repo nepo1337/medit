@@ -131,12 +131,35 @@ Terrain::Terrain(int size)
 	glActiveTexture(GL_TEXTURE10);
 	this->terrInf.tex2H[3] = this->uploadTextureGFX(this->tex8);
 	
-	/*if(debug)
->>>>>>> d9861b4941551f94d383b9eeda8221bae5399f4f
-	{
-		if(texH==0)
-			cout<<"SOIL loading error: "<< SOIL_last_result()<<endl;
-	}*/
+	this->TerrainShader.compileShaderFromFile("terr.vsh",GLSLShader::VERTEX);
+	this->TerrainShader.compileShaderFromFile("terr.fsh",GLSLShader::FRAGMENT);
+	this->TerrainShader.bindAttribLocation(0,"vertexPosition");
+	this->TerrainShader.bindAttribLocation(1,"vertexNormal");
+	this->TerrainShader.bindAttribLocation(2,"vertexUv");
+	this->TerrainShader.bindAttribLocation(3,"vertexUvBM");
+	
+	
+	if(debug)
+		cout<<this->TerrainShader.log();
+		
+	this->TerrainShader.link();
+	
+	if(debug)
+		cout<<this->TerrainShader.log();
+	
+	this->TerrainShader.use();
+	this->TerrainShader.setUniform("blendmap1", 1);
+	this->TerrainShader.setUniform("blendmap2", 2);
+	this->TerrainShader.setUniform("tex1", 3);
+	this->TerrainShader.setUniform("tex2", 4);
+	this->TerrainShader.setUniform("tex3", 5);
+	this->TerrainShader.setUniform("tex4", 6);
+	this->TerrainShader.setUniform("tex5", 7);
+	this->TerrainShader.setUniform("tex6", 8);
+	this->TerrainShader.setUniform("tex7", 9);
+	this->TerrainShader.setUniform("tex8", 10);
+	this->TerrainShader.setUniform("gridMap",11);
+	glUseProgram(0);
 
 	//create buffers
 	glGenVertexArrays(1,&vaoh);
@@ -180,6 +203,26 @@ Terrain::Terrain(int size)
 	this->terrInf.vaoh=this->vaoh;
 }
 
+void Terrain::draw()
+{
+	mat4 mvp=mat4(0.0f);
+	//rendering terrain
+	//add modelmatrix if needed(should not be needed)
+	mvp=this->projMatrix*this->viewMatrix;
+	//terrain doesnt support any scaling etc
+	mat4 modelMatrix(1.0f);
+	this->TerrainShader.use();
+	this->TerrainShader.setUniform("modelMatrix",modelMatrix);
+	this->TerrainShader.setUniform("MVP",mvp);
+	
+	//draws ground plane
+	glBindVertexArray(this->vaoh);
+	glDrawArrays(GL_TRIANGLES,0,6);
+	
+	glUseProgram(0);
+	glBindVertexArray(0);
+}
+
 //uploads the blendmaps to the GFX, getting a handle to the GFX side tex
 void Terrain::makeBlendMap(GLuint& handle, sf::Image img)
 {
@@ -207,11 +250,6 @@ Terrain::~Terrain()
 	glDeleteTextures(4,this->terrInf.tex2H);
 	glDeleteTextures(1,&this->terrInf.blendmap1H);
 	glDeleteTextures(1,&this->terrInf.blendmap2H);
-}
-
-GLuint Terrain::getVaoh()
-{
-	return this->vaoh;
 }
 
 TerrainInfo *Terrain::getTerrInfo()
@@ -378,16 +416,24 @@ void Terrain::setActiveTex(int tex)
 	this->activeTex=tex;
 }
 
-void Terrain::save(string path, string filename)
+void Terrain::saveMaps(string path, string filename)
 {
 	string p1 = path+filename+"bmp1"+".png";
 	string p2 = path+filename+"bmp2"+".png";
 	string p3 = path+filename+"minimap"+".png";
-	this->blendmap1.SaveToFile(p1.c_str());
-	this->blendmap2.SaveToFile(p2.c_str());
+	
+	//swaps the images for exporting
 	this->makeMiniMap();
 	this->swapImg(this->minimap);
+	this->swapImg(this->blendmap1);
+	this->swapImg(this->blendmap2);
+	this->blendmap1.SaveToFile(p1.c_str());
+	this->blendmap2.SaveToFile(p2.c_str());
 	this->minimap.SaveToFile(p3);
+	
+	//swaps back the blendmaps
+	this->swapImg(this->blendmap1);
+	this->swapImg(this->blendmap2);
 }
 
 void Terrain::makeMiniMap()
@@ -409,9 +455,9 @@ void Terrain::makeMiniMap()
 	tex8Avg = this->getAverageTexColor(tex8);
 	
 
-	for(int i=0;i<this->minimap.GetHeight();i++)
+	for(unsigned int i=0;i<this->minimap.GetHeight();i++)
 	{
-		for(int j=0;j<this->minimap.GetWidth();j++)
+		for(unsigned int j=0;j<this->minimap.GetWidth();j++)
 		{
 			this->minimap.SetPixel(i,j,this->getSample(i,j,ratioX,ratioY));
 		}
@@ -483,9 +529,9 @@ sf::Color Terrain::getAverageTexColor(sf::Image &img)
 	unsigned long r=0;
 	unsigned long g=0;
 	unsigned long b=0;
-	for(int i=0;i<img.GetHeight();i++)
+	for(unsigned int i=0;i<img.GetHeight();i++)
 	{
-		for(int j=0;j<img.GetWidth();j++)
+		for(unsigned int j=0;j<img.GetWidth();j++)
 		{
 			r+=long(img.GetPixel(j,i).r);
 			g+=long(img.GetPixel(j,i).g);
@@ -501,13 +547,42 @@ sf::Color Terrain::getAverageTexColor(sf::Image &img)
 
 void Terrain::swapImg(sf::Image &img)
 {
-	for(int i=0;i<img.GetWidth();i++)
+	for(unsigned int i=0;i<img.GetWidth();i++)
 	{
-		for(int j=0;j<img.GetHeight()/2;j++)
+		for(unsigned int j=0;j<img.GetHeight()/2;j++)
 		{
 			sf::Color tmp = img.GetPixel(i,img.GetHeight()-1-j);
 			img.SetPixel(i,img.GetHeight()-1-j,img.GetPixel(i,j));
 			img.SetPixel(i,j,tmp);
 		}
 	}
+}
+
+int Terrain::getWidth()
+{
+	return this->width;
+}
+int Terrain::getHeight()
+{
+	return this->height;
+}
+void Terrain::updateViewMatrix(mat4 viewMatrix)
+{
+	this->viewMatrix=viewMatrix;
+	this->TerrainShader.use();
+	this->TerrainShader.setUniform("viewMatrix",this->viewMatrix);
+	glUseProgram(0);
+}
+
+void Terrain::updateProjMatrix(float width, float height)
+{
+	float nearClip = 0.5f;
+	float farClip  = 1000.0f;
+	float fov_deg = 45.0f;
+	float aspect = (float)width/(float)height;
+	this->projMatrix=perspective(fov_deg, aspect,nearClip,farClip);
+
+	this->TerrainShader.use();
+	this->TerrainShader.setUniform("projectionMatrix",this->projMatrix);
+	glUseProgram(0);
 }

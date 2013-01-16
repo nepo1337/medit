@@ -10,7 +10,6 @@
 #include "glm/gtx/transform2.hpp"
 #include <vector>
 #include "MeshInfo.h"
-#include "TA.h"
 #include "GUI.h"
 
 using namespace std;
@@ -19,12 +18,10 @@ class Renderer
 {
 private:
 	GLSLProgram modelShader;
-	GLSLProgram TerrainShader;
 	mat4 viewMatrix,projMatrix;
 	int wwidth,wheight;
 	bool debug;
 	vector<Model*> models;
-	TerrainInfo *terrInf;
 public:
 	Renderer();
 	~Renderer();
@@ -32,7 +29,6 @@ public:
 	void updateViewMatrix(mat4 viewMatrix);
 	void updateProjMatrix(float width, float height);
 	void addModel(Model* m);
-	void setTerrainInfo(TerrainInfo *t);
 	mat4 getProjMatrix();
 };
 

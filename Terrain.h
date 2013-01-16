@@ -11,6 +11,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <Intersection.h>
+#include "GLSLProgram.h"
 
 using namespace std;
 using namespace glm;
@@ -18,6 +19,7 @@ using namespace glm;
 class Terrain
 {
 private:
+	GLSLProgram TerrainShader;
 	Intersection intersect;
 	float width,height;
 	GLuint vaoh, gridTexHandle;
@@ -54,12 +56,12 @@ private:
 	sf::Color getSample(int x, int y,float xratio,float yratio);
 	sf::Color getAverageTexColor(sf::Image &img);
 	void swapImg(sf::Image &img);
+	mat4 viewMatrix;
+	mat4 projMatrix;
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
 	Terrain(int size);
 	~Terrain();
-	GLuint getVaoh();
-	GLuint getTexh();
 	TerrainInfo *getTerrInfo();
 	//the sf::Image should be replaced with an array for ore indexes
 	//x and y represents the center,ex where someone clicked
@@ -68,8 +70,12 @@ public:
 	void setActiveTex(int tex);
 	void setOpacity(float opa);
 	void setDropoff(float d);
-	void save(string path, string filename);
-
+	void saveMaps(string path, string filename);
+	int getWidth();
+	int getHeight();
+	void draw();
+	void updateViewMatrix(mat4 viewMatrix);
+	void updateProjMatrix(float width, float height);
 };
 
 #endif // TERRAIN_H

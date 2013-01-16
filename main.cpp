@@ -27,9 +27,11 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 
 void save(string filename, Terrain& terr)
 {
-	terr.save(path,filename);
+	terr.saveMaps(path,filename);
 	string fullName=path+filename+".txt";
 	ofstream out(fullName.c_str());
+	out << "width: " << terr.getWidth() << endl;
+	out << "height: " <<  terr.getHeight() << endl;
 	out << "bmp1: " <<filename<<"bmp1.png"<<endl;
 	out << "bmp2: " <<filename<<"bmp2.png"<<endl;
 	out << "minimap: " << filename << "minimap.png"<<endl;
@@ -71,12 +73,12 @@ int main(int argc, char **argv)
 	terrain.setRadius(gui.getSliderRadius());
 	terrain.setOpacity(gui.getSliderOpacity());
 	
-	//sends texture handels etc to the renderer
-	rend.setTerrainInfo(terrain.getTerrInfo());
-	//also the gui needs the textures for browsing
+	//the gui needs the textures for browsing
 	gui.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
 	rend.updateViewMatrix(cam.getViewMatrix());
+	terrain.updateProjMatrix(width,height);
+	terrain.updateViewMatrix(cam.getViewMatrix());
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
@@ -115,6 +117,7 @@ int main(int argc, char **argv)
 				width = app.GetWidth();
 				glViewport(0,0,width,height);
 				rend.updateProjMatrix(width,height);
+				terrain.updateProjMatrix(width,height);
 			}
 			if(event.Type == sf::Event::MouseWheelMoved)
 			{
@@ -123,6 +126,7 @@ int main(int argc, char **argv)
 				else
 					cam.zoomOut(-event.MouseWheel.Delta*0.5);
 				rend.updateViewMatrix(cam.getViewMatrix());
+				terrain.updateViewMatrix(cam.getViewMatrix());
 			}
 			
 			if(event.Type == sf::Event::MouseButtonPressed)
@@ -190,18 +194,20 @@ int main(int argc, char **argv)
 			getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 					
 			if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
-			if(gui.isInDrawWindow(normalisedx,normalisedy))
 			{
-				if(gui.getState()==GUIstate::PAINT)
-					terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
-			}
-			else
-			{
-				gui.moveSliders(normalisedx,normalisedy);
+				if(gui.isInDrawWindow(normalisedx,normalisedy))
 				{
-					terrain.setRadius(gui.getSliderRadius());
-					terrain.setOpacity(gui.getSliderOpacity());
-					terrain.setDropoff(gui.getSliderDropoff());
+					if(gui.getState()==GUIstate::PAINT)
+						terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+				}
+				else
+				{
+					gui.moveSliders(normalisedx,normalisedy);
+					{
+						terrain.setRadius(gui.getSliderRadius());
+						terrain.setOpacity(gui.getSliderOpacity());
+						terrain.setDropoff(gui.getSliderDropoff());
+					}
 				}
 			}
 		}
@@ -222,23 +228,21 @@ int main(int argc, char **argv)
 			if(app.GetInput().IsKeyDown(sf::Key::W))
 			{
 				cam.moveForeward(0.1);
-				rend.updateViewMatrix(cam.getViewMatrix());
 			}
 			if(app.GetInput().IsKeyDown(sf::Key::S))
 			{
 				cam.moveBackward(0.1);
-				rend.updateViewMatrix(cam.getViewMatrix());
 			}
 			if(app.GetInput().IsKeyDown(sf::Key::A))
 			{
 				cam.strafeLeft(0.1);
-				rend.updateViewMatrix(cam.getViewMatrix());
 			}
 			if(app.GetInput().IsKeyDown(sf::Key::D))
 			{
 				cam.strafeRight(0.1);
-				rend.updateViewMatrix(cam.getViewMatrix());
 			}
+			rend.updateViewMatrix(cam.getViewMatrix());
+			terrain.updateViewMatrix(cam.getViewMatrix());
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Middle))
 		{
@@ -257,6 +261,7 @@ int main(int argc, char **argv)
 
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		terrain.draw();
 		rend.draw();
 		gui.draw();
 

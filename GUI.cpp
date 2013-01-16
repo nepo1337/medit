@@ -24,7 +24,6 @@ void GUI::init()
 	this->sliderOpacity.setMinPos(0.56,-0.91f);
 		
 	this->activeTex=0;	
-
 	//the gui
 	this->GUIshader.compileShaderFromFile("gui.vsh",GLSLShader::VERTEX);
 	this->GUIshader.compileShaderFromFile("gui.fsh",GLSLShader::FRAGMENT);
