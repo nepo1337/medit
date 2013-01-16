@@ -10,8 +10,6 @@ uniform sampler2D tex1;
 void main()
 {
   vec4 texColor1 = texture(tex1,texCoord);
-  if(texColor1.a<0.05)
-    discard;
   
   vec3 ka = vec3(0.2,0.2,0.2);
   vec3 kd = vec3(0.7,0.7,0.7);
@@ -20,14 +18,14 @@ void main()
   vec4 lightPos = vec4(1,10,1,0);
   vec3 lightIntens = vec3(0.8,0.8,0.8);
   
-  if(lightPos.w==0)
-  {
+ // if(lightPos.w==0)
+ // {
     s = normalize(vec3(lightPos));
-  }
-  else
-  {
-    s = normalize(vec3(lightPos)-position);
-  }
+ // }
+ // else
+ // {
+ //   s = normalize(vec3(lightPos)-position);
+ // }
   
   vec3 r = reflect(-s,n);
   vec3 ambdiff=lightIntens*(ka + kd*max(dot(s,n),0.0));

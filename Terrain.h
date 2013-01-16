@@ -12,14 +12,26 @@
 #include <iostream>
 #include <Intersection.h>
 #include "GLSLProgram.h"
+#include "SurfaceTex.h"
+#include <math.h>
+#include <fstream>
 
 using namespace std;
 using namespace glm;
 
+namespace TerrState
+{
+  enum TerrStates
+  {
+    NONE,PAINT,DRAWSURFACE
+  };
+};
+
 class Terrain
 {
 private:
-	GLSLProgram TerrainShader;
+	TerrState::TerrStates state;
+	GLSLProgram TerrainShader,surfaceTexShader;
 	Intersection intersect;
 	float width,height;
 	GLuint vaoh, gridTexHandle;
@@ -58,6 +70,11 @@ private:
 	void swapImg(sf::Image &img);
 	mat4 viewMatrix;
 	mat4 projMatrix;
+	
+	//SurfacesTex class holds a texture to the surface and positions/rotations for each surface using that tex
+	SurfaceTex stoneSurface;
+	float worldClickX,worldClickZ;
+	void rayIntersectTerrain(vec3 origin, vec3 ray, float &x, float &y);
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
 	Terrain(int size);
@@ -70,12 +87,14 @@ public:
 	void setActiveTex(int tex);
 	void setOpacity(float opa);
 	void setDropoff(float d);
-	void saveMaps(string path, string filename);
-	int getWidth();
-	int getHeight();
+	void save(string path, string filename);
 	void draw();
 	void updateViewMatrix(mat4 viewMatrix);
 	void updateProjMatrix(float width, float height);
+	void addSurface(vec3 origin, vec3 ray, int id);
+	void setWorldXY(vec3 origin, vec3 ray);
+	bool inCircle(float cx, float cy, float x, float y,float rad);
+	void setTerState(TerrState::TerrStates state);
 };
 
 #endif // TERRAIN_H

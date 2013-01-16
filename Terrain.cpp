@@ -1,4 +1,5 @@
 #include "Terrain.h"
+#define PI 3.14159265
 
 Terrain::Terrain(int size)
 {
@@ -131,6 +132,7 @@ Terrain::Terrain(int size)
 	glActiveTexture(GL_TEXTURE10);
 	this->terrInf.tex2H[3] = this->uploadTextureGFX(this->tex8);
 	
+	//the shader for the terrain
 	this->TerrainShader.compileShaderFromFile("terr.vsh",GLSLShader::VERTEX);
 	this->TerrainShader.compileShaderFromFile("terr.fsh",GLSLShader::FRAGMENT);
 	this->TerrainShader.bindAttribLocation(0,"vertexPosition");
@@ -159,6 +161,25 @@ Terrain::Terrain(int size)
 	this->TerrainShader.setUniform("tex7", 9);
 	this->TerrainShader.setUniform("tex8", 10);
 	this->TerrainShader.setUniform("gridMap",11);
+	glUseProgram(0);
+	
+	//shader for drawing surface textures
+	this->surfaceTexShader.compileShaderFromFile("model.vsh",GLSLShader::VERTEX);
+	this->surfaceTexShader.compileShaderFromFile("model.fsh",GLSLShader::FRAGMENT);
+	this->surfaceTexShader.bindAttribLocation(0,"vertexPosition");
+	this->surfaceTexShader.bindAttribLocation(1,"vertexNormal");
+	this->surfaceTexShader.bindAttribLocation(2,"vertexUv");
+	
+	if(debug)
+		cout<<this->surfaceTexShader.log();
+		
+	this->surfaceTexShader.link();
+	
+	if(debug)
+		cout<<this->surfaceTexShader.log();
+		
+	this->surfaceTexShader.use();
+	this->surfaceTexShader.setUniform("tex1",0);
 	glUseProgram(0);
 
 	//create buffers
@@ -201,6 +222,8 @@ Terrain::Terrain(int size)
 	glVertexAttribPointer(3,2,GL_FLOAT,GL_FALSE,0,NULL);
 	
 	this->terrInf.vaoh=this->vaoh;
+	
+	this->stoneSurface.init("terrain/textures/set1/stone.png");
 }
 
 void Terrain::draw()
@@ -219,6 +242,27 @@ void Terrain::draw()
 	glBindVertexArray(this->vaoh);
 	glDrawArrays(GL_TRIANGLES,0,6);
 	
+	
+	this->surfaceTexShader.use();
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(this->stoneSurface.getVaoH());
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glDisable(GL_DEPTH_TEST);
+	for(unsigned int i=0; i<this->stoneSurface.getRotations()->size();i++)
+	{
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=glm::translate(this->stoneSurface.getPositions()->at(i));
+		modelMatrix*=glm::rotate(this->stoneSurface.getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
+		
+		mvp=this->projMatrix*this->viewMatrix*modelMatrix;
+		this->surfaceTexShader.setUniform("normalMatrix",mat3(modelMatrix));
+		this->surfaceTexShader.setUniform("MVP",mvp);
+		glBindTexture(GL_TEXTURE_2D,this->stoneSurface.getTexHandle());
+		glDrawArrays(GL_TRIANGLES,0,6);
+	}
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
 	glBindVertexArray(0);
 }
@@ -257,7 +301,7 @@ TerrainInfo *Terrain::getTerrInfo()
 	return &this->terrInf;
 }
 
-void Terrain::paint(vec3 origin, vec3 ray)
+void Terrain::rayIntersectTerrain(vec3 origin, vec3 ray, float &x, float &y)
 {
 	//one of the triangles
 	vec3 v1= vec3(0.0f,0.0f,0.0f);
@@ -265,8 +309,8 @@ void Terrain::paint(vec3 origin, vec3 ray)
 	vec3 v3= vec3(this->width,0.0f,0.0f);
 	vec3 hit = intersect.rayIntersectTriangle(origin,ray,v1,v2,v3);
 	//the other triangle
-	int x=hit.x*256*this->blendsc;
-	int y=(hit.z*256*this->blendsc);
+	x=hit.x*this->width;
+	y=(hit.z*this->height);
 	
 	//if the first ray missed the first triangle, try the other one
 	if(hit.x==1)
@@ -275,83 +319,113 @@ void Terrain::paint(vec3 origin, vec3 ray)
 		v2= vec3(this->width,0.0f,0.0f);
 		v3= vec3(0.0f,0.0f,-this->height);
 		hit=intersect.rayIntersectTriangle(origin,ray,v1,v2,v3);
-		x=256*this->blendsc-hit.x*256*this->blendsc;
-		y=256*this->blendsc+(-hit.z*256*this->blendsc);
+		x=this->width-hit.x*this->width;
+		y=this->height+(-hit.z*this->height);
 	}
-	
-		//if the the ray hit any of the triangles
-	//go through the blendmaps and update blend values
-	if(hit.x!=1)
+}
+
+
+void Terrain::paint(vec3 origin, vec3 ray)
+{
+	if(state == TerrState::PAINT)
 	{
-		//lowest x,y values, in case of drawing partially outside
-		//used to create a new image which can replace parts of the texture on the GFX side
-		int lowestY=y-this->radius;
-		int lowestX=x-this->radius;
-		int highestY=y+this->radius;
-		int highestX=x+this->radius;
+		int x=0;
+		int y=0;
+		//one of the triangles
+		vec3 v1= vec3(0.0f,0.0f,0.0f);
+		vec3 v2= vec3(0.0f,0.0f,-this->height);
+		vec3 v3= vec3(this->width,0.0f,0.0f);
+		vec3 hit = intersect.rayIntersectTriangle(origin,ray,v1,v2,v3);
+		//the other triangle
+		x=hit.x*256*this->blendsc;
+		y=(hit.z*256*this->blendsc);
 		
-		if(lowestY<0)
-			lowestY=0;
-		if(lowestX<0)
-			lowestX=0;
-		if(highestX>256*this->blendsc)
-			highestX=256*this->blendsc;
-		if(highestY>256*this->blendsc)
-			highestY=256*this->blendsc;
-		
-		sf::Image bmp1;
-		sf::Image bmp2;
-		
-		bmp1.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
-		bmp2.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
-		
-		//so you cant change the map with close to 0 radius
-		if(bmp1.GetWidth()>0)
+		//if the first ray missed the first triangle, try the other one
+		if(hit.x==1)
 		{
-			//counter for the sub image
-			int subX=0;
-			int subY=0;
+			v1= vec3(this->width,0.0f,-this->height);
+			v2= vec3(this->width,0.0f,0.0f);
+			v3= vec3(0.0f,0.0f,-this->height);
+			hit=intersect.rayIntersectTriangle(origin,ray,v1,v2,v3);
+			x=256*this->blendsc-hit.x*256*this->blendsc;
+			y=256*this->blendsc+(-hit.z*256*this->blendsc);
+		}
+		
+
+			//if the the ray hit any of the triangles
+		//go through the blendmaps and update blend values
+		if(x!=1)
+		{
+			//lowest x,y values, in case of drawing partially outside
+			//used to create a new image which can replace parts of the texture on the GFX side
+			int lowestY=y-this->radius;
+			int lowestX=x-this->radius;
+			int highestY=y+this->radius;
+			int highestX=x+this->radius;
 			
-				//creates a area to look through the blendmap to inrease speed
-				for(int i=y-this->radius;i<y+this->radius;i++)
-				{
-					for(int j=x-this->radius;j<x+this->radius;j++)
+			if(lowestY<0)
+				lowestY=0;
+			if(lowestX<0)
+				lowestX=0;
+			if(highestX>256*this->blendsc)
+				highestX=256*this->blendsc;
+			if(highestY>256*this->blendsc)
+				highestY=256*this->blendsc;
+			
+			sf::Image bmp1;
+			sf::Image bmp2;
+			
+			bmp1.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
+			bmp2.Create(highestX-lowestX,highestY-lowestY,sf::Color(0,0,0,0));
+			
+			//so you cant change the map with close to 0 radius
+			if(bmp1.GetWidth()>0)
+			{
+				//counter for the sub image
+				int subX=0;
+				int subY=0;
+				
+					//creates a area to look through the blendmap to inrease speed
+					for(int i=y-this->radius;i<y+this->radius;i++)
 					{
-						//if the cordinats are inside the bounds
-						if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
+						for(int j=x-this->radius;j<x+this->radius;j++)
 						{
-							//first updates the pixel in the part texture that will replace
-							//the texture on the gfx, with the "global blendmap"
-							sf::Color pix1=this->blendmap1.GetPixel(j,i);
-							sf::Color pix2=this->blendmap2.GetPixel(j,i);
-							bmp1.SetPixel(subX,subY,pix1);
-							bmp2.SetPixel(subX,subY,pix2);
-							if(this->inCircle(x,y,j,i))
+							//if the cordinats are inside the bounds
+							if(j>=0&&i>=0&&j<256*this->blendsc&&i<256*this->blendsc)
 							{
-								this->increasePixelPaint(pix1,pix2,this->activeTex,sqrt((float)((j-x)*(j-x)+(i-y)*(i-y))));
-								//updates the small texture thats going to replace pixels in the GFX tex
+								//first updates the pixel in the part texture that will replace
+								//the texture on the gfx, with the "global blendmap"
+								sf::Color pix1=this->blendmap1.GetPixel(j,i);
+								sf::Color pix2=this->blendmap2.GetPixel(j,i);
 								bmp1.SetPixel(subX,subY,pix1);
 								bmp2.SetPixel(subX,subY,pix2);
-								//and updates the global blendmap
-								this->blendmap1.SetPixel(j,i,pix1);
-								this->blendmap2.SetPixel(j,i,pix2);
+								if(this->inCircle(x,y,j,i))
+								{
+									this->increasePixelPaint(pix1,pix2,this->activeTex,sqrt((float)((j-x)*(j-x)+(i-y)*(i-y))));
+									//updates the small texture thats going to replace pixels in the GFX tex
+									bmp1.SetPixel(subX,subY,pix1);
+									bmp2.SetPixel(subX,subY,pix2);
+									//and updates the global blendmap
+									this->blendmap1.SetPixel(j,i,pix1);
+									this->blendmap2.SetPixel(j,i,pix2);
+								}
+								subX++;
 							}
-							subX++;
 						}
+						//if inside volume, counter y is increase so the sub img(bmp1/2) is correct
+						if(i>=0&&i<=256*this->blendsc)
+							subY++;
+						subX=0;
 					}
-					//if inside volume, counter y is increase so the sub img(bmp1/2) is correct
-					if(i>=0&&i<=256*this->blendsc)
-						subY++;
-					subX=0;
-				}
 
-			//should be changes to upload just the data changed and not the whole blendmap
-			//glActiveTexture(GL_TEXTURE1);
-			this->replacePartTexture(lowestX,lowestY,bmp1,this->terrInf.blendmap1H);
-			//this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
-			//glActiveTexture(GL_TEXTURE2);
-			this->replacePartTexture(lowestX,lowestY,bmp2,this->terrInf.blendmap2H);
-			//this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+				//should be changes to upload just the data changed and not the whole blendmap
+				//glActiveTexture(GL_TEXTURE1);
+				this->replacePartTexture(lowestX,lowestY,bmp1,this->terrInf.blendmap1H);
+				//this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+				//glActiveTexture(GL_TEXTURE2);
+				this->replacePartTexture(lowestX,lowestY,bmp2,this->terrInf.blendmap2H);
+				//this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+			}
 		}
 	}
 }
@@ -416,8 +490,17 @@ void Terrain::setActiveTex(int tex)
 	this->activeTex=tex;
 }
 
-void Terrain::saveMaps(string path, string filename)
+void Terrain::save(string path, string filename)
 {
+	string fullName=path+filename+".txt";
+	ofstream out(fullName.c_str());
+	out << "width: " << this->width << endl;
+	out << "height: " <<  this->height << endl;
+	out << "bmp1: " <<filename<<"bmp1.png"<<endl;
+	out << "bmp2: " <<filename<<"bmp2.png"<<endl;
+	out << "minimap: " << filename << "minimap.png"<<endl;
+	
+	
 	string p1 = path+filename+"bmp1"+".png";
 	string p2 = path+filename+"bmp2"+".png";
 	string p3 = path+filename+"minimap"+".png";
@@ -434,6 +517,17 @@ void Terrain::saveMaps(string path, string filename)
 	//swaps back the blendmaps
 	this->swapImg(this->blendmap1);
 	this->swapImg(this->blendmap2);
+	
+	//starts saving the surface planes
+	out << endl<<"Surfaceplanes: (format rotY, posX,posZ) "<<endl;
+	out << "SF: " << this->stoneSurface.getName()<<endl;
+	for(int i=0;i<this->stoneSurface.getRotations()->size();i++)
+	{
+		out << this->stoneSurface.getRotations()->at(i) << " " <<
+		this->stoneSurface.getPositions()->at(i).x << " " <<
+		this->stoneSurface.getPositions()->at(i).z << " " <<endl;
+	}
+	out.close();
 }
 
 void Terrain::makeMiniMap()
@@ -558,19 +652,14 @@ void Terrain::swapImg(sf::Image &img)
 	}
 }
 
-int Terrain::getWidth()
-{
-	return this->width;
-}
-int Terrain::getHeight()
-{
-	return this->height;
-}
 void Terrain::updateViewMatrix(mat4 viewMatrix)
 {
 	this->viewMatrix=viewMatrix;
 	this->TerrainShader.use();
 	this->TerrainShader.setUniform("viewMatrix",this->viewMatrix);
+	
+	this->surfaceTexShader.use();
+	this->surfaceTexShader.setUniform("viewMatrix",this->viewMatrix);
 	glUseProgram(0);
 }
 
@@ -584,5 +673,50 @@ void Terrain::updateProjMatrix(float width, float height)
 
 	this->TerrainShader.use();
 	this->TerrainShader.setUniform("projectionMatrix",this->projMatrix);
+	
+	this->surfaceTexShader.use();
+	this->surfaceTexShader.setUniform("projectionMatrix",this->projMatrix);
 	glUseProgram(0);
+}
+void Terrain::addSurface(vec3 origin, vec3 ray, int id)
+{
+	float x=0;
+	float z=0;
+	this->rayIntersectTerrain(origin,ray,x,z);
+	
+	if(!this->inCircle(this->worldClickX,this->worldClickZ,x,z,0.9))
+	{
+		if(x>0)
+		{
+			//calculates position and rotation for the surfaceplanes
+			vec3 pos;
+			pos.x=x;
+			pos.y=0;
+			pos.z=-z;
+
+			float dx = pos.x-this->worldClickX;
+			float dz = -pos.z-this->worldClickZ;//needs to turn z, since i turned it b4
+			float a = atan2(dz,dx)*180/PI+90;
+
+			this->stoneSurface.addSurface(a,pos);
+			this->worldClickX=x;
+			this->worldClickZ=z;
+		}
+	}
+}
+void Terrain::setWorldXY(vec3 origin, vec3 ray)
+{
+	this->rayIntersectTerrain(origin,ray,this->worldClickX,this->worldClickZ);
+}
+
+bool Terrain::inCircle(float cx, float cy, float x, float y,float rad)
+{
+	float dist;
+	dist = (cx-x)*(cx-x)+(cy-y)*(cy-y);
+	return dist<rad*rad;
+}
+
+void Terrain::setTerState(TerrState::TerrStates state)
+{
+	this->state = state;
 }

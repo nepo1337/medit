@@ -18,6 +18,8 @@ Renderer::Renderer()
 	if(debug)
 		cout<<this->modelShader.log();
 		
+	this->modelShader.setUniform("tex1",0);
+		
 	//the shader used for rendering the terrain
 	this->debug=true;
 		

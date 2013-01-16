@@ -27,15 +27,8 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 
 void save(string filename, Terrain& terr)
 {
-	terr.saveMaps(path,filename);
-	string fullName=path+filename+".txt";
-	ofstream out(fullName.c_str());
-	out << "width: " << terr.getWidth() << endl;
-	out << "height: " <<  terr.getHeight() << endl;
-	out << "bmp1: " <<filename<<"bmp1.png"<<endl;
-	out << "bmp2: " <<filename<<"bmp2.png"<<endl;
-	out << "minimap: " << filename << "minimap.png"<<endl;
-	out.close();
+	terr.save(path,filename);
+	
 }
 
 
@@ -161,6 +154,8 @@ int main(int argc, char **argv)
 						if(gui.checkDialogAnswer()=="svC")
 							gui.hideSaveMapDialog();
 					}
+					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+					terrain.setWorldXY(cam.getPos(),ray);
 				}
 			}
 
@@ -198,7 +193,16 @@ int main(int argc, char **argv)
 				if(gui.isInDrawWindow(normalisedx,normalisedy))
 				{
 					if(gui.getState()==GUIstate::PAINT)
+					{
+						terrain.setTerState(TerrState::PAINT);
 						terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+					}
+					if(gui.getState()==GUIstate::NONE)
+					{
+						terrain.setTerState(TerrState::DRAWSURFACE);
+						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+						terrain.addSurface(cam.getPos(),ray, 0);
+					}
 				}
 				else
 				{
