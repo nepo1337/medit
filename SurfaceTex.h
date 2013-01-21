@@ -18,9 +18,10 @@ class SurfaceTex
 private:
 	GLuint texHandle;
 	GLuint vaoh;
-	GLuint vbohs[3];
+	GLuint vbohs[4];
 	vector<float> rotations;
 	vector<vec3> positions;
+	vector<bool> showBbox;
 	string name;
 public:
 	SurfaceTex();
@@ -30,6 +31,7 @@ public:
 	GLuint getVaoH();
 	vector<float>* getRotations();
 	vector<vec3>* getPositions();
+	vector<bool>* getDrawBbox();
 	void addSurface(float rot, vec3 pos);
 	string getName();
 

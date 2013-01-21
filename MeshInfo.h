@@ -7,6 +7,7 @@ class MeshInfo
 	GLuint vaoh;
 	GLuint texH;
 	int nrOfVerts;
+
 public:
 	MeshInfo();
 	~MeshInfo();
@@ -17,6 +18,7 @@ public:
 	GLuint getVaoh();
 	GLuint getTexh();
 	int getNrOfVerts();
+	
 
 };
 

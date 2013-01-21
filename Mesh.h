@@ -2,20 +2,24 @@
 #define MESH_H
 #define GLEW_STATIC
 #include <glew.h>
-#include <OBJimporter.h>
+#include "ReadFish.h"
 #include <Object.h>
 #include <iostream>
 #include <vector>
 #include <MeshInfo.h>
 #include "SOIL/SOIL.h"
+#include "FishStructs.h"
+#include "BoundingBox.h"
 
 using namespace std;
 
 class Mesh
 {
 private:
-	OBJimporter objimp;
+	BoundingBox bBox;
+	ReadFish fishImp;
 	string fileName;
+
 	
 	//holds VAOS,TEXHs for each object
 	vector<MeshInfo> meshesInfo;
@@ -23,6 +27,7 @@ private:
 	bool debug;
 	string path;
 	void setFilename(string fn);
+	GLuint bBoxVboh,bBoxVaoh;
 	
 	//uploads vbos etc to gfx
 	void uploadToGFX();
@@ -35,6 +40,7 @@ public:
 	
 	//returns pointer to the meshinfo vector, one for each object
 	vector<MeshInfo>* getMeshInfo();
+	BoundingBox* getBoundingBox();
 };
 
 #endif // MESH_H

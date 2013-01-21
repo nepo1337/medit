@@ -9,6 +9,7 @@ Model::Model()
 	this->normalMatrix=mat3(1.0f);
 	rotx=roty=rotz=0;
 	this->scale=1.0f;
+	this->selected=false;
 }
 
 Model::~Model()
@@ -23,10 +24,10 @@ void Model::setMesh(vector<MeshInfo> *m)
 void Model::updateModelMatrix()
 {
 	this->modelMatrix=mat4(1.0f);
+	this->modelMatrix*=translate(this->pos);
 	this->modelMatrix*=rotate(this->rotx,glm::vec3(1.0f,0.0f,0.0f));
 	this->modelMatrix*=rotate(this->roty,glm::vec3(0.0f,1.0f,0.0f));
 	this->modelMatrix*=rotate(this->rotz,glm::vec3(0.0f,0.0f,1.0f));
-	this->modelMatrix*=translate(this->pos);
 	this->modelMatrix*=glm::scale(mat4(1.0f),vec3(this->scale));
 }
 
@@ -50,6 +51,16 @@ vector<MeshInfo>* Model::getMeshInfo()
 	return this->meshInfo;
 }
 
+void Model::setBoundingBox(BoundingBox *b)
+{
+	this->bbox=b;
+}
+
+BoundingBox* Model::getBoundingBox()
+{
+	return this->bbox;
+}
+
 void Model::rotateX(float x)
 {
 	this->rotx=x;
@@ -71,4 +82,17 @@ void Model::scaleXYZ(float f)
 {
 	this->scale=f;
 	this->updateModelMatrix();
+}
+
+void Model::select()
+{
+	this->selected=true;
+}
+void Model::unSelect()
+{
+	this->selected=false;
+}
+bool Model::isSelected()
+{
+	return this->selected;
 }

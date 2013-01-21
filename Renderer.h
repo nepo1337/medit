@@ -17,7 +17,7 @@ using namespace glm;
 class Renderer
 {
 private:
-	GLSLProgram modelShader;
+	GLSLProgram modelShader,bBoxShader;
 	mat4 viewMatrix,projMatrix;
 	int wwidth,wheight;
 	bool debug;
@@ -30,6 +30,7 @@ public:
 	void updateProjMatrix(float width, float height);
 	void addModel(Model* m);
 	mat4 getProjMatrix();
+	
 };
 
 #endif // RENDERER_H

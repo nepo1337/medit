@@ -19,6 +19,7 @@ public:
 	MeshHandler(string dir);
 	~MeshHandler();
 	vector<MeshInfo>* getMeshInfo(int i);
+	BoundingBox *getBoundingBox(int i);
 
 };
 

@@ -77,12 +77,28 @@ int main(int argc, char **argv)
 	MeshHandler mh("./models/");
 	Model m;
 	
-	m.setMesh(mh.getMeshInfo(0));
+	m.setMesh(mh.getMeshInfo(3));
+	m.setBoundingBox(mh.getBoundingBox(3));
 	rend.addModel(&m);
-	m.rotateX(-90);
+	m.setPos(vec3(25,0,-30));
+	//m.scaleXYZ(0.1);
+	Model t;
+	t.setMesh(mh.getMeshInfo(2));
+	t.setBoundingBox(mh.getBoundingBox(2));
+	t.select();
+	t.scaleXYZ(0.1);
+	t.rotateY(45);
+	t.setPos(vec3(15,0,-30));
+	rend.addModel(&t);
 	
-	m.setPos(vec3(0.8f,0.0f,0.0f));
-	m.scaleXYZ(0.02);
+	Model f;
+	f.setMesh(mh.getMeshInfo(1));
+	f.setBoundingBox(mh.getBoundingBox(1));
+	rend.addModel(&f);
+	f.setPos(vec3(30,1,-30));
+	f.scaleXYZ(0.1);
+	f.setPos(vec3(20,0,-30));
+	
 	 
 	sf::Event event;
 

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include "MeshInfo.h"
+#include "BoundingBox.h"
 
 using namespace std;
 using namespace glm;
@@ -15,10 +16,12 @@ class Model
 private:
 	vec3 pos;
 	vector<MeshInfo>* meshInfo;
+	BoundingBox* bbox;
 	mat4 modelMatrix;
 	mat3 normalMatrix;
 	void updateModelMatrix();
 	float rotx,roty,rotz,scale;
+	bool selected;
 public:
 	Model();
 	~Model();
@@ -31,6 +34,11 @@ public:
 	void rotateY(float y);
 	void rotateZ(float z);
 	void scaleXYZ(float f);
+	void setBoundingBox(BoundingBox *b);
+	BoundingBox* getBoundingBox();
+	void select();
+	void unSelect();
+	bool isSelected();
 
 };
 

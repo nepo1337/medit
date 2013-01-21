@@ -31,7 +31,7 @@ class Terrain
 {
 private:
 	TerrState::TerrStates state;
-	GLSLProgram TerrainShader,surfaceTexShader;
+	GLSLProgram TerrainShader,surfaceTexShader,surfaceBboxShader;
 	Intersection intersect;
 	float width,height;
 	GLuint vaoh, gridTexHandle;
