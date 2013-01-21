@@ -22,6 +22,20 @@ Renderer::Renderer()
 		
 	//the shader used for rendering the terrain
 	this->debug=true;
+	
+	//bbox
+	this->bBoxShader.compileShaderFromFile("bbox.vsh",GLSLShader::VERTEX);
+	this->bBoxShader.compileShaderFromFile("bbox.fsh",GLSLShader::FRAGMENT);
+	this->bBoxShader.bindAttribLocation(3,"bBoxCordsVertex");
+	
+	if(debug)
+		cout<<this->bBoxShader.log();
+		
+	this->bBoxShader.link();
+	
+	if(debug)
+		cout<<this->bBoxShader.log();
+	glUseProgram(0);
 		
 	if(debug)
 	{
@@ -76,6 +90,22 @@ void Renderer::draw()
 			glBindTexture(GL_TEXTURE_2D, this->models[i]->getMeshInfo()->at(j).getTexh());
 			glBindVertexArray(this->models[i]->getMeshInfo()->at(j).getVaoh());
 			glDrawArrays(GL_TRIANGLES,0,this->models[i]->getMeshInfo()->at(j).getNrOfVerts());
+		}
+	}
+	this->bBoxShader.use();
+	
+	//renders bounding box
+	for(unsigned int i=0;i<this->models.size();i++)
+	{
+		//if the object is selected
+		if(this->models[i]->isSelected())
+		{
+			//set upp uniforms for rendering call
+			mvp=this->projMatrix*this->viewMatrix*this->models[i]->getModelMatrix();
+			this->modelShader.setUniform("MVP",mvp);
+			
+			glBindVertexArray(this->models[i]->getBoundingBox()->getVaoh());
+			glDrawArrays(GL_LINE_STRIP,0,16);
 		}
 	}
 	

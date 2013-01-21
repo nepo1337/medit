@@ -180,6 +180,19 @@ Terrain::Terrain(int size)
 		
 	this->surfaceTexShader.use();
 	this->surfaceTexShader.setUniform("tex1",0);
+	
+	//bbox
+	this->surfaceBboxShader.compileShaderFromFile("bbox.vsh",GLSLShader::VERTEX);
+	this->surfaceBboxShader.compileShaderFromFile("bbox.fsh",GLSLShader::FRAGMENT);
+	this->surfaceBboxShader.bindAttribLocation(3,"bBoxCordsVertex");
+	
+	if(debug)
+		cout<<this->surfaceBboxShader.log();
+		
+	this->surfaceBboxShader.link();
+	
+	if(debug)
+		cout<<this->surfaceBboxShader.log();
 	glUseProgram(0);
 
 	//create buffers
@@ -261,6 +274,22 @@ void Terrain::draw()
 		glBindTexture(GL_TEXTURE_2D,this->stoneSurface.getTexHandle());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
+	
+	this->surfaceBboxShader.use();
+	for(unsigned int i=0; i<this->stoneSurface.getRotations()->size();i++)
+	{
+		if(this->stoneSurface.getDrawBbox()->at(i))
+		{
+			modelMatrix=mat4(1.0f);
+			modelMatrix*=glm::translate(this->stoneSurface.getPositions()->at(i));
+			modelMatrix*=glm::rotate(this->stoneSurface.getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
+			
+			mvp=this->projMatrix*this->viewMatrix*modelMatrix;
+			this->surfaceTexShader.setUniform("MVP",mvp);
+			glDrawArrays(GL_LINE_STRIP,0,5);
+		}
+	}
+	
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glUseProgram(0);
@@ -676,6 +705,7 @@ void Terrain::updateProjMatrix(float width, float height)
 	
 	this->surfaceTexShader.use();
 	this->surfaceTexShader.setUniform("projectionMatrix",this->projMatrix);
+	
 	glUseProgram(0);
 }
 void Terrain::addSurface(vec3 origin, vec3 ray, int id)

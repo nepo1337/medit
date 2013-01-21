@@ -17,7 +17,7 @@ using namespace glm;
 class Renderer
 {
 private:
-	GLSLProgram modelShader;
+	GLSLProgram modelShader,bBoxShader;
 	mat4 viewMatrix,projMatrix;
 	int wwidth,wheight;
 	bool debug;

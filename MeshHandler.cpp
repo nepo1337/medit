@@ -6,7 +6,7 @@ MeshHandler::MeshHandler(string dir)
 	this->fileDirReader.getFilesInDir(dir,files);
 	for(unsigned int i=0;i<files.size();i++)
 	{
-		if(this->getFileExtension(files[i])=="obj")
+		if(this->getFileExtension(files[i])=="BFish")
 		{
 			Mesh m;
 			if(m.import(dir,files[i]))
@@ -58,4 +58,9 @@ vector<MeshInfo>* MeshHandler::getMeshInfo(int i)
 		mf = this->meshes[i].getMeshInfo();
 	}
 	return mf;
+}
+
+BoundingBox *MeshHandler::getBoundingBox(int i)
+{
+	return this->meshes[i].getBoundingBox();
 }

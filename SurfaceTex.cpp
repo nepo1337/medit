@@ -43,12 +43,21 @@ void SurfaceTex::init(string texName)
 		1.0f,0.0f,
 		0.0f,1.0f
 	};
+	
+	float bBox[]=
+	{
+		-0.5f,0.0f,-0.5f,
+		-0.5f,0.0f,0.5f,
+		0.5f,0.0f,0.5f,
+		0.5f,0.0f,-0.5f,
+		-0.5f,0.0f,-0.5f,
+	};
 	glActiveTexture(GL_TEXTURE0);
 	this->texHandle = SOIL_load_OGL_texture(texName.c_str(),SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 	
 	//create buffers
 	glGenVertexArrays(1,&vaoh);
-	glGenBuffers(3,vbohs);
+	glGenBuffers(4,vbohs);
 	//vertex points
 	glBindBuffer(GL_ARRAY_BUFFER, vbohs[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVerts),planeVerts,GL_STATIC_DRAW);
@@ -61,12 +70,17 @@ void SurfaceTex::init(string texName)
 	glBindBuffer(GL_ARRAY_BUFFER, vbohs[2]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(planeUvs), planeUvs, GL_STATIC_DRAW);
 	
+	//bbox
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(bBox), bBox, GL_STATIC_DRAW);
+	
 	
 	//SETTING UP VAO
 	glBindVertexArray(vaoh);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
 	
 	//vertex
 	glBindBuffer(GL_ARRAY_BUFFER, vbohs[0]);
@@ -77,6 +91,9 @@ void SurfaceTex::init(string texName)
 	//uv
 	glBindBuffer(GL_ARRAY_BUFFER, vbohs[2]);
 	glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,0,NULL);
+	//bbox
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[3]);
+	glVertexAttribPointer(3,3,GL_FLOAT,GL_FALSE,0,NULL);
 	
 }
 vector<float>* SurfaceTex::getRotations()
@@ -87,6 +104,10 @@ vector<float>* SurfaceTex::getRotations()
 vector<vec3>* SurfaceTex::getPositions()
 {
 	return &this->positions;
+}
+vector<bool>* SurfaceTex::getDrawBbox()
+{
+	return &this->showBbox;
 }
 
 GLuint SurfaceTex::getTexHandle()
@@ -101,6 +122,7 @@ void SurfaceTex::addSurface(float rot, vec3 pos)
 {
 	this->rotations.push_back(rot);
 	this->positions.push_back(vec3(pos.x,0,pos.z));
+	this->showBbox.push_back(true);
 }
 
 string SurfaceTex::getName()
