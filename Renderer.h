@@ -30,6 +30,7 @@ public:
 	void updateProjMatrix(float width, float height);
 	void addModel(Model* m);
 	mat4 getProjMatrix();
+	
 };
 
 #endif // RENDERER_H
