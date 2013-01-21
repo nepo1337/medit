@@ -46,6 +46,8 @@ void SurfaceTex::init(string texName)
 	glActiveTexture(GL_TEXTURE0);
 	this->texHandle = SOIL_load_OGL_texture(texName.c_str(),SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 	
+	if(texHandle==0)
+				cout<<"SOIL loading error: "<< SOIL_last_result()<<endl;
 	//create buffers
 	glGenVertexArrays(1,&vaoh);
 	glGenBuffers(3,vbohs);
