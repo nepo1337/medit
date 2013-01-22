@@ -160,6 +160,7 @@ int main(int argc, char **argv)
 					gui.setLeftClick(normalisedx,normalisedy);
 					//cout<<normalisedx<< " " << normalisedy<<endl;
 					terrain.setActiveTex(gui.getActiveTex());
+					rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
 					if(gui.isSaveMapDialogUp())
 					{
 						if(gui.checkDialogAnswer()=="svOK")
