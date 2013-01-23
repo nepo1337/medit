@@ -32,6 +32,20 @@ void GUI::init()
 	this->GUIshader.link();
 	this->GUIshader.setUniform("guiTex", 0);
 	
+	
+	this->modelDisplayShader.compileShaderFromFile("modelDisplay.vsh",GLSLShader::VERTEX);
+	this->modelDisplayShader.compileShaderFromFile("modelDisplay.fsh",GLSLShader::FRAGMENT);
+	this->modelDisplayShader.bindAttribLocation(0,"vertexPosition");
+	this->modelDisplayShader.bindAttribLocation(1,"vertexNormal");
+	this->modelDisplayShader.bindAttribLocation(2,"vertexUv");
+	
+		
+	this->modelDisplayShader.link();
+		
+	this->modelDisplayShader.setUniform("tex1",0);
+		
+	glUseProgram(0);
+	
 	//the panels to the right side
 	this->frontPanel.init(vec3(0.0f),1.0f,1.0f,"gui/GUI-Front.png");
 	this->backPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Back.png");
@@ -70,6 +84,7 @@ void GUI::init()
 	
 	this->loadMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Load.png");
 	text.init("", 350, 360,0.25,1280,720,"gui/Text100.png",100,100);
+
 }
 
 GUI::~GUI()
@@ -157,6 +172,30 @@ void GUI::draw()
 	//for placing and editing models
 	if(this->state == GUIstate::MODEL)
 	{
+		glEnable(GL_DEPTH_TEST);
+		//draws the models meshes
+		
+		//renderin models
+		this->modelDisplayShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		for(unsigned int i=0;i<this->displayModels.size();i++)
+		{
+			//set upp uniforms for rendering call
+			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[i].getModelMatrix());
+			mat3 normalMatrix=mat3(this->displayModels[i].getModelMatrix());
+			this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
+			
+			//get a pointer to a vector with meshes info for each mesh
+			for(unsigned int j=0;j<this->displayModels[i].getMeshInfo()->size();j++)
+			{
+				glBindTexture(GL_TEXTURE_2D, this->displayModels[i].getMeshInfo()->at(j).getTexh());
+				glBindVertexArray(this->displayModels[i].getMeshInfo()->at(j).getVaoh());
+				glDrawArrays(GL_TRIANGLES,0,this->displayModels[i].getMeshInfo()->at(j).getNrOfVerts());
+			}
+		}
+		
+		this->GUIshader.use();
+		
 		//draws the panels in the right slot
 		glBindTexture(GL_TEXTURE_2D, this->modelPanel.getTextureHandle());
 		glBindVertexArray(this->modelPanel.getVaoHandle());
@@ -615,4 +654,13 @@ bool GUI::isLoadMapDialogUp()
 bool GUI::isNewMapDialogUp()
 {
 	return this->showNewMapSprite;
+}
+
+void GUI::addDisplayModel(Model m)
+{
+	Model tmp = m;
+	float scaleY=tmp.getBoundingBox()->getBboxSide().y;
+	cout << scaleY<<endl;
+	m.scaleXYZ(1/scaleY);
+	this->displayModels.push_back(m);
 }

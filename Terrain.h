@@ -95,6 +95,8 @@ public:
 	void setWorldXY(vec3 origin, vec3 ray);
 	bool inCircle(float cx, float cy, float x, float y,float rad);
 	void setTerState(TerrState::TerrStates state);
+	void selectTexSurfaces(float radius, vec3 origin, vec3 ray);
+	void deselectAllSurfaceTex();
 };
 
 #endif // TERRAIN_H

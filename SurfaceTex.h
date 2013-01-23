@@ -34,6 +34,8 @@ public:
 	vector<bool>* getDrawBbox();
 	void addSurface(float rot, vec3 pos);
 	string getName();
+	void select(int index);
+	void deSelect(int index);
 
 };
 

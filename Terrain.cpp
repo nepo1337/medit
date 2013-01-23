@@ -739,6 +739,26 @@ void Terrain::setWorldXY(vec3 origin, vec3 ray)
 	this->rayIntersectTerrain(origin,ray,this->worldClickX,this->worldClickZ);
 }
 
+void Terrain::selectTexSurfaces(float radius, vec3 origin, vec3 ray)
+{
+	this->setWorldXY(origin,ray);
+	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
+	{
+		if(this->inCircle(this->worldClickX,-this->worldClickZ, this->stoneSurface.getPositions()->at(i).x,this->stoneSurface.getPositions()->at(i).z,radius))
+		{
+			this->stoneSurface.select(i);
+		}
+	}
+}
+
+void Terrain::deselectAllSurfaceTex()
+{
+	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
+	{
+		this->stoneSurface.deSelect(i);
+	}
+}
+
 bool Terrain::inCircle(float cx, float cy, float x, float y,float rad)
 {
 	float dist;

@@ -20,7 +20,7 @@ public:
 	~MeshHandler();
 	vector<MeshInfo>* getMeshInfo(int i);
 	BoundingBox *getBoundingBox(int i);
-
+	int getNrOfMeshes();
 };
 
 #endif // MESHHANDLER_H

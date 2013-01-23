@@ -124,9 +124,17 @@ void SurfaceTex::addSurface(float rot, vec3 pos)
 {
 	this->rotations.push_back(rot);
 	this->positions.push_back(vec3(pos.x,0,pos.z));
-	this->showBbox.push_back(true);
+	this->showBbox.push_back(false);
 }
 
+void SurfaceTex::select(int index)
+{
+	this->showBbox[index]=true;
+}
+void SurfaceTex::deSelect(int index)
+{
+	this->showBbox[index]=false;
+}
 string SurfaceTex::getName()
 {
 	return this->name;

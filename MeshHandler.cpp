@@ -64,3 +64,8 @@ BoundingBox *MeshHandler::getBoundingBox(int i)
 {
 	return this->meshes[i].getBoundingBox();
 }
+
+int MeshHandler::getNrOfMeshes()
+{
+	return this->meshes.size();
+}

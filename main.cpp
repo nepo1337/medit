@@ -38,7 +38,6 @@ int main(int argc, char **argv)
 	Camera cam;
 	int mousedx=0;
 	int mousedy=0;
-	int test=0;
 
 	//window options
 	width=1280;
@@ -60,6 +59,7 @@ int main(int argc, char **argv)
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
+	
 	gui.init();
 	//sets up the terrain
 	Terrain terrain(0);
@@ -75,38 +75,28 @@ int main(int argc, char **argv)
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
+	
+	for(int i=0;i<mh.getNrOfMeshes();i++)
+	{
+		Model tmp;
+		tmp.setMesh(mh.getMeshInfo(i));
+		tmp.setBoundingBox(mh.getBoundingBox(i));
+		gui.addDisplayModel(tmp);
+	}
+	
+	/*
 	Model m;
 	
 	m.setMesh(mh.getMeshInfo(3));
 	m.setBoundingBox(mh.getBoundingBox(3));
 	rend.addModel(&m);
 	m.setPos(vec3(25,0,-30));
-	//m.scaleXYZ(0.1);
-	Model t;
-	t.setMesh(mh.getMeshInfo(2));
-	t.setBoundingBox(mh.getBoundingBox(2));
-	t.select();
-	t.scaleXYZ(0.1);
-	t.rotateY(45);
-	t.setPos(vec3(15,0,-30));
-	rend.addModel(&t);
-	
-	Model f;
-	f.setMesh(mh.getMeshInfo(1));
-	f.setBoundingBox(mh.getBoundingBox(1));
-	rend.addModel(&f);
-	f.setPos(vec3(30,1,-30));
-	f.scaleXYZ(0.1);
-	f.setPos(vec3(20,0,-30));
-	
+	*/
 	 
 	sf::Event event;
 
 	while (app.IsOpened())
 	{
-		//fps
-		float framerate = 1.f / app.GetFrameTime();
-
 		//events
 		while(app.GetEvent(event))
 		{
@@ -173,6 +163,7 @@ int main(int argc, char **argv)
 					}
 					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
 					terrain.setWorldXY(cam.getPos(),ray);
+					terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
 				}
 			}
 
@@ -239,6 +230,7 @@ int main(int argc, char **argv)
 				getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 				
 				gui.setMouseXY(normalisedx,normalisedy);
+				terrain.deselectAllSurfaceTex();
 				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
 		

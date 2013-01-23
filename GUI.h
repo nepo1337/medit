@@ -12,7 +12,10 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/transform2.hpp"
+#include "Model.h"
+#include <vector>
 
+class Renderer;
 
 using namespace std;
 using namespace glm;
@@ -41,7 +44,7 @@ private:
 	Sprite dragArrow;
 	Slider sliderOpacity,sliderSize,sliderDropoff;
 	
-	GLSLProgram GUIshader;
+	GLSLProgram GUIshader,modelDisplayShader;
 	//textur handles to paintable textures
 	GLuint texHandels[8];
 	int activeTex;
@@ -51,6 +54,8 @@ private:
 	bool showNewMapSprite,showLoadMapSprite,showSaveMapSprite;
 	string ans;
 	bool textMode;
+	vector<Model> displayModels;
+	
 public:
 	GUI();
 	~GUI();
@@ -81,7 +86,7 @@ public:
 	bool isSaveMapDialogUp();
 	bool isLoadMapDialogUp();
 	bool isNewMapDialogUp();
-	
+	void addDisplayModel(Model m);
 };
 
 #endif // GUI_H
