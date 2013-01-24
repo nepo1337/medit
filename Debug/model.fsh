@@ -6,6 +6,7 @@ in vec3 position;
 in vec2 texCoord;
 
 uniform sampler2D tex1;
+uniform float outAlpha;
 
 void main()
 {
@@ -30,5 +31,5 @@ void main()
   vec3 r = reflect(-s,n);
   vec3 ambdiff=lightIntens*(ka + kd*max(dot(s,n),0.0));
   
-  fragColor=vec4(ambdiff,1.0)*texColor1;
+  fragColor=vec4(ambdiff,outAlpha)*texColor1;
 }

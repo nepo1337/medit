@@ -24,7 +24,7 @@ namespace GUIstate
 {
   enum GUIstates
   {
-    NONE,PAINT,MODEL,LIGHT,PATH,PARTICLE,QUEST
+    NONE,PAINT,MODEL,LIGHT,PATH,PARTICLE,QUEST,ROAD
   };
 };
 
@@ -36,9 +36,10 @@ private:
 	GLuint k;
 	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,
 	questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,
-	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap;
+	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap,menuRoad,roadPanel;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;
+	vector<GLuint> surfaceTexHandles;
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
@@ -55,6 +56,9 @@ private:
 	string ans;
 	bool textMode;
 	vector<Model> displayModels;
+	int activeModel;
+	void incActiveTex();
+	void decActiveTex();
 	
 public:
 	GUI();
@@ -62,8 +66,6 @@ public:
 	void init();
 	void draw();
 	void setTerrainInfo(TerrainInfo *t);
-	void incActiveTex();
-	void decActiveTex();
 	int getActiveTex();
 	void setGuiState(GUIstate::GUIstates state);
 	void showMenu(bool ans);
@@ -87,6 +89,9 @@ public:
 	bool isLoadMapDialogUp();
 	bool isNewMapDialogUp();
 	void addDisplayModel(Model m);
+	void setSurfaceTexHandles(vector<GLuint> th);
+	void resetDialogAns();
+	int getActiveModelIndex();
 };
 
 #endif // GUI_H

@@ -25,9 +25,10 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 	y = 1 - 2 * (float)mouseY / height;
 }
 
-void save(string filename, Terrain& terr)
+void save(string filename, Terrain& terr, Renderer &r)
 {
 	terr.save(path,filename);
+	r.saveModels(path,filename);
 	
 }
 
@@ -65,6 +66,7 @@ int main(int argc, char **argv)
 	Terrain terrain(0);
 	terrain.setRadius(gui.getSliderRadius());
 	terrain.setOpacity(gui.getSliderOpacity());
+	gui.setSurfaceTexHandles(terrain.getSurfaceTexHandles());
 	
 	//the gui needs the textures for browsing
 	gui.setTerrainInfo(terrain.getTerrInfo());
@@ -84,19 +86,15 @@ int main(int argc, char **argv)
 		gui.addDisplayModel(tmp);
 	}
 	
-	/*
-	Model m;
-	
-	m.setMesh(mh.getMeshInfo(3));
-	m.setBoundingBox(mh.getBoundingBox(3));
-	rend.addModel(&m);
-	m.setPos(vec3(25,0,-30));
-	*/
 	 
 	sf::Event event;
-
+	
 	while (app.IsOpened())
 	{
+		float normalisedx = 0;
+		float normalisedy = 0;
+		
+		getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 		//events
 		while(app.GetEvent(event))
 		{
@@ -133,9 +131,6 @@ int main(int argc, char **argv)
 				if(event.MouseButton.Button==sf::Mouse::Right)
 				{
 					gui.showMenu(true);
-					float normalisedx = 0;
-					float normalisedy = 0;
-					getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 					gui.setRightClickXY(normalisedx,normalisedy);
 				}
 			}
@@ -144,26 +139,64 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					float normalisedx = 0;
-					float normalisedy = 0;
-					getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
+					//cout << normalisedx << " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					//cout<<normalisedx<< " " << normalisedy<<endl;
 					terrain.setActiveTex(gui.getActiveTex());
 					rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
+					
+					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
+					{
+						if(gui.getState()==GUIstate::ROAD)
+						{
+							if(gui.checkDialogAnswer()=="RS")
+							{
+								terrain.removeSelectedSurfaces();
+								gui.resetDialogAns();
+							}
+						}
+						if(gui.getState()==GUIstate::MODEL)
+						{
+							if(gui.isInDrawWindow(normalisedx,normalisedy))
+							{
+								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+								float x=-1;
+								float z=1;
+								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+								if(x!=-1)
+								{
+									Model m;
+									m.setPos(vec3(x,0,-z));
+									m.setMesh(mh.getMeshInfo(gui.getActiveModelIndex()));
+									m.setBoundingBox(mh.getBoundingBox(gui.getActiveModelIndex()));
+									m.scaleXYZ(0.1);
+									m.setMeshName(mh.getMeshName(gui.getActiveModelIndex()));
+									rend.addModel(m);
+								}
+							}
+						}
+						if(gui.getState()==GUIstate::NONE || gui.getState()==GUIstate::ROAD)
+						{
+							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+							terrain.setWorldXY(cam.getPos(),ray);
+							
+							if(terrain.selectTexSurfaces(0.5,cam.getPos(),ray))
+							{
+								gui.setGuiState(GUIstate::ROAD);
+							}
+						}
+					}
+					
 					if(gui.isSaveMapDialogUp())
 					{
 						if(gui.checkDialogAnswer()=="svOK")
 						{
-							save(gui.getInputText(),terrain);
+							save(gui.getInputText(),terrain,rend);
 							gui.hideSaveMapDialog();
 						}
 						if(gui.checkDialogAnswer()=="svC")
 							gui.hideSaveMapDialog();
 					}
-					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-					terrain.setWorldXY(cam.getPos(),ray);
-					terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
 				}
 			}
 
@@ -192,10 +225,7 @@ int main(int argc, char **argv)
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-			float normalisedx = 0;
-			float normalisedy = 0;
-			getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
-					
+	
 			if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 			{
 				if(gui.isInDrawWindow(normalisedx,normalisedy))
@@ -205,7 +235,7 @@ int main(int argc, char **argv)
 						terrain.setTerState(TerrState::PAINT);
 						terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
 					}
-					if(gui.getState()==GUIstate::NONE)
+					if(gui.getState()==GUIstate::ROAD)
 					{
 						terrain.setTerState(TerrState::DRAWSURFACE);
 						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
@@ -225,10 +255,6 @@ int main(int argc, char **argv)
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
-				float normalisedx = 0;
-				float normalisedy = 0;
-				getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
-				
 				gui.setMouseXY(normalisedx,normalisedy);
 				terrain.deselectAllSurfaceTex();
 				//cout << normalisedx <<" " << normalisedy<<endl;
@@ -274,8 +300,26 @@ int main(int argc, char **argv)
 
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
 		terrain.draw();
 		rend.draw();
+		if(gui.getState()==GUIstate::MODEL &&gui.isInDrawWindow(normalisedx,normalisedy) )
+		{
+			vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+			float x=-1;
+			float z=1;
+			terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+			if(x!=-1)
+			{
+				Model m;
+				m.setPos(vec3(x,0,-z));
+				m.setMesh(mh.getMeshInfo(gui.getActiveModelIndex()));
+				m.setBoundingBox(mh.getBoundingBox(gui.getActiveModelIndex()));
+				m.scaleXYZ(0.1);
+				m.setMeshName(mh.getMeshName(gui.getActiveModelIndex()));
+				rend.drawModel(m);
+			}
+		}
 		gui.draw();
 
 		app.Display();

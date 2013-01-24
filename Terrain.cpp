@@ -60,11 +60,11 @@ Terrain::Terrain(int size)
 	float planeUvs[]=
 	{
 		0.0f,0.0f,
-		0.0f,1.0f*width,
-		1.0f*height,0.0f,
-		1.0f*height,1.0f*width,
-		1.0f*height,0.0f,
-		0.0f,1.0f*width
+		0.0f,1.0f*width/8,
+		1.0f*height/8,0.0f,
+		1.0f*height/8,1.0f*width/8,
+		1.0f*height/8,0.0f,
+		0.0f,1.0f*width/8
 	};
 	
 	float blendmapUvs[]=
@@ -235,8 +235,8 @@ Terrain::Terrain(int size)
 	glVertexAttribPointer(3,2,GL_FLOAT,GL_FALSE,0,NULL);
 	
 	this->terrInf.vaoh=this->vaoh;
-	
 	this->stoneSurface.init("terrain/textures/set1/stone.png");
+	
 }
 
 void Terrain::draw()
@@ -262,6 +262,7 @@ void Terrain::draw()
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
+	this->surfaceTexShader.setUniform("outAlpha",1.0f);
 	for(unsigned int i=0; i<this->stoneSurface.getRotations()->size();i++)
 	{
 		modelMatrix=mat4(1.0f);
@@ -556,6 +557,7 @@ void Terrain::save(string path, string filename)
 		this->stoneSurface.getPositions()->at(i).x << " " <<
 		this->stoneSurface.getPositions()->at(i).z << " " <<endl;
 	}
+	out << "end"<<endl;
 	out.close();
 }
 
@@ -739,16 +741,19 @@ void Terrain::setWorldXY(vec3 origin, vec3 ray)
 	this->rayIntersectTerrain(origin,ray,this->worldClickX,this->worldClickZ);
 }
 
-void Terrain::selectTexSurfaces(float radius, vec3 origin, vec3 ray)
+bool Terrain::selectTexSurfaces(float radius, vec3 origin, vec3 ray)
 {
 	this->setWorldXY(origin,ray);
+	bool found=false;
 	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
 	{
 		if(this->inCircle(this->worldClickX,-this->worldClickZ, this->stoneSurface.getPositions()->at(i).x,this->stoneSurface.getPositions()->at(i).z,radius))
 		{
 			this->stoneSurface.select(i);
+			found = true;
 		}
 	}
+	return found;
 }
 
 void Terrain::deselectAllSurfaceTex()
@@ -769,4 +774,25 @@ bool Terrain::inCircle(float cx, float cy, float x, float y,float rad)
 void Terrain::setTerState(TerrState::TerrStates state)
 {
 	this->state = state;
+}
+
+vector<GLuint> Terrain::getSurfaceTexHandles()
+{
+	vector<GLuint> th;
+	th.push_back(this->stoneSurface.getTexHandle());
+	return th;
+}
+
+void Terrain::removeSelectedSurfaces()
+{
+	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
+	{
+		if(this->stoneSurface.isSelected(i))
+		{
+			this->stoneSurface.remove(i);
+			//lowers the index, since the remove function removes an element
+			//if not, it would cause to make a miss in the vector
+			i--;
+		}
+	}
 }

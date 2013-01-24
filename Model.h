@@ -22,6 +22,7 @@ private:
 	void updateModelMatrix();
 	float rotx,roty,rotz,scale;
 	bool selected;
+	string meshName;
 public:
 	Model();
 	~Model();
@@ -33,12 +34,15 @@ public:
 	void rotateX(float x);
 	void rotateY(float y);
 	void rotateZ(float z);
+	vec3 getRot();
 	void scaleXYZ(float f);
 	void setBoundingBox(BoundingBox *b);
 	BoundingBox* getBoundingBox();
 	void select();
 	void unSelect();
 	bool isSelected();
+	void setMeshName(string name);
+	string getMeshName();
 
 };
 

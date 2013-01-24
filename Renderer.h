@@ -11,6 +11,7 @@
 #include <vector>
 #include "MeshInfo.h"
 #include "GUI.h"
+#include <fstream>
 
 using namespace std;
 using namespace glm;
@@ -21,16 +22,18 @@ private:
 	mat4 viewMatrix,projMatrix;
 	int wwidth,wheight;
 	bool debug;
-	vector<Model*> models;
+	vector<Model> models;
 public:
 	Renderer();
 	~Renderer();
 	void draw();
 	void updateViewMatrix(mat4 viewMatrix);
 	void updateProjMatrix(float width, float height);
-	void addModel(Model* m);
+	void addModel(Model m);
 	mat4 getProjMatrix();
 	vec3 rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos);
+	void saveModels(string path, string filename);
+	void drawModel(Model m);
 	
 };
 

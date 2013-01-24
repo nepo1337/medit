@@ -5,6 +5,7 @@ GUI::GUI()
 }
 void GUI::init()
 {
+	this->activeModel=2;
 	this->ans="";
 	this->menuUp=false;
 	this->showNewMapSprite=false;
@@ -55,6 +56,7 @@ void GUI::init()
 	this->lightPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Light.png");
 	this->questPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Quest.png");
 	this->modelPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Model.png");
+	this->roadPanel.init(vec3(0.7f,0.0f,0.0f),0.28f,1.0f,"gui/GUI-Road.png");
 	
 	//the right click menu
 	this->menuOff.init(vec3(0.0f),0.21,0.29,"gui/C-off.png");
@@ -64,6 +66,7 @@ void GUI::init()
 	this->menuParticle.init(vec3(0.0f),0.21,0.29,"gui/C-Particle.png");
 	this->menuPath.init(vec3(0.0f),0.21,0.29,"gui/C-Path.png");
 	this->menuQuest.init(vec3(0.0f),0.21,0.29,"gui/C-Quest.png");
+	this->menuRoad.init(vec3(0.0f),0.21,0.29,"gui/C-Road.png");
 	
 	//the textures you can browse thorugh
 	this->mainTex.init(vec3(0.7f,0.53f,0),0.15,0.27);
@@ -178,23 +181,60 @@ void GUI::draw()
 		//renderin models
 		this->modelDisplayShader.use();
 		glActiveTexture(GL_TEXTURE0);
-		for(unsigned int i=0;i<this->displayModels.size();i++)
+		//draws the 2 left small models
+
+		for(unsigned int i=0;i<2;i++)
 		{
 			//set upp uniforms for rendering call
-			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[i].getModelMatrix());
-			mat3 normalMatrix=mat3(this->displayModels[i].getModelMatrix());
+
+			this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].setPos(vec3(0.525+i*0.1,-0.02,0));
+			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
+			mat3 normalMatrix=mat3(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
 			this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
 			
 			//get a pointer to a vector with meshes info for each mesh
-			for(unsigned int j=0;j<this->displayModels[i].getMeshInfo()->size();j++)
+			for(unsigned int j=0;j<this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->size();j++)
 			{
-				glBindTexture(GL_TEXTURE_2D, this->displayModels[i].getMeshInfo()->at(j).getTexh());
-				glBindVertexArray(this->displayModels[i].getMeshInfo()->at(j).getVaoh());
-				glDrawArrays(GL_TRIANGLES,0,this->displayModels[i].getMeshInfo()->at(j).getNrOfVerts());
+				glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
+				glBindVertexArray(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
+				glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
+			}
+		}
+		//the two right
+		for(unsigned int i=3;i<5;i++)
+		{
+			//set upp uniforms for rendering call
+			this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].setPos(vec3(0.47+i*0.1,-0.02,0));
+			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
+			mat3 normalMatrix=mat3(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
+			this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
+			
+			//get a pointer to a vector with meshes info for each mesh
+			for(unsigned int j=0;j<this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->size();j++)
+			{
+				glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
+				glBindVertexArray(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
+				glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
 			}
 		}
 		
+		//set upp uniforms for rendering call
+		this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].setPos(vec3(0.7,0.25,0));
+		this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getModelMatrix());
+		mat3 normalMatrix=mat3(this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getModelMatrix());
+		this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
+		
+		//get a pointer to a vector with meshes info for each mesh
+		for(unsigned int j=0;j<this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->size();j++)
+		{
+			glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
+			glBindVertexArray(this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
+			glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
+		}
+		//draws the main panel
+		
 		this->GUIshader.use();
+		glDisable(GL_DEPTH_TEST);
 		
 		//draws the panels in the right slot
 		glBindTexture(GL_TEXTURE_2D, this->modelPanel.getTextureHandle());
@@ -240,6 +280,20 @@ void GUI::draw()
 		glBindTexture(GL_TEXTURE_2D, this->questPanel.getTextureHandle());
 		glBindVertexArray(this->questPanel.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",questPanel.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+	}
+	
+	if(this->state == GUIstate::ROAD)
+	{
+		glBindTexture(GL_TEXTURE_2D, this->surfaceTexHandles[0]);
+		glBindVertexArray(this->mainTex.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->mainTex.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		//draws the panels in the right slot
+		glBindTexture(GL_TEXTURE_2D, this->roadPanel.getTextureHandle());
+		glBindVertexArray(this->roadPanel.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",roadPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -345,6 +399,14 @@ void GUI::draw()
 			this->GUIshader.setUniform("modelMatrix",this->menuQuest.getModelMatrix());
 			glDrawArrays(GL_TRIANGLES,0,6);
 		}
+		if(this->state==GUIstate::ROAD)
+		{
+			//draws the right click panel
+			glBindTexture(GL_TEXTURE_2D, this->menuRoad.getTextureHandle());
+			glBindVertexArray(this->menuRoad.getVaoHandle());
+			this->GUIshader.setUniform("modelMatrix",this->menuRoad.getModelMatrix());
+			glDrawArrays(GL_TRIANGLES,0,6);
+		}
 	}
 	
 	glEnable(GL_DEPTH_TEST);
@@ -405,6 +467,7 @@ void GUI::setRightClickXY(float x, float y)
 	this->menuParticle.setPosition(vec3(x,y,0));
 	this->menuPath.setPosition(vec3(x,y,0));
 	this->menuQuest.setPosition(vec3(x,y,0));
+	this->menuRoad.setPosition(vec3(x,y,0));
 }
 
 void GUI::moveSliders(float x, float y)
@@ -431,6 +494,23 @@ void GUI::setLeftClick(float x, float y)
 			this->incActiveTex();
 		if(this->inCircle(x,y, 0.9,0.52,0.03))
 			this->decActiveTex();
+	}
+	if(this->state==GUIstate::MODEL)
+	{
+		if(this->inCircle(x,y, 0.5,0.52,0.03))
+		{
+			this->activeModel++;
+			if(this->activeModel>this->displayModels.size()-1)
+				this->activeModel=0;
+		}	
+		
+		if(this->inCircle(x,y, 0.9,0.52,0.03))
+		{
+			this->activeModel--;
+			if(this->activeModel<0)
+				this->activeModel=this->displayModels.size()-1;
+		}
+		
 	}
 	//when clicking on the top bar
 	if(y>0.9)
@@ -521,6 +601,14 @@ void GUI::setLeftClick(float x, float y)
 			this->textMode=false;
 		}
 	}
+
+	if(this->state==GUIstate::ROAD)
+	{
+		if(x>0.63 && x < 0.77 && y>-0.25&&y<-0.177)
+		{
+			this->ans="RS";
+		}
+	}
 }
 string GUI::checkDialogAnswer()
 {
@@ -537,7 +625,7 @@ void GUI::setMouseXY(float x, float y)
 		ax=x-this->rightClickX;
 		ay=y-this->rightClickY;
 		//so we can count on that 0,0 is in the middle
-		
+
 		//ax,ay is the difference from the click, the other parameters are the middle point of the circle
 		//where the choice(for ex paint) is located
 		
@@ -545,29 +633,33 @@ void GUI::setMouseXY(float x, float y)
 		{
 			this->state=GUIstate::NONE;
 		}
-		if(this->inCircle(ax,ay,-0.125,0,0.07))
+		if(this->inCircle(ax,ay,-0.135,0,0.06))
 		{
 			this->state=GUIstate::LIGHT;
 		}
-		if(this->inCircle(ax,ay,+0.125,0,0.07))
+		if(this->inCircle(ax,ay,+0.134,0.07,0.07))
 		{
 			this->state=GUIstate::MODEL;
 		}
-		if(this->inCircle(ax,ay,-0.0625,0.185,0.07))
+		if(this->inCircle(ax,ay,-0.0546,0.211,0.07))
 		{
 			this->state=GUIstate::PATH;
 		}
-		if(this->inCircle(ax,ay,0.0625,0.185,0.07))
+		if(this->inCircle(ax,ay,0.0578,0.214,0.07))
 		{
 			this->state=GUIstate::QUEST;
 		}
-		if(this->inCircle(ax,ay,-0.0625,-0.185,0.07))
+		if(this->inCircle(ax,ay,0.001,-0.195,0.07))
 		{
 			this->state=GUIstate::PAINT;
 		}
-		if(this->inCircle(ax,ay,0.0625,-0.185,0.07))
+		if(this->inCircle(ax,ay,0.1125,-0.108,0.07))
 		{
 			this->state=GUIstate::PARTICLE;
+		}
+		if(this->inCircle(ax,ay,-0.104,-0.11,0.07))
+		{
+			this->state=GUIstate::ROAD;
 		}
 	}
 }
@@ -659,8 +751,26 @@ bool GUI::isNewMapDialogUp()
 void GUI::addDisplayModel(Model m)
 {
 	Model tmp = m;
+	float scaleX=tmp.getBoundingBox()->getBboxSide().x;
 	float scaleY=tmp.getBoundingBox()->getBboxSide().y;
-	cout << scaleY<<endl;
-	m.scaleXYZ(1/scaleY);
+	float scaleZ=tmp.getBoundingBox()->getBboxSide().z;
+	float scale=scaleY;
+	if(scaleX>scaleY)
+		scale=scaleX;
+	if(scaleZ>scaleX)
+		scale=scaleZ;
+	m.scaleXYZ(0.04/(scale));
 	this->displayModels.push_back(m);
+}
+void GUI::setSurfaceTexHandles(vector<GLuint> th)
+{
+	this->surfaceTexHandles = th;
+}
+void GUI::resetDialogAns()
+{
+	this->ans="";
+}
+int GUI::getActiveModelIndex()
+{
+	return abs(this->activeModel+2)%this->displayModels.size();
 }

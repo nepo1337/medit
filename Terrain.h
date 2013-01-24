@@ -15,6 +15,7 @@
 #include "SurfaceTex.h"
 #include <math.h>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 using namespace glm;
@@ -74,7 +75,7 @@ private:
 	//SurfacesTex class holds a texture to the surface and positions/rotations for each surface using that tex
 	SurfaceTex stoneSurface;
 	float worldClickX,worldClickZ;
-	void rayIntersectTerrain(vec3 origin, vec3 ray, float &x, float &y);
+	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
 	Terrain(int size);
@@ -95,8 +96,11 @@ public:
 	void setWorldXY(vec3 origin, vec3 ray);
 	bool inCircle(float cx, float cy, float x, float y,float rad);
 	void setTerState(TerrState::TerrStates state);
-	void selectTexSurfaces(float radius, vec3 origin, vec3 ray);
+	bool selectTexSurfaces(float radius, vec3 origin, vec3 ray);
 	void deselectAllSurfaceTex();
+	vector<GLuint> getSurfaceTexHandles();
+	void removeSelectedSurfaces();
+	void rayIntersectTerrain(vec3 origin, vec3 ray, float &x, float &y);
 };
 
 #endif // TERRAIN_H

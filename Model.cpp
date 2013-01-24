@@ -10,6 +10,7 @@ Model::Model()
 	rotx=roty=rotz=0;
 	this->scale=1.0f;
 	this->selected=false;
+	this->meshName="";
 }
 
 Model::~Model()
@@ -95,4 +96,16 @@ void Model::unSelect()
 bool Model::isSelected()
 {
 	return this->selected;
+}
+void Model::setMeshName(string name)
+{
+	this->meshName=name;
+}
+string Model::getMeshName()
+{
+	return this->meshName;
+}
+vec3 Model::getRot()
+{
+	return vec3(this->rotx,this->roty,this->rotz);
 }

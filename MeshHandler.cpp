@@ -69,3 +69,7 @@ int MeshHandler::getNrOfMeshes()
 {
 	return this->meshes.size();
 }
+string MeshHandler::getMeshName(int i)
+{
+	return this->meshes[i].getFilename();
+}

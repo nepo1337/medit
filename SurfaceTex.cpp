@@ -139,3 +139,14 @@ string SurfaceTex::getName()
 {
 	return this->name;
 }
+
+bool SurfaceTex::isSelected(int i)
+{
+	return this->showBbox[i];
+}
+void SurfaceTex::remove(int i)
+{
+	this->positions.erase(positions.begin()+i);
+	this->rotations.erase(rotations.begin()+i);
+	this->showBbox.erase(showBbox.begin()+i);
+}

@@ -9,6 +9,7 @@ Renderer::Renderer()
 	this->modelShader.bindAttribLocation(0,"vertexPosition");
 	this->modelShader.bindAttribLocation(1,"vertexNormal");
 	this->modelShader.bindAttribLocation(2,"vertexUv");
+
 	
 	if(debug)
 		cout<<this->modelShader.log();
@@ -75,21 +76,22 @@ void Renderer::draw()
 	this->modelShader.use();
 	mat4 mvp=mat4(0.0f);
 	glActiveTexture(GL_TEXTURE0);
+	
 	for(unsigned int i=0;i<this->models.size();i++)
 	{
 		//set upp uniforms for rendering call
-		mvp=this->projMatrix*this->viewMatrix*this->models[i]->getModelMatrix();
-		this->modelShader.setUniform("modelMatrix",this->models[i]->getModelMatrix());
+		mvp=this->projMatrix*this->viewMatrix*this->models[i].getModelMatrix();
+		this->modelShader.setUniform("modelMatrix",this->models[i].getModelMatrix());
 		this->modelShader.setUniform("MVP",mvp);
-		mat3 normalMatrix=transpose(inverse(mat3(this->viewMatrix*this->models[i]->getModelMatrix())));
+		mat3 normalMatrix=transpose(inverse(mat3(this->viewMatrix*this->models[i].getModelMatrix())));
 		this->modelShader.setUniform("normalMatrix",normalMatrix);
 		
 		//get a pointer to a vector with meshes info for each mesh
-		for(unsigned int j=0;j<this->models[i]->getMeshInfo()->size();j++)
+		for(unsigned int j=0;j<this->models[i].getMeshInfo()->size();j++)
 		{
-			glBindTexture(GL_TEXTURE_2D, this->models[i]->getMeshInfo()->at(j).getTexh());
-			glBindVertexArray(this->models[i]->getMeshInfo()->at(j).getVaoh());
-			glDrawArrays(GL_TRIANGLES,0,this->models[i]->getMeshInfo()->at(j).getNrOfVerts());
+			glBindTexture(GL_TEXTURE_2D, this->models[i].getMeshInfo()->at(j).getTexh());
+			glBindVertexArray(this->models[i].getMeshInfo()->at(j).getVaoh());
+			glDrawArrays(GL_TRIANGLES,0,this->models[i].getMeshInfo()->at(j).getNrOfVerts());
 		}
 	}
 	this->bBoxShader.use();
@@ -98,13 +100,13 @@ void Renderer::draw()
 	for(unsigned int i=0;i<this->models.size();i++)
 	{
 		//if the object is selected
-		if(this->models[i]->isSelected())
+		if(this->models[i].isSelected())
 		{
 			//set upp uniforms for rendering call
-			mvp=this->projMatrix*this->viewMatrix*this->models[i]->getModelMatrix();
+			mvp=this->projMatrix*this->viewMatrix*this->models[i].getModelMatrix();
 			this->modelShader.setUniform("MVP",mvp);
 			
-			glBindVertexArray(this->models[i]->getBoundingBox()->getVaoh());
+			glBindVertexArray(this->models[i].getBoundingBox()->getVaoh());
 			glDrawArrays(GL_LINE_STRIP,0,16);
 		}
 	}
@@ -136,7 +138,7 @@ void Renderer::updateProjMatrix(float width, float height)
 	glUseProgram(0);
 }
 
-void Renderer::addModel(Model* m)
+void Renderer::addModel(Model m)
 {
 	this->models.push_back(m);
 }
@@ -153,7 +155,7 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 	for(unsigned int j=0;j<this->models.size();j++)
 	{
 		
-		mat4 unview = inverse(this->projMatrix*this->viewMatrix*this->models[j]->getModelMatrix());
+		mat4 unview = inverse(this->projMatrix*this->viewMatrix*this->models[j].getModelMatrix());
 		vec4 near_point = unview * vec4(normalizedX, normalizedY, 0, 1);
 		//the last vec3 is the pos of the camera
 		vec3 t = vec3(near_point.x/near_point.w,near_point.y/near_point.w,near_point.z/near_point.w)-pos;
@@ -161,22 +163,22 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 		
 		vec3 normalizedSides[3] = 
 		{
-			normalize(vec3(this->models.at(j)->getBoundingBox()->getBboxSide().x,0.0f,0.0f)),
-			normalize(vec3(0,this->models.at(j)->getBoundingBox()->getBboxSide().y,0)),
-			normalize(vec3 (0,0,this->models.at(j)->getBoundingBox()->getBboxSide().z))
+			normalize(vec3(this->models.at(j).getBoundingBox()->getBboxSide().x,0.0f,0.0f)),
+			normalize(vec3(0,this->models.at(j).getBoundingBox()->getBboxSide().y,0)),
+			normalize(vec3 (0,0,this->models.at(j).getBoundingBox()->getBboxSide().z))
 		};
 		
 		vec3 sides[3] =
 		{
-			vec3(this->models.at(j)->getBoundingBox()->getBboxSide().x,0.0f,0.0f),
-			vec3(0,this->models.at(j)->getBoundingBox()->getBboxSide().y,0),
-			vec3(0,0,this->models.at(j)->getBoundingBox()->getBboxSide().z)
+			vec3(this->models.at(j).getBoundingBox()->getBboxSide().x,0.0f,0.0f),
+			vec3(0,this->models.at(j).getBoundingBox()->getBboxSide().y,0),
+			vec3(0,0,this->models.at(j).getBoundingBox()->getBboxSide().z)
 		};
 
 		bool found = false;
 		float tmin = -9999999;
 		float tmax = 9999999;
-		vec3 p = this->models.at(j)->getBoundingBox()->getBboxPos()-pos;
+		vec3 p = this->models.at(j).getBoundingBox()->getBboxPos()-pos;
 		for(int i=0;i<3;i++)
 		{
 			float e = dot(normalizedSides[i],p);
@@ -212,11 +214,52 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 			//hitData.t=tmin;
 			//hitData.color=b.color;
 			found=true;
-			cout << "k"<<endl;
 		}
 			//hitData.t=tmax;
 			//hitData.color=b.color;
 			//found=true;
 	}
 
+}
+
+void Renderer::saveModels(string path, string filename)
+{
+	fstream file;
+	string p = path+filename+".txt";
+	file.open(p.c_str(),fstream::out|fstream::app);
+	file << "MODELS: name, pos x,y,z, rot x,y,z"<<endl;
+	for(unsigned int i = 0; i< this->models.size();i++)
+	{
+		file << models[i].getMeshName() <<" " << models[i].getPos().x<< " " << models[i].getPos().y<< " " << models[i].getPos().z<< " " << models[i].getRot().x<< " " << models[i].getRot().y<< " " << models[i].getRot().z<< " "<<endl;
+	}
+	file << "end"<<endl;
+	file.close();
+}
+
+void Renderer::drawModel(Model m)
+{
+	glEnable(GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	this->modelShader.use();
+		this->modelShader.setUniform("outAlpha",0.5f);
+	mat4 mvp=mat4(0.0f);
+	glActiveTexture(GL_TEXTURE0);
+	
+	//set upp uniforms for rendering call
+	mvp=this->projMatrix*this->viewMatrix*m.getModelMatrix();
+	this->modelShader.setUniform("modelMatrix",m.getModelMatrix());
+	this->modelShader.setUniform("MVP",mvp);
+	mat3 normalMatrix=transpose(inverse(mat3(this->viewMatrix*m.getModelMatrix())));
+	this->modelShader.setUniform("normalMatrix",normalMatrix);
+	
+	//get a pointer to a vector with meshes info for each mesh
+	for(unsigned int j=0;j<m.getMeshInfo()->size();j++)
+	{
+		glBindTexture(GL_TEXTURE_2D, m.getMeshInfo()->at(j).getTexh());
+		glBindVertexArray(m.getMeshInfo()->at(j).getVaoh());
+		glDrawArrays(GL_TRIANGLES,0,m.getMeshInfo()->at(j).getNrOfVerts());
+	}
+
+	glDisable(GL_BLEND);
 }

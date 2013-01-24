@@ -36,6 +36,8 @@ public:
 	string getName();
 	void select(int index);
 	void deSelect(int index);
+	bool isSelected(int index);
+	void remove(int index);
 
 };
 
