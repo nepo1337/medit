@@ -26,7 +26,7 @@ private:
 public:
 	SurfaceTex();
 	~SurfaceTex();
-	void init(string texName);
+	void init(string path, string texName);
 	GLuint getTexHandle();
 	GLuint getVaoH();
 	vector<float>* getRotations();

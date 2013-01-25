@@ -43,7 +43,7 @@ private:
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
-	Slider sliderOpacity,sliderSize,sliderDropoff;
+	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale;
 	
 	GLSLProgram GUIshader,modelDisplayShader;
 	//textur handles to paintable textures
@@ -56,10 +56,10 @@ private:
 	string ans;
 	bool textMode;
 	vector<Model> displayModels;
-	int activeModel;
+	int activeModelIndex;
 	void incActiveTex();
 	void decActiveTex();
-	
+	Model activeModel;
 public:
 	GUI();
 	~GUI();
@@ -91,7 +91,7 @@ public:
 	void addDisplayModel(Model m);
 	void setSurfaceTexHandles(vector<GLuint> th);
 	void resetDialogAns();
-	int getActiveModelIndex();
+	Model getActiveModel();
 };
 
 #endif // GUI_H

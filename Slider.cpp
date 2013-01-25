@@ -7,6 +7,7 @@ Slider::Slider(vec3 pos)
 	this->maxYVal=0;
 	this->minXVal=0;
 	this->minYVal=0;
+	this->startPos=pos;
 }
 
 Slider::Slider()
@@ -72,4 +73,9 @@ void Slider::setMinPos(float x, float y)
 bool Slider::isInsideSliderSpace(float x, float y)
 {
 	return (x<=this->maxXVal&&x>=this->minXVal&&y<=this->maxYVal&&y>=this->minYVal);
+}
+
+void Slider::resetPosition()
+{
+	this->pos=this->startPos;
 }

@@ -5,7 +5,7 @@ GUI::GUI()
 }
 void GUI::init()
 {
-	this->activeModel=2;
+	this->activeModelIndex=2;
 	this->ans="";
 	this->menuUp=false;
 	this->showNewMapSprite=false;
@@ -16,7 +16,10 @@ void GUI::init()
 	this->sliderSize=Slider(vec3(0.675f,-0.39f,0.0f));
 	this->sliderDropoff=Slider(vec3(0.675f,-0.635f,0.0f));
 	this->sliderOpacity=Slider(vec3(0.675f,-0.88f,0.0f));
+	this->sliderScale=Slider(vec3(0.676,-0.68,0.0));
 	
+	this->sliderScale.setMinPos(0.56,-0.7);
+	this->sliderScale.setMaxPos(0.784,-0.65f);
 	this->sliderSize.setMaxPos(0.786,-0.36f);
 	this->sliderSize.setMinPos(0.56,-0.42f);
 	this->sliderDropoff.setMaxPos(0.786,-0.60f);
@@ -87,6 +90,8 @@ void GUI::init()
 	
 	this->loadMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Load.png");
 	text.init("", 350, 360,0.25,1280,720,"gui/Text100.png",100,100);
+	
+	this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 
 }
 
@@ -187,49 +192,49 @@ void GUI::draw()
 		{
 			//set upp uniforms for rendering call
 
-			this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].setPos(vec3(0.525+i*0.1,-0.02,0));
-			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
-			mat3 normalMatrix=mat3(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
+			this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].setPos(vec3(0.525+i*0.1,-0.02,0));
+			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getModelMatrix());
+			mat3 normalMatrix=mat3(this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getModelMatrix());
 			this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
 			
 			//get a pointer to a vector with meshes info for each mesh
-			for(unsigned int j=0;j<this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->size();j++)
+			for(unsigned int j=0;j<this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->size();j++)
 			{
-				glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
-				glBindVertexArray(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
-				glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
+				glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
+				glBindVertexArray(this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
+				glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
 			}
 		}
 		//the two right
 		for(unsigned int i=3;i<5;i++)
 		{
 			//set upp uniforms for rendering call
-			this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].setPos(vec3(0.47+i*0.1,-0.02,0));
-			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
-			mat3 normalMatrix=mat3(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getModelMatrix());
+			this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].setPos(vec3(0.47+i*0.1,-0.02,0));
+			this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getModelMatrix());
+			mat3 normalMatrix=mat3(this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getModelMatrix());
 			this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
 			
 			//get a pointer to a vector with meshes info for each mesh
-			for(unsigned int j=0;j<this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->size();j++)
+			for(unsigned int j=0;j<this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->size();j++)
 			{
-				glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
-				glBindVertexArray(this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
-				glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(int(this->activeModel+i))%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
+				glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
+				glBindVertexArray(this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
+				glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(int(this->activeModelIndex+i))%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
 			}
 		}
 		
 		//set upp uniforms for rendering call
-		this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].setPos(vec3(0.7,0.25,0));
-		this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getModelMatrix());
-		mat3 normalMatrix=mat3(this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getModelMatrix());
+		this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].setPos(vec3(0.7,0.25,0));
+		this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getModelMatrix());
+		mat3 normalMatrix=mat3(this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getModelMatrix());
 		this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
 		
 		//get a pointer to a vector with meshes info for each mesh
-		for(unsigned int j=0;j<this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->size();j++)
+		for(unsigned int j=0;j<this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getMeshInfo()->size();j++)
 		{
-			glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
-			glBindVertexArray(this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
-			glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(this->activeModel+2)%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
+			glBindTexture(GL_TEXTURE_2D, this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getMeshInfo()->at(j).getTexh());
+			glBindVertexArray(this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getMeshInfo()->at(j).getVaoh());
+			glDrawArrays(GL_TRIANGLES,0,this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getMeshInfo()->at(j).getNrOfVerts());
 		}
 		//draws the main panel
 		
@@ -240,6 +245,14 @@ void GUI::draw()
 		glBindTexture(GL_TEXTURE_2D, this->modelPanel.getTextureHandle());
 		glBindVertexArray(this->modelPanel.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",modelPanel.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		//draws the dragers, same sprite used
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		mat4 modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderScale.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -472,6 +485,8 @@ void GUI::setRightClickXY(float x, float y)
 
 void GUI::moveSliders(float x, float y)
 {
+	if(GUIstate::PAINT)
+	{
 		//move the sliders
 		if(this->sliderSize.isInsideSliderSpace(x,y))
 			this->sliderSize.setPositionX(x);
@@ -481,6 +496,17 @@ void GUI::moveSliders(float x, float y)
 
 		if(this->sliderOpacity.isInsideSliderSpace(x,y))
 			this->sliderOpacity.setPositionX(x);
+	}
+	if(GUIstate::MODEL)
+	{
+		if(this->sliderScale.isInsideSliderSpace(x,y))
+		{
+			this->sliderScale.setPositionX(x);
+			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
+			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
+			
+		}
+	}
 }
 
 void GUI::setLeftClick(float x, float y)
@@ -494,22 +520,98 @@ void GUI::setLeftClick(float x, float y)
 			this->incActiveTex();
 		if(this->inCircle(x,y, 0.9,0.52,0.03))
 			this->decActiveTex();
+	
 	}
 	if(this->state==GUIstate::MODEL)
 	{
+		//if switching model (left)
 		if(this->inCircle(x,y, 0.5,0.52,0.03))
 		{
-			this->activeModel++;
-			if(this->activeModel>this->displayModels.size()-1)
-				this->activeModel=0;
+			this->activeModelIndex++;
+			if(this->activeModelIndex>this->displayModels.size()-1)
+				this->activeModelIndex=0;
+			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
+			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}	
-		
+		//switching model (right)
 		if(this->inCircle(x,y, 0.9,0.52,0.03))
 		{
-			this->activeModel--;
-			if(this->activeModel<0)
-				this->activeModel=this->displayModels.size()-1;
+			this->activeModelIndex--;
+			if(this->activeModelIndex<0)
+				this->activeModelIndex=this->displayModels.size()-1;
+			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
+			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}
+		if(this->inCircle(x,y,0.84,-0.53,0.05))
+		{
+			this->sliderScale.resetPosition();
+			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
+		}
+		float rotAmount=15.0f;
+		//checks for rotation x right
+		if(this->inCircle(x,y,0.546,-0.863,0.02))
+		{
+			this->activeModel.rotateX(this->activeModel.getRot().x+rotAmount);
+		}
+		//left
+		if(this->inCircle(x,y,0.562,-0.816,0.02))
+		{
+			this->activeModel.rotateX(this->activeModel.getRot().x-rotAmount);
+		}
+		//y right
+		if(this->inCircle(x,y,0.695,-0.863,0.02))
+		{
+			this->activeModel.rotateY(this->activeModel.getRot().y+rotAmount);
+		}
+		//y left
+		if(this->inCircle(x,y,0.714,-0.816,0.02))
+		{
+			this->activeModel.rotateY(this->activeModel.getRot().y-rotAmount);
+		}
+		//z right
+		if(this->inCircle(x,y,0.839,-0.863,0.02))
+		{
+			this->activeModel.rotateZ(this->activeModel.getRot().z+rotAmount);
+		}
+		//z left
+		if(this->inCircle(x,y,0.857,-0.816,0.02))
+		{
+			this->activeModel.rotateZ(this->activeModel.getRot().z-rotAmount);
+		}
+		
+		
+		
+		//all the code below just scales the display window models
+		float scaleX=this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
+		float scaleY=this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
+		float scaleZ=this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()].getBoundingBox()->getBboxSide().z;
+		float scale=scaleY;
+		if(scaleX>scaleY)
+			scale=scaleX;
+		if(scaleZ>scaleX)
+			scale=scaleZ;
+		this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()].scaleXYZ(0.04/(scale));
+		
+		
+		scaleX=this->displayModels[abs(this->activeModelIndex+1)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
+		scaleY=this->displayModels[abs(this->activeModelIndex+1)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
+		scaleZ=this->displayModels[abs(this->activeModelIndex+1)%this->displayModels.size()].getBoundingBox()->getBboxSide().z;
+		scale=scaleY;
+		if(scaleX>scaleY)
+			scale=scaleX;
+		if(scaleZ>scaleX)
+			scale=scaleZ;
+		this->displayModels[abs(this->activeModelIndex+1)%this->displayModels.size()].scaleXYZ(0.04/(scale));
+		
+		scaleX=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
+		scaleY=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
+		scaleZ=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getBoundingBox()->getBboxSide().z;
+		scale=scaleY;
+		if(scaleX>scaleY)
+			scale=scaleX;
+		if(scaleZ>scaleX)
+			scale=scaleZ;
+		this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].scaleXYZ(0.16/(scale));
 		
 	}
 	//when clicking on the top bar
@@ -761,6 +863,23 @@ void GUI::addDisplayModel(Model m)
 		scale=scaleZ;
 	m.scaleXYZ(0.04/(scale));
 	this->displayModels.push_back(m);
+	if(this->displayModels.size()==5)
+	{
+		scaleX=this->displayModels[4].getBoundingBox()->getBboxSide().x;
+		scaleY=this->displayModels[4].getBoundingBox()->getBboxSide().y;
+		scaleZ=this->displayModels[4].getBoundingBox()->getBboxSide().z;
+		scale=scaleY;
+		if(scaleX>scaleY)
+			scale=scaleX;
+		if(scaleZ>scaleX)
+			scale=scaleZ;
+		this->displayModels[4].scaleXYZ(0.16/(scale));
+		{
+			this->activeModel=this->displayModels[4];
+			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
+		}
+	}
+
 }
 void GUI::setSurfaceTexHandles(vector<GLuint> th)
 {
@@ -770,7 +889,7 @@ void GUI::resetDialogAns()
 {
 	this->ans="";
 }
-int GUI::getActiveModelIndex()
+Model GUI::getActiveModel()
 {
-	return abs(this->activeModel+2)%this->displayModels.size();
+	return this->activeModel;
 }

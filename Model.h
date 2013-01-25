@@ -43,6 +43,7 @@ public:
 	bool isSelected();
 	void setMeshName(string name);
 	string getMeshName();
+	float getScale();
 
 };
 

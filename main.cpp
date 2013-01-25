@@ -83,11 +83,15 @@ int main(int argc, char **argv)
 		Model tmp;
 		tmp.setMesh(mh.getMeshInfo(i));
 		tmp.setBoundingBox(mh.getBoundingBox(i));
+		tmp.setMeshName(mh.getMeshName(i));
 		gui.addDisplayModel(tmp);
 	}
 	
 	 
 	sf::Event event;
+	
+	Model m;
+	float rotY=0.0f;
 	
 	while (app.IsOpened())
 	{
@@ -139,9 +143,8 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					//cout << normalisedx << " " << normalisedy<<endl;
+					cout << normalisedx << " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
-					//cout<<normalisedx<< " " << normalisedy<<endl;
 					terrain.setActiveTex(gui.getActiveTex());
 					rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
 					
@@ -165,12 +168,7 @@ int main(int argc, char **argv)
 								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
 								if(x!=-1)
 								{
-									Model m;
-									m.setPos(vec3(x,0,-z));
-									m.setMesh(mh.getMeshInfo(gui.getActiveModelIndex()));
-									m.setBoundingBox(mh.getBoundingBox(gui.getActiveModelIndex()));
-									m.scaleXYZ(0.1);
-									m.setMeshName(mh.getMeshName(gui.getActiveModelIndex()));
+									m.select();
 									rend.addModel(m);
 								}
 							}
@@ -282,6 +280,14 @@ int main(int argc, char **argv)
 			}
 			rend.updateViewMatrix(cam.getViewMatrix());
 			terrain.updateViewMatrix(cam.getViewMatrix());
+			if(gui.getState()==GUIstate::MODEL)
+			{
+				if(app.GetInput().IsKeyDown(sf::Key::Q))
+					rotY+=1;
+
+				if(app.GetInput().IsKeyDown(sf::Key::E))
+					rotY-=1;
+			}
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Middle))
 		{
@@ -311,12 +317,10 @@ int main(int argc, char **argv)
 			terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
 			if(x!=-1)
 			{
-				Model m;
+				m=gui.getActiveModel();
 				m.setPos(vec3(x,0,-z));
-				m.setMesh(mh.getMeshInfo(gui.getActiveModelIndex()));
-				m.setBoundingBox(mh.getBoundingBox(gui.getActiveModelIndex()));
-				m.scaleXYZ(0.1);
-				m.setMeshName(mh.getMeshName(gui.getActiveModelIndex()));
+				m.scaleXYZ(m.getScale());
+				m.rotateY(m.getRot().y+rotY);
 				rend.drawModel(m);
 			}
 		}

@@ -179,14 +179,14 @@ void Mesh::uploadToGFX()
 		{
 			verts.push_back(subMesh.vertices[b].position.x);
 			verts.push_back(subMesh.vertices[b].position.y);
-			verts.push_back(subMesh.vertices[b].position.z);
+			verts.push_back(-subMesh.vertices[b].position.z);
 		}
 		
 		for(unsigned int b=0;b<subMesh.vertices.size();b++)
 		{
 			normals.push_back(subMesh.vertices[b].normal.x);
 			normals.push_back(subMesh.vertices[b].normal.y);
-			normals.push_back(subMesh.vertices[b].normal.z);
+			normals.push_back(-subMesh.vertices[b].normal.z);
 		}
 		
 		for(unsigned int b=0;b<subMesh.vertices.size();b++)

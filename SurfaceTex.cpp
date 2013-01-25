@@ -11,7 +11,7 @@ SurfaceTex::~SurfaceTex()
 	glDeleteVertexArrays(1, &this->vaoh);
 }
 
-void SurfaceTex::init(string texName)
+void SurfaceTex::init(string path, string texName)
 {
 	this->name=texName;
 	float planeVerts[]=
@@ -53,7 +53,8 @@ void SurfaceTex::init(string texName)
 		-0.5f,0.0f,-0.5f,
 	};
 	glActiveTexture(GL_TEXTURE0);
-	this->texHandle = SOIL_load_OGL_texture(texName.c_str(),SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
+	string fullPath=path+texName;
+	this->texHandle = SOIL_load_OGL_texture(fullPath.c_str(),SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID,SOIL_FLAG_MIPMAPS |SOIL_FLAG_INVERT_Y | SOIL_FLAG_COMPRESS_TO_DXT|SOIL_FLAG_TEXTURE_REPEATS);
 	
 	if(texHandle==0)
 				cout<<"SOIL loading error: "<< SOIL_last_result()<<endl;

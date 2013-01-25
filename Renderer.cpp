@@ -151,49 +151,52 @@ mat4 Renderer::getProjMatrix()
 vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos)
 {
 	
-	
+	bool found=true;
+	float t1=0;
+	float t2=0;
 	for(unsigned int j=0;j<this->models.size();j++)
 	{
 		
 		mat4 unview = inverse(this->projMatrix*this->viewMatrix*this->models[j].getModelMatrix());
 		vec4 near_point = unview * vec4(normalizedX, normalizedY, 0, 1);
 		//the last vec3 is the pos of the camera
-		vec3 t = vec3(near_point.x/near_point.w,near_point.y/near_point.w,near_point.z/near_point.w)-pos;
+		vec3 test= vec3(unview[0][3],unview[1][3],unview[2][3]);
+
+		vec3 t = vec3(near_point.x/near_point.w,near_point.y/near_point.w,near_point.z/near_point.w)-test;
 		vec3 rayd = normalize(t);
+		
+		
+		mat3 kok=mat3(this->models[j].getModelMatrix());
+		float sides[3] =
+		{
+			this->models.at(j).getBoundingBox()->getBboxSide().x,
+			this->models.at(j).getBoundingBox()->getBboxSide().y,
+			this->models.at(j).getBoundingBox()->getBboxSide().z
+		};
 		
 		vec3 normalizedSides[3] = 
 		{
-			normalize(vec3(this->models.at(j).getBoundingBox()->getBboxSide().x,0.0f,0.0f)),
+			normalize(vec3(this->models.at(j).getBoundingBox()->getBboxSide().x,0,0)),
 			normalize(vec3(0,this->models.at(j).getBoundingBox()->getBboxSide().y,0)),
-			normalize(vec3 (0,0,this->models.at(j).getBoundingBox()->getBboxSide().z))
+			normalize(vec3(0,0,this->models.at(j).getBoundingBox()->getBboxSide().z))
 		};
 		
-		vec3 sides[3] =
-		{
-			vec3(this->models.at(j).getBoundingBox()->getBboxSide().x,0.0f,0.0f),
-			vec3(0,this->models.at(j).getBoundingBox()->getBboxSide().y,0),
-			vec3(0,0,this->models.at(j).getBoundingBox()->getBboxSide().z)
-		};
-
-		bool found = false;
-		float tmin = -9999999;
-		float tmax = 9999999;
-		vec3 p = this->models.at(j).getBoundingBox()->getBboxPos()-pos;
+		float tmin=-0.0000001;
+		float tmax=999999999;
+		
+		vec3 p = this->models.at(j).getBoundingBox()->getBboxPos()-test;
+		
 		for(int i=0;i<3;i++)
 		{
 			float e = dot(normalizedSides[i],p);
 			float f = dot(normalizedSides[i],rayd);
-			float k=f;
-			if(f<0)
-				k=-f;
-			if(k>0.000000000000000001)
+			if(abs(f)>0.000001)
 			{
-				float t1 = e+length(sides[i])/2/f;
-				float t2 = e-length(sides[i])/2/f;
+				t1=(e+sides[i])/f;
+				t2=(e-sides[i])/f;
 				if(t1>t2)
 				{
-					float tmp=0;
-					tmp=t1;
+					float tmp=t1;
 					t1=t2;
 					t2=tmp;
 				}
@@ -202,22 +205,21 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 				if(t2<tmax)
 					tmax=t2;
 				if(tmin>tmax)
-					found = false;
+					found=false;
 				if(tmax<0)
 					found=false;
 			}
-			else if(-e-length(sides[i])/2 >0 || -e+length(sides[i])/2<0)
+			else if(-e-sides[i]>0 || -e+sides[i]<0)
 				found=false;
 		}
-		if(tmin>0)
-		{
-			//hitData.t=tmin;
-			//hitData.color=b.color;
-			found=true;
+		if(found)
+		{cout<<"mm"<<endl;
+			if(tmin>0)
+				cout<<"ja min"<<endl;
+			else
+				cout<<"ja max"<<endl;
 		}
-			//hitData.t=tmax;
-			//hitData.color=b.color;
-			//found=true;
+
 	}
 
 }

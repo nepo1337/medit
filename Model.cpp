@@ -109,3 +109,8 @@ vec3 Model::getRot()
 {
 	return vec3(this->rotx,this->roty,this->rotz);
 }
+
+float Model::getScale()
+{
+	return this->scale;
+}

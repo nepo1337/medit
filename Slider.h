@@ -19,6 +19,7 @@ private:
 	float maxYVal;
 	float minXVal;
 	float minYVal;
+	vec3 startPos;
 public:
 	Slider(vec3 pos);
 	Slider();
@@ -31,6 +32,7 @@ public:
 	void setMaxPos(float x, float y);
 	void setMinPos(float x, float y);
 	bool isInsideSliderSpace(float x, float y);
+	void resetPosition();
 };
 
 #endif // SLIDER_H

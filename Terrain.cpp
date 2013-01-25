@@ -235,7 +235,7 @@ Terrain::Terrain(int size)
 	glVertexAttribPointer(3,2,GL_FLOAT,GL_FALSE,0,NULL);
 	
 	this->terrInf.vaoh=this->vaoh;
-	this->stoneSurface.init("terrain/textures/set1/stone.png");
+	this->stoneSurface.init("terrain/textures/set1/","stone.png");
 	
 }
 
@@ -540,6 +540,7 @@ void Terrain::save(string path, string filename)
 	this->swapImg(this->minimap);
 	this->swapImg(this->blendmap1);
 	this->swapImg(this->blendmap2);
+
 	this->blendmap1.SaveToFile(p1.c_str());
 	this->blendmap2.SaveToFile(p2.c_str());
 	this->minimap.SaveToFile(p3);
