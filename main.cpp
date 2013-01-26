@@ -143,7 +143,6 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					cout << normalisedx << " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());

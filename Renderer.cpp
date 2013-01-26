@@ -151,22 +151,23 @@ mat4 Renderer::getProjMatrix()
 vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos)
 {
 	
-	bool found=true;
-	float t1=0;
-	float t2=0;
+	
 	for(unsigned int j=0;j<this->models.size();j++)
 	{
-		
-		mat4 unview = inverse(this->projMatrix*this->viewMatrix*this->models[j].getModelMatrix());
+		bool found=true;
+		float t1=0;
+		float t2=0;
+		mat4 unview = inverse(this->projMatrix*this->viewMatrix);
 		vec4 near_point = unview * vec4(normalizedX, normalizedY, 0, 1);
-		//the last vec3 is the pos of the camera
-		vec3 test= vec3(unview[0][3],unview[1][3],unview[2][3]);
 
-		vec3 t = vec3(near_point.x/near_point.w,near_point.y/near_point.w,near_point.z/near_point.w)-test;
-		vec3 rayd = normalize(t);
+		vec4 mm = inverse(mat4(models[j].getModelMatrix()))*vec4(pos,1);
 		
-		
-		mat3 kok=mat3(this->models[j].getModelMatrix());
+
+		vec3 t = vec3(near_point.x/near_point.w,near_point.y/near_point.w,near_point.z/near_point.w)-pos;
+		vec3 rayd=inverse(mat3(models[j].getModelMatrix()))*t;
+		rayd = normalize(rayd);
+
+
 		float sides[3] =
 		{
 			this->models.at(j).getBoundingBox()->getBboxSide().x,
@@ -176,15 +177,16 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 		
 		vec3 normalizedSides[3] = 
 		{
-			normalize(vec3(this->models.at(j).getBoundingBox()->getBboxSide().x,0,0)),
-			normalize(vec3(0,this->models.at(j).getBoundingBox()->getBboxSide().y,0)),
-			normalize(vec3(0,0,this->models.at(j).getBoundingBox()->getBboxSide().z))
+			vec3(1,0,0),
+			vec3(0,1,0),
+			vec3(0,0,1)
 		};
 		
-		float tmin=-0.0000001;
-		float tmax=999999999;
+		float tmin=-0.000001;
+		float tmax=99999999;
 		
-		vec3 p = this->models.at(j).getBoundingBox()->getBboxPos()-test;
+
+		vec3 p = this->models.at(j).getBoundingBox()->getBboxPos()-vec3(mm.x/mm.w,mm.y/mm.w,mm.z/mm.w);
 		
 		for(int i=0;i<3;i++)
 		{
@@ -213,7 +215,7 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 				found=false;
 		}
 		if(found)
-		{cout<<"mm"<<endl;
+		{
 			if(tmin>0)
 				cout<<"ja min"<<endl;
 			else
