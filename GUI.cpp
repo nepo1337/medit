@@ -224,7 +224,7 @@ void GUI::draw()
 		}
 		
 		//set upp uniforms for rendering call
-		this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].setPos(vec3(0.7,0.25,0));
+		this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].setPos(vec3(0.7,0.3,0));
 		this->modelDisplayShader.setUniform("modelMatrix",this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getModelMatrix());
 		mat3 normalMatrix=mat3(this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getModelMatrix());
 		this->modelDisplayShader.setUniform("normalMatrix",normalMatrix);
