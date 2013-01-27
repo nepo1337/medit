@@ -148,10 +148,11 @@ mat4 Renderer::getProjMatrix()
 	return this->projMatrix;
 }
 
-vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos)
+int Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos)
 {
 	
-	
+	float min=999999.0f;
+	int minIndex=-1;
 	for(unsigned int j=0;j<this->models.size();j++)
 	{
 		bool found=true;
@@ -217,13 +218,20 @@ vec3 Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos
 		if(found)
 		{
 			if(tmin>0)
-				cout<<"ja min"<<endl;
-			else
-				cout<<"ja max"<<endl;
+			{
+				if(tmin<min)
+				{
+					min = tmin;
+					minIndex=j;
+				}
+			}
 		}
-
 	}
-
+	if(minIndex>=0)
+	{
+		return minIndex;
+	}
+	return -1;
 }
 
 void Renderer::saveModels(string path, string filename)
@@ -266,4 +274,16 @@ void Renderer::drawModel(Model m)
 	}
 
 	glDisable(GL_BLEND);
+}
+bool Renderer::selectModelAtIndex(int i)
+{
+	bool ok=false;
+	for(int j=0;j<this->models.size();j++)
+		this->models[j].unSelect();
+	if(i>=0&&i<this->models.size())
+	{
+		this->models[i].select();
+		ok=true;
+	}
+	return ok;
 }

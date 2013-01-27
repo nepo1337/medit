@@ -145,7 +145,8 @@ int main(int argc, char **argv)
 				{
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
-					rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
+					int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
+					rend.selectModelAtIndex(index);
 					
 					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 					{

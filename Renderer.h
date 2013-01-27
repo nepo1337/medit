@@ -31,9 +31,10 @@ public:
 	void updateProjMatrix(float width, float height);
 	void addModel(Model m);
 	mat4 getProjMatrix();
-	vec3 rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos);
+	int rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos);
 	void saveModels(string path, string filename);
 	void drawModel(Model m);
+	bool selectModelAtIndex(int i);
 	
 };
 
