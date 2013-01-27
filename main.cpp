@@ -145,8 +145,7 @@ int main(int argc, char **argv)
 				{
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
-					int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
-					rend.selectModelAtIndex(index);
+					
 					
 					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 					{
@@ -158,18 +157,30 @@ int main(int argc, char **argv)
 								gui.resetDialogAns();
 							}
 						}
-						if(gui.getState()==GUIstate::MODEL)
+						if(gui.getState()==GUIstate::MODEL||gui.getState()==GUIstate::NONE)
 						{
-							if(gui.isInDrawWindow(normalisedx,normalisedy))
+							if(gui.getState()==GUIstate::MODEL)
 							{
-								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-								float x=-1;
-								float z=1;
-								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-								if(x!=-1)
+								if(gui.isInDrawWindow(normalisedx,normalisedy))
 								{
-									m.select();
-									rend.addModel(m);
+									vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+									float x=-1;
+									float z=1;
+									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+									if(x!=-1)
+									{
+										rend.addModel(m);
+									}
+								}
+							}
+							if(gui.getState()==GUIstate::NONE)
+							{
+								if(gui.isInDrawWindow(normalisedx,normalisedy))
+								{
+									int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
+									rend.selectModelAtIndex(index);
+									if(index!=-1)
+										gui.setGuiState(GUIstate::MODEL);
 								}
 							}
 						}
@@ -255,6 +266,7 @@ int main(int argc, char **argv)
 		{
 				gui.setMouseXY(normalisedx,normalisedy);
 				terrain.deselectAllSurfaceTex();
+				rotY=0;
 				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
 		

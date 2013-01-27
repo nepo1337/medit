@@ -547,7 +547,7 @@ void GUI::setLeftClick(float x, float y)
 			this->sliderScale.resetPosition();
 			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}
-		float rotAmount=15.0f;
+		float rotAmount=22.5f;
 		//checks for rotation x right
 		if(this->inCircle(x,y,0.546,-0.863,0.02))
 		{
@@ -742,6 +742,10 @@ void GUI::setMouseXY(float x, float y)
 		if(this->inCircle(ax,ay,+0.134,0.07,0.07))
 		{
 			this->state=GUIstate::MODEL;
+			//resets the rotation for the active model when model panel is brought up
+			this->activeModel.rotateX(0);
+			this->activeModel.rotateY(0);
+			this->activeModel.rotateZ(0);
 		}
 		if(this->inCircle(ax,ay,-0.0546,0.211,0.07))
 		{
