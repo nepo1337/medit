@@ -16,6 +16,7 @@
 #include <math.h>
 #include <fstream>
 #include <vector>
+#include "Model.h"
 
 using namespace std;
 using namespace glm;
@@ -75,6 +76,7 @@ private:
 	//SurfacesTex class holds a texture to the surface and positions/rotations for each surface using that tex
 	SurfaceTex stoneSurface;
 	float worldClickX,worldClickZ;
+	bool showGridMap;
 	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
@@ -101,6 +103,9 @@ public:
 	vector<GLuint> getSurfaceTexHandles();
 	void removeSelectedSurfaces();
 	void rayIntersectTerrain(vec3 origin, vec3 ray, float &x, float &y);
+	void showHideGridMap();
+	void makeGridUnderModel(Model m);
+	void recalcGridAroundModel(vector<Model> removedModels, vector<Model> models);
 };
 
 #endif // TERRAIN_H

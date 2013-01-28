@@ -92,6 +92,8 @@ public:
 	void setSurfaceTexHandles(vector<GLuint> th);
 	void resetDialogAns();
 	Model getActiveModel();
+	void rotateActiveModelLeft(float f);
+	void rotateActiveModelRight(float f);
 };
 
 #endif // GUI_H

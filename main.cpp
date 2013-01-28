@@ -91,7 +91,6 @@ int main(int argc, char **argv)
 	sf::Event event;
 	
 	Model m;
-	float rotY=0.0f;
 	
 	while (app.IsOpened())
 	{
@@ -143,9 +142,15 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
+					//cout<< normalisedx<< " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					
+					if(gui.checkDialogAnswer()=="GRID")
+					{
+						terrain.showHideGridMap();
+						gui.resetDialogAns();
+					}
 					
 					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 					{
@@ -153,6 +158,18 @@ int main(int argc, char **argv)
 						{
 							if(gui.checkDialogAnswer()=="RS")
 							{
+								terrain.removeSelectedSurfaces();
+								gui.resetDialogAns();
+							}
+						}
+						if(gui.getState()==GUIstate::NONE)
+						{
+							if(gui.checkDialogAnswer()=="DEL")
+							{
+								vector<Model> rm = rend.removeSelectedModels();
+								vector<Model> tm =rend.getModels();
+								terrain.recalcGridAroundModel(rm,tm);
+								
 								terrain.removeSelectedSurfaces();
 								gui.resetDialogAns();
 							}
@@ -170,6 +187,8 @@ int main(int argc, char **argv)
 									if(x!=-1)
 									{
 										rend.addModel(m);
+										terrain.setWorldXY(cam.getPos(),ray);
+										terrain.makeGridUnderModel(m);
 									}
 								}
 							}
@@ -179,8 +198,6 @@ int main(int argc, char **argv)
 								{
 									int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
 									rend.selectModelAtIndex(index);
-									if(index!=-1)
-										gui.setGuiState(GUIstate::MODEL);
 								}
 							}
 						}
@@ -188,11 +205,7 @@ int main(int argc, char **argv)
 						{
 							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
 							terrain.setWorldXY(cam.getPos(),ray);
-							
-							if(terrain.selectTexSurfaces(0.5,cam.getPos(),ray))
-							{
-								gui.setGuiState(GUIstate::ROAD);
-							}
+							terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
 						}
 					}
 					
@@ -214,6 +227,7 @@ int main(int argc, char **argv)
 				if(event.MouseButton.Button==sf::Mouse::Right)
 				{
 					gui.showMenu(false);
+					rend.unselectAllModels();
 				}
 			}
 			//if the gui excpects text input
@@ -266,7 +280,6 @@ int main(int argc, char **argv)
 		{
 				gui.setMouseXY(normalisedx,normalisedy);
 				terrain.deselectAllSurfaceTex();
-				rotY=0;
 				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
 		
@@ -295,10 +308,10 @@ int main(int argc, char **argv)
 			if(gui.getState()==GUIstate::MODEL)
 			{
 				if(app.GetInput().IsKeyDown(sf::Key::Q))
-					rotY+=1;
+					gui.rotateActiveModelLeft(1.0f);
 
 				if(app.GetInput().IsKeyDown(sf::Key::E))
-					rotY-=1;
+					gui.rotateActiveModelRight(1.0f);
 			}
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Middle))
@@ -332,7 +345,7 @@ int main(int argc, char **argv)
 				m=gui.getActiveModel();
 				m.setPos(vec3(x,0,-z));
 				m.scaleXYZ(m.getScale());
-				m.rotateY(m.getRot().y+rotY);
+				m.rotateY(m.getRot().y);
 				rend.drawModel(m);
 			}
 		}

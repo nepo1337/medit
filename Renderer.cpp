@@ -278,12 +278,37 @@ void Renderer::drawModel(Model m)
 bool Renderer::selectModelAtIndex(int i)
 {
 	bool ok=false;
-	for(int j=0;j<this->models.size();j++)
-		this->models[j].unSelect();
 	if(i>=0&&i<this->models.size())
 	{
 		this->models[i].select();
 		ok=true;
 	}
 	return ok;
+}
+vector<Model> Renderer::removeSelectedModels()
+{
+	vector<Model> removedModels;
+	for(int i=0;i<this->models.size();i++)
+	{
+		if(this->models[i].isSelected())
+		{
+			removedModels.push_back(this->models[i]);
+			this->models[i]=this->models[this->models.size()-1];
+			this->models.pop_back();
+			i--;
+		}
+	}
+	return removedModels;
+}
+
+void Renderer::unselectAllModels()
+{
+	for(int i=0;i<this->models.size();i++)
+	{
+		this->models[i].unSelect();
+	}
+}
+vector<Model> Renderer::getModels()
+{
+	return this->models;
 }

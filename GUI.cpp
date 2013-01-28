@@ -620,12 +620,17 @@ void GUI::setLeftClick(float x, float y)
 		//the position of the grid le button
 		if(x>-0.75&&x<-0.7)
 		{
-			cout<<"GRID"<<endl;
+			this->ans="GRID";
 		}
 		//exit
 		if(x>-0.685&&x<-0.64)
 		{
 			cout<<"EXIT"<<endl;
+		}
+		//exit
+		if(x>-0.62&&x<-0.44)
+		{
+			this->ans = "DEL";
 		}
 		//new
 		if(x>-0.94&&x<-0.9)
@@ -896,4 +901,12 @@ void GUI::resetDialogAns()
 Model GUI::getActiveModel()
 {
 	return this->activeModel;
+}
+void GUI::rotateActiveModelLeft(float f)
+{
+	this->activeModel.rotateY(this->activeModel.getRot().y+f);
+}
+void GUI::rotateActiveModelRight(float f)
+{
+	this->activeModel.rotateY(this->activeModel.getRot().y-f);
 }

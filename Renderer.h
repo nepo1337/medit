@@ -35,6 +35,9 @@ public:
 	void saveModels(string path, string filename);
 	void drawModel(Model m);
 	bool selectModelAtIndex(int i);
+	vector<Model> removeSelectedModels();
+	void unselectAllModels();
+	vector<Model> getModels();
 	
 };
 

@@ -18,31 +18,28 @@ uniform sampler2D tex6;
 uniform sampler2D tex7;
 uniform sampler2D tex8;
 uniform float test;
+uniform bool showGM;
 
 void main()
 {
 	vec4 gridColors = texture(gridMap,bmTexCoord);
 	vec4 texColor;
-			
-	if(gridColors.a>=0.0001)
-		texColor=vec4(0,0,0,1);
-	else
-	{
-		vec4 blendColors1 = texture(blendmap1,bmTexCoord);
-		vec4 blendColors2 = texture(blendmap2,bmTexCoord);
+
+	vec4 blendColors1 = texture(blendmap1,bmTexCoord);
+	vec4 blendColors2 = texture(blendmap2,bmTexCoord);
 		
-		//first blendmap
-		texColor = texture(tex1,texCoord)*blendColors1.r;
-		texColor += texture(tex2,texCoord)*blendColors1.g;
-		texColor += texture(tex3,texCoord)*blendColors1.b;
-		texColor += texture(tex4,texCoord)*blendColors1.a;
+	//first blendmap
+	texColor = texture(tex1,texCoord)*blendColors1.r;
+	texColor += texture(tex2,texCoord)*blendColors1.g;
+	texColor += texture(tex3,texCoord)*blendColors1.b;
+	texColor += texture(tex4,texCoord)*blendColors1.a;
 			
-		//2nd blendmap
-		texColor += texture(tex5,texCoord)*blendColors2.r;
-		texColor += texture(tex6,texCoord)*blendColors2.g;
-		texColor += texture(tex7,texCoord)*blendColors2.b;
-		texColor += texture(tex8,texCoord)*blendColors2.a;
-	}
+	//2nd blendmap
+	texColor += texture(tex5,texCoord)*blendColors2.r;
+	texColor += texture(tex6,texCoord)*blendColors2.g;
+	texColor += texture(tex7,texCoord)*blendColors2.b;
+	texColor += texture(tex8,texCoord)*blendColors2.a;
+
   
 	vec3 ka = vec3(0.2,0.2,0.2);
 	vec3 kd = vec3(0.7,0.7,0.7);
@@ -55,6 +52,14 @@ void main()
   
 	vec3 r = reflect(-s,n);
 	vec3 ambdiff=lightIntens*(ka + kd*max(dot(s,n),0.0));
+	
+	if(showGM==true)
+	{
+		if(gridColors.a>0.0)
+		{
+			texColor=vec4(1,0,0,1);
+		}
+	}
   
 	fragColor=vec4(ambdiff,1.0)*texColor;
 }
