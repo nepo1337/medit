@@ -55,13 +55,13 @@ void main()
 	
 	if(showGM==true)
 	{
-		if(gridColors.a>0.0)
+		if(gridColors.a>0.01)
 		{
-			texColor*=vec4(0.5,0,0,1);
+			texColor=texColor*0.5+vec4(0.5,0,0,1);
 		}
-		else if(gridColors.g>0.0)
+		else if(gridColors.g>0.01)
 		{
-			texColor*=vec4(0,0.5,0,1);
+			texColor=texColor*0.5+vec4(0,0.5,0,1);
 		}
 	}
   
