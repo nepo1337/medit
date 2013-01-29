@@ -57,7 +57,11 @@ void main()
 	{
 		if(gridColors.a>0.0)
 		{
-			texColor=vec4(1,0,0,1);
+			texColor*=vec4(0.5,0,0,1);
+		}
+		else if(gridColors.g>0.0)
+		{
+			texColor*=vec4(0,0.5,0,1);
 		}
 	}
   

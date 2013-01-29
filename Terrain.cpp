@@ -87,6 +87,13 @@ Terrain::Terrain(int size)
 	
 	//creates a gridmap
 	this->gridMap.Create(512*this->blendsc/4,512*this->blendsc/4,sf::Color(0,0,0,0));
+	for(int i=1;i<this->gridMap.GetHeight();i+=2)
+	{
+		for(int j=1;j<this->gridMap.GetWidth();j+=2)
+		{
+			this->gridMap.SetPixel(j,i,sf::Color(0,255,0,0));
+		}
+	}
 	
 	//the minimap
 	this->minimap.Create(256,256,sf::Color(0,0,0,0));
@@ -565,7 +572,10 @@ void Terrain::makeMiniMap()
 	
 	
 	ratioX=this->blendmap1.GetWidth()/this->minimap.GetWidth();
-	ratioY=this->blendmap1.GetWidth()/this->minimap.GetHeight();
+	ratioY=this->blendmap1.GetHeight()/this->minimap.GetHeight();
+	
+	float gmRatioX=this->gridMap.GetWidth()/this->minimap.GetWidth();
+	float gmRatioY=this->gridMap.GetHeight()/this->minimap.GetHeight();
 	
 	tex1Avg = this->getAverageTexColor(tex1);
 	tex2Avg = this->getAverageTexColor(tex2);
@@ -581,7 +591,12 @@ void Terrain::makeMiniMap()
 	{
 		for(unsigned int j=0;j<this->minimap.GetWidth();j++)
 		{
-			this->minimap.SetPixel(i,j,this->getSample(i,j,ratioX,ratioY));
+			this->minimap.SetPixel(j,i,this->getSample(j,i,ratioX,ratioY));
+			int stepCorrection=0;
+			if(int(j*gmRatioX)%2==0)
+				stepCorrection=1;
+			if(this->gridMap.GetPixel(j*gmRatioX+stepCorrection,i*gmRatioY+stepCorrection).a>0)
+				this->minimap.SetPixel(j,i,this->gridMap.GetPixel(j*gmRatioX+stepCorrection,i*gmRatioY+stepCorrection));
 		}
 	}
 }
@@ -636,13 +651,6 @@ sf::Color Terrain::getSample(int x, int y,float xrat, float yrat)
 	outColor.g+=int(this->tex8Avg.g)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).a))/255;
 	outColor.b+=int(this->tex8Avg.b)*(int(this->blendmap2.GetPixel(x*xrat,y*yrat).a))/255;
 
-	/*for(int i=x;i<x*xrat;i++)
-	{
-		for(int y=0;j<y*yrat;j++)
-		{
-			
-		}
-	}*/
 	return outColor;
 }
 
@@ -906,7 +914,7 @@ void Terrain::makeGridUnderModel(Model m)
 			}
 			if(found)
 			{
-				this->gridMap.SetPixel(i,j,sf::Color(0,0,0,255));
+				this->gridMap.SetPixel(i,j,sf::Color(120,120,255,255));
 			}
 		}
 	}
@@ -925,10 +933,10 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 			rad=rad<removedModels[o].getBoundingBox()->getBboxSide().x;
 		
 		rad*=1.5;
-		int minX = (removedModels[o].getPos().x-rad)*(this->gridMap.GetWidth()/this->width);
-		int minY = (-removedModels[o].getPos().z-rad)*(this->gridMap.GetHeight()/this->height);
-		int maxX=(removedModels[o].getPos().x+rad)*(this->gridMap.GetWidth()/this->width);
-		int maxY=(-removedModels[o].getPos().z+rad)*(this->gridMap.GetHeight()/this->height);
+		int minX = (removedModels[o].getPos().x-rad)*(this->gridMap.GetWidth()/this->width)-1;
+		int minY = (-removedModels[o].getPos().z-rad)*(this->gridMap.GetHeight()/this->height)-1;
+		int maxX=(removedModels[o].getPos().x+rad)*(this->gridMap.GetWidth()/this->width)+1;
+		int maxY=(-removedModels[o].getPos().z+rad)*(this->gridMap.GetHeight()/this->height)+1;
 		if(maxY>this->gridMap.GetHeight())
 			maxY=this->gridMap.GetHeight();
 		if(maxX>this->gridMap.GetWidth())
@@ -951,13 +959,13 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 		{
 			for(int i=minX;i<maxX;i+=2)
 			{
-				this->gridMap.SetPixel(i,j,sf::Color(0,0,0,0));
+				this->gridMap.SetPixel(i,j,sf::Color(0,255,0,0));
 			}
 		}
 		for(int z=0;z<models.size();z++)
 		{
 			if(this->inCircle(removedModels[o].getPos().x,-removedModels[o].getPos().z,models[z].getPos().x,-models[z].getPos().z,rad*2.5))
-			{cout<<"yepp"<<endl;
+			{
 					for(int j=1;j<maxY;j+=2)
 					{
 						for(int i=1;i<maxX;i+=2)
@@ -1028,7 +1036,7 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 							}
 							if(found)
 							{
-								this->gridMap.SetPixel(i,j,sf::Color(0,0,0,255));
+								this->gridMap.SetPixel(i,j,sf::Color(120,120,255,255));
 							}
 						}
 					}

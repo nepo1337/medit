@@ -16,7 +16,7 @@ void GUI::init()
 	this->sliderSize=Slider(vec3(0.675f,-0.39f,0.0f));
 	this->sliderDropoff=Slider(vec3(0.675f,-0.635f,0.0f));
 	this->sliderOpacity=Slider(vec3(0.675f,-0.88f,0.0f));
-	this->sliderScale=Slider(vec3(0.676,-0.68,0.0));
+	this->sliderScale=Slider(vec3(0.672,-0.68,0.0));
 	
 	this->sliderScale.setMinPos(0.56,-0.7);
 	this->sliderScale.setMaxPos(0.784,-0.65f);
