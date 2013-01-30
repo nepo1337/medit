@@ -16,7 +16,8 @@ private:
 public:
 	PathHandler();
 	~PathHandler();
-
+	void addPath();
+	void addFlagToCurrentPath(vec3 pos);
 };
 
 #endif // PATHHANDLER_H
