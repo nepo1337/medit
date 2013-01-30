@@ -60,6 +60,7 @@ private:
 	void incActiveTex();
 	void decActiveTex();
 	Model activeModel;
+	bool selectRoad;
 public:
 	GUI();
 	~GUI();
@@ -94,6 +95,7 @@ public:
 	Model getActiveModel();
 	void rotateActiveModelLeft(float f);
 	void rotateActiveModelRight(float f);
+	bool isSelectingRoad();
 };
 
 #endif // GUI_H

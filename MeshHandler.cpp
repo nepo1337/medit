@@ -14,7 +14,10 @@ MeshHandler::MeshHandler(string dir)
 		}
 	}
 }
-
+MeshHandler::MeshHandler()
+{
+	
+}
 MeshHandler::~MeshHandler()
 {
 	for(unsigned int i=0;i<this->meshes.size();i++)

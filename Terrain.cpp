@@ -108,14 +108,14 @@ Terrain::Terrain(int size)
 	this->makeBlendMap(this->gridTexHandle,this->gridMap);
 	
 	//for blendmap 1
-	this->tex1.LoadFromFile("terrain/textures/set1/1.jpg");
-	this->tex2.LoadFromFile("terrain/textures/set1/2.jpg");
-	this->tex3.LoadFromFile("terrain/textures/set1/3.jpg");
-	this->tex4.LoadFromFile("terrain/textures/set1/4.jpg");
-	this->tex5.LoadFromFile("terrain/textures/set1/5.jpg");
-	this->tex6.LoadFromFile("terrain/textures/set1/6.jpg");
-	this->tex7.LoadFromFile("terrain/textures/set1/7.jpg");
-	this->tex8.LoadFromFile("terrain/textures/set1/8.jpg");
+	this->tex1.LoadFromFile("terrain/textures/set1/1.png");
+	this->tex2.LoadFromFile("terrain/textures/set1/2.png");
+	this->tex3.LoadFromFile("terrain/textures/set1/3.png");
+	this->tex4.LoadFromFile("terrain/textures/set1/4.png");
+	this->tex5.LoadFromFile("terrain/textures/set1/5.png");
+	this->tex6.LoadFromFile("terrain/textures/set1/6.png");
+	this->tex7.LoadFromFile("terrain/textures/set1/7.png");
+	this->tex8.LoadFromFile("terrain/textures/set1/8.png");
 	glActiveTexture(GL_TEXTURE3);
 	this->terrInf.texH[0] = this->uploadTextureGFX(this->tex1);
 	glActiveTexture(GL_TEXTURE4);
@@ -562,7 +562,23 @@ void Terrain::save(string path, string filename)
 		this->stoneSurface.getPositions()->at(i).z << " " <<endl;
 	}
 	out << "end"<<endl;
+	
+	out << "GRID "<<endl;
+	out << "width, height " << this->gridMap.GetWidth()/2<<" " << this->gridMap.GetHeight()/2<<endl;
+	for(int j=1;j<this->gridMap.GetHeight();j+=2)
+	{
+		for(int i=1;i<this->gridMap.GetWidth();i+=2)
+		{
+			if(this->gridMap.GetPixel(i,j).r>0)
+				out << 1;
+			else
+				out << 0;
+		}
+		out << endl;
+	}
+	out<<"end"<<endl;
 	out.close();
+	
 }
 
 void Terrain::makeMiniMap()
@@ -868,9 +884,9 @@ void Terrain::makeGridUnderModel(Model m)
 
 			float sides[3] =
 			{
-				m.getBoundingBox()->getBboxSide().x,
+				m.getBoundingBox()->getBboxSide().x+0.1,
 				m.getBoundingBox()->getBboxSide().y,
-				m.getBoundingBox()->getBboxSide().z
+				m.getBoundingBox()->getBboxSide().z+0.1
 			};
 			
 			vec3 normalizedSides[3] = 
@@ -928,9 +944,9 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 	for(int o=0;o<removedModels.size();o++)
 	{
 		
-		float rad= removedModels[o].getBoundingBox()->getBboxSide().z;
+		float rad= removedModels[o].getBoundingBox()->getBboxSide().z+0.1;
 		if(rad<removedModels[o].getBoundingBox()->getBboxSide().x)
-			rad=rad<removedModels[o].getBoundingBox()->getBboxSide().x;
+			rad=rad<removedModels[o].getBoundingBox()->getBboxSide().x+0.1;
 		
 		rad*=1.5;
 		int minX = (removedModels[o].getPos().x-rad)*(this->gridMap.GetWidth()/this->width)-1;
@@ -990,9 +1006,9 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 
 							float sides[3] =
 							{
-								models[z].getBoundingBox()->getBboxSide().x,
+								models[z].getBoundingBox()->getBboxSide().x+0.1,
 								models[z].getBoundingBox()->getBboxSide().y,
-								models[z].getBoundingBox()->getBboxSide().z
+								models[z].getBoundingBox()->getBboxSide().z+0.1
 							};
 							
 							vec3 normalizedSides[3] = 

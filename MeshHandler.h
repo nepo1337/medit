@@ -17,6 +17,7 @@ private:
 	string getFileName(string str);
 public:
 	MeshHandler(string dir);
+	MeshHandler();
 	~MeshHandler();
 	vector<MeshInfo>* getMeshInfo(int i);
 	string getMeshName(int i);

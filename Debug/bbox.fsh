@@ -1,7 +1,11 @@
 #version 400
 out vec4 fragColor;
 
+uniform float ro;
+uniform float go;
+uniform float bo;
+
 void main()
 {
-  fragColor=vec4(0.0,1.0,0.0,1.0);
+  fragColor=vec4(ro,go,bo,1.0);
 }

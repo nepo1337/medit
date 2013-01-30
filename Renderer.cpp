@@ -95,8 +95,11 @@ void Renderer::draw()
 		}
 	}
 	this->bBoxShader.use();
-	
+	this->bBoxShader.setUniform("ro",0.0f);
+	this->bBoxShader.setUniform("go",1.0f);
+	this->bBoxShader.setUniform("bo",0.0f);
 	//renders bounding box
+	glLineWidth(2);
 	for(unsigned int i=0;i<this->models.size();i++)
 	{
 		//if the object is selected

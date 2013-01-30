@@ -12,6 +12,7 @@
 #include "Intersection.h"
 #include "GUI.h"
 #include <fstream>
+#include "PathHandler.h"
 
 using namespace std;
 using namespace glm;
@@ -25,11 +26,11 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 	y = 1 - 2 * (float)mouseY / height;
 }
 
-void save(string filename, Terrain& terr, Renderer &r)
+void save(string filename, Terrain& terr, Renderer &r,PathHandler& p)
 {
 	terr.save(path,filename);
 	r.saveModels(path,filename);
-	
+	p.save(path,filename);
 }
 
 
@@ -56,7 +57,7 @@ int main(int argc, char **argv)
 	{
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
-		
+	
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
@@ -64,6 +65,8 @@ int main(int argc, char **argv)
 	gui.init();
 	//sets up the terrain
 	Terrain terrain(0);
+	PathHandler ph;
+	ph.init();
 	terrain.setRadius(gui.getSliderRadius());
 	terrain.setOpacity(gui.getSliderOpacity());
 	gui.setSurfaceTexHandles(terrain.getSurfaceTexHandles());
@@ -74,9 +77,13 @@ int main(int argc, char **argv)
 	rend.updateViewMatrix(cam.getViewMatrix());
 	terrain.updateProjMatrix(width,height);
 	terrain.updateViewMatrix(cam.getViewMatrix());
+	ph.updateProjectionMatrix(width,height);
+	ph.updateViewMatrix(cam.getViewMatrix());
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
+	MeshHandler mhPath("./models/paths/");
+	ph.setMesh(mhPath.getMeshInfo(0),mhPath.getBoundingBox(0));
 	
 	for(int i=0;i<mh.getNrOfMeshes();i++)
 	{
@@ -118,6 +125,7 @@ int main(int argc, char **argv)
 				glViewport(0,0,width,height);
 				rend.updateProjMatrix(width,height);
 				terrain.updateProjMatrix(width,height);
+				ph.updateProjectionMatrix(width,height);
 			}
 			if(event.Type == sf::Event::MouseWheelMoved)
 			{
@@ -127,6 +135,7 @@ int main(int argc, char **argv)
 					cam.zoomOut(-event.MouseWheel.Delta*0.5);
 				rend.updateViewMatrix(cam.getViewMatrix());
 				terrain.updateViewMatrix(cam.getViewMatrix());
+				ph.updateViewMatrix(cam.getViewMatrix());
 			}
 			
 			if(event.Type == sf::Event::MouseButtonPressed)
@@ -174,6 +183,38 @@ int main(int argc, char **argv)
 								gui.resetDialogAns();
 							}
 						}
+						
+						if(gui.getState()==GUIstate::PATH)
+						{
+							if(gui.checkDialogAnswer()=="DEL")
+							{
+								ph.removeSelectedPaths();
+								gui.resetDialogAns();
+							}
+							if(gui.checkDialogAnswer()=="CRP")
+							{
+								ph.addPath();
+								gui.resetDialogAns();
+							}
+							if(gui.isInDrawWindow(normalisedx,normalisedy))
+							{
+								if(gui.isSelectingRoad())
+								{
+									vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+									float x=-1;
+									float z=1;
+									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+									if(x!=-1)
+									{
+										ph.addFlagToCurrentPath(vec3(x,0,-z));
+									}
+								}
+								else
+								{
+									ph.selectPaths(normalisedx,normalisedy,cam.getPos());
+								}
+							}
+						}
 						if(gui.getState()==GUIstate::MODEL||gui.getState()==GUIstate::NONE)
 						{
 							if(gui.getState()==GUIstate::MODEL)
@@ -198,6 +239,7 @@ int main(int argc, char **argv)
 								{
 									int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
 									rend.selectModelAtIndex(index);
+									
 								}
 							}
 						}
@@ -213,7 +255,7 @@ int main(int argc, char **argv)
 					{
 						if(gui.checkDialogAnswer()=="svOK")
 						{
-							save(gui.getInputText(),terrain,rend);
+							save(gui.getInputText(),terrain,rend,ph);
 							gui.hideSaveMapDialog();
 						}
 						if(gui.checkDialogAnswer()=="svC")
@@ -280,6 +322,7 @@ int main(int argc, char **argv)
 		{
 				gui.setMouseXY(normalisedx,normalisedy);
 				terrain.deselectAllSurfaceTex();
+				
 				//cout << normalisedx <<" " << normalisedy<<endl;
 		}
 		
@@ -305,6 +348,7 @@ int main(int argc, char **argv)
 			}
 			rend.updateViewMatrix(cam.getViewMatrix());
 			terrain.updateViewMatrix(cam.getViewMatrix());
+			ph.updateViewMatrix(cam.getViewMatrix());
 			if(gui.getState()==GUIstate::MODEL)
 			{
 				if(app.GetInput().IsKeyDown(sf::Key::Q))
@@ -319,6 +363,8 @@ int main(int argc, char **argv)
 			cam.rotateLeft(mousedx-app.GetInput().GetMouseX());
 			cam.rotateUp(mousedy-app.GetInput().GetMouseY());
 			rend.updateViewMatrix(cam.getViewMatrix());
+			terrain.updateViewMatrix(cam.getViewMatrix());
+			ph.updateViewMatrix(cam.getViewMatrix());
 		}
 		
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
@@ -334,6 +380,11 @@ int main(int argc, char **argv)
 		
 		terrain.draw();
 		rend.draw();
+		
+		if(gui.getState()==GUIstate::PATH)
+		{
+			ph.drawPaths();
+		}
 		if(gui.getState()==GUIstate::MODEL &&gui.isInDrawWindow(normalisedx,normalisedy) )
 		{
 			vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());

@@ -5,6 +5,7 @@ GUI::GUI()
 }
 void GUI::init()
 {
+	this->selectRoad=false;
 	this->activeModelIndex=2;
 	this->ans="";
 	this->menuUp=false;
@@ -481,6 +482,7 @@ void GUI::setRightClickXY(float x, float y)
 	this->menuPath.setPosition(vec3(x,y,0));
 	this->menuQuest.setPosition(vec3(x,y,0));
 	this->menuRoad.setPosition(vec3(x,y,0));
+	this->selectRoad=false;
 }
 
 void GUI::moveSliders(float x, float y)
@@ -613,6 +615,24 @@ void GUI::setLeftClick(float x, float y)
 			scale=scaleZ;
 		this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].scaleXYZ(0.16/(scale));
 		
+	}
+	if(this->state == GUIstate::PATH)
+	{
+		if(y>0.388&&y<0.472)
+		{
+			if(x>0.546&&x<0.687)
+			{
+				//create path
+				this->ans="CRP";
+				this->selectRoad=true;
+			}
+			if(x>0.712&&x<0.85)
+			{
+				//remove path
+				this->ans="RMP";
+				this->ans="DEL";
+			}
+		}
 	}
 	//when clicking on the top bar
 	if(y>0.9)
@@ -909,4 +929,9 @@ void GUI::rotateActiveModelLeft(float f)
 void GUI::rotateActiveModelRight(float f)
 {
 	this->activeModel.rotateY(this->activeModel.getRot().y-f);
+}
+
+bool GUI::isSelectingRoad()
+{
+	return this->selectRoad;
 }
