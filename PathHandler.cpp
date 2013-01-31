@@ -211,10 +211,19 @@ void PathHandler::selectPaths(float normalizedX, float normalizedY,vec3 pos)
 			}
 			if(found)
 			{
-				this->Paths[k].select();
+				if(tmin>0)
+				{
+					if(tmin<min)
+					{
+						min = tmin;
+						minIndex=k;
+					}
+				}
 			}
 		}
 	}
+	if(minIndex>=0)
+		this->Paths[minIndex].select();
 }
 
 void PathHandler::removeSelectedPaths()

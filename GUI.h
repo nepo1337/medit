@@ -36,14 +36,14 @@ private:
 	GLuint k;
 	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,
 	questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,
-	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap,menuRoad,roadPanel;
+	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap,menuRoad,roadPanel,colorPickerSprite;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;
 	vector<GLuint> surfaceTexHandles;
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
-	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale;
+	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker;
 	
 	GLSLProgram GUIshader,modelDisplayShader;
 	//textur handles to paintable textures

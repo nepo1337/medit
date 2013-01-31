@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	settings.StencilBits       = 8;  // Request a 8 bits stencil buffer
 	settings.AntialiasingLevel = 2;  // Request 2 levels of antialiasing
 	sf::Window app;
-	app.Create(sf::VideoMode(width, height, 32), "R-EDIT", sf::Style::Close|sf::Style::Resize, settings);
+	app.Create(sf::VideoMode(width, height, 32), "Saints Edit", sf::Style::Close|sf::Style::Resize, settings);
 	app.UseVerticalSync(true);
 
 	GLenum err = glewInit();
@@ -151,7 +151,7 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					//cout<< normalisedx<< " " << normalisedy<<endl;
+					cout<< normalisedx<< " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					

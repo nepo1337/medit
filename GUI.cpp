@@ -18,6 +18,7 @@ void GUI::init()
 	this->sliderDropoff=Slider(vec3(0.675f,-0.635f,0.0f));
 	this->sliderOpacity=Slider(vec3(0.675f,-0.88f,0.0f));
 	this->sliderScale=Slider(vec3(0.672,-0.68,0.0));
+	this->sliderColorPicker=Slider(vec3(0.8245,0.4975,0));
 	
 	this->sliderScale.setMinPos(0.56,-0.7);
 	this->sliderScale.setMaxPos(0.784,-0.65f);
@@ -27,6 +28,9 @@ void GUI::init()
 	this->sliderDropoff.setMinPos(0.56,-0.66f);
 	this->sliderOpacity.setMaxPos(0.786,-0.85f);
 	this->sliderOpacity.setMinPos(0.56,-0.91f);
+	
+	this->sliderColorPicker.setMinPos(0.731,0.325);
+	this->sliderColorPicker.setMaxPos(0.918,0.67);
 		
 	this->activeTex=0;	
 	//the gui
@@ -50,6 +54,10 @@ void GUI::init()
 	this->modelDisplayShader.setUniform("tex1",0);
 		
 	glUseProgram(0);
+	
+	//le color picker sprite
+	this->colorPickerSprite.init(vec3(this->sliderColorPicker.getPosition().x,this->sliderColorPicker.getPosition().y,0),0.015,0.015,"gui/marker.png");
+	
 	
 	//the panels to the right side
 	this->frontPanel.init(vec3(0.0f),1.0f,1.0f,"gui/GUI-Front.png");
@@ -90,7 +98,9 @@ void GUI::init()
 	//loadMap panel
 	
 	this->loadMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Load.png");
+	
 	text.init("", 350, 360,0.25,1280,720,"gui/Text100.png",100,100);
+	
 	
 	this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 
@@ -259,11 +269,18 @@ void GUI::draw()
 	
 	//The lights panel
 	if(this->state == GUIstate::LIGHT)
-	{
+	{		
 		//draws the panels in the right slot
 		glBindTexture(GL_TEXTURE_2D, this->lightPanel.getTextureHandle());
 		glBindVertexArray(this->lightPanel.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",lightPanel.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->colorPickerSprite.getTextureHandle());
+		mat4 modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderColorPicker.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glBindVertexArray(this->colorPickerSprite.getVaoHandle());
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -507,6 +524,14 @@ void GUI::moveSliders(float x, float y)
 			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
 			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 			
+		}
+	}
+	if(GUIstate::LIGHT)
+	{
+		if(this->sliderColorPicker.isInsideSliderSpace(x,y))
+		{
+			this->sliderColorPicker.setPositionX(x);
+			this->sliderColorPicker.setPositionY(y);
 		}
 	}
 }

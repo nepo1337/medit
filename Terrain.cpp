@@ -189,6 +189,7 @@ Terrain::Terrain(int size)
 	this->surfaceBboxShader.compileShaderFromFile("bbox.fsh",GLSLShader::FRAGMENT);
 	this->surfaceBboxShader.bindAttribLocation(3,"bBoxCordsVertex");
 	
+
 	if(debug)
 		cout<<this->surfaceBboxShader.log();
 		
@@ -280,6 +281,10 @@ void Terrain::draw()
 	}
 	
 	this->surfaceBboxShader.use();
+	this->surfaceBboxShader.setUniform("ro",0.0f);
+	this->surfaceBboxShader.setUniform("go",1.0f);
+	this->surfaceBboxShader.setUniform("bo",0.0f);
+			
 	for(unsigned int i=0; i<this->stoneSurface.getRotations()->size();i++)
 	{
 		if(this->stoneSurface.getDrawBbox()->at(i))
@@ -565,9 +570,9 @@ void Terrain::save(string path, string filename)
 	
 	out << "GRID "<<endl;
 	out << "width, height " << this->gridMap.GetWidth()/2<<" " << this->gridMap.GetHeight()/2<<endl;
-	for(int j=1;j<this->gridMap.GetHeight();j+=2)
+	for(int j=1;j<this->gridMap.GetHeight()-1;j+=2)
 	{
-		for(int i=1;i<this->gridMap.GetWidth();i+=2)
+		for(int i=1;i<this->gridMap.GetWidth()-1;i+=2)
 		{
 			if(this->gridMap.GetPixel(i,j).r>0)
 				out << 1;

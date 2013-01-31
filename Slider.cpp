@@ -38,7 +38,7 @@ bool Slider::setPositionX(float x)
 bool Slider::setPositionY(float y)
 {
 	bool valid=false;
-	if(y>=this->minYVal&&y<=this->minYVal)
+	if(y>=this->minYVal&&y<=this->maxYVal)
 	{
 		this->pos.y=y;
 		valid=true;
