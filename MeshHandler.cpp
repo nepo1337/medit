@@ -10,7 +10,29 @@ MeshHandler::MeshHandler(string dir)
 		{
 			Mesh m;
 			if(m.import(dir,files[i]))
+			{
+				if(files[i][0]=='l'&&files[i][1]=='a'&&files[i][2]=='m'&&files[i][3]=='p')
+					m.setType("light");
 				this->meshes.push_back(m);
+			}
+		}
+	}
+}
+void MeshHandler::load(string dir)
+{
+		vector<string> files;
+	this->fileDirReader.getFilesInDir(dir,files);
+	for(unsigned int i=0;i<files.size();i++)
+	{
+		if(this->getFileExtension(files[i])=="BFish")
+		{
+			Mesh m;
+			if(m.import(dir,files[i]))
+			{
+				if(files[i][0]=='l'&&files[i][1]=='a'&&files[i][2]=='m'&&files[i][3]=='p')
+					m.setType("light");
+				this->meshes.push_back(m);
+			}
 		}
 	}
 }
@@ -75,4 +97,18 @@ int MeshHandler::getNrOfMeshes()
 string MeshHandler::getMeshName(int i)
 {
 	return this->meshes[i].getFilename();
+}
+string MeshHandler::getMeshType(int i)
+{
+	return this->meshes[i].getType();
+}
+int MeshHandler::getMeshByName(string name)
+{
+	int id=-1;
+	for( int i=0;i<this->meshes.size();i++)
+	{
+		if(this->meshes[i].getFilename()==name)
+			id=i;
+	}
+	return id;
 }

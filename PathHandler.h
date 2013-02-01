@@ -11,6 +11,7 @@
 #include "MeshInfo.h"
 #include "BoundingBox.h"
 #include <fstream>
+#include "MeshHandler.h"
 
 using namespace glm;
 using namespace std;
@@ -24,6 +25,7 @@ private:
 	mat4 projectionMatrix;
 	vector<MeshInfo> *meshInfo;
 	BoundingBox * bb;
+	MeshHandler meshes;
 public:
 	PathHandler();
 	~PathHandler();

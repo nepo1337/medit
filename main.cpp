@@ -13,6 +13,7 @@
 #include "GUI.h"
 #include <fstream>
 #include "PathHandler.h"
+#include "LightHandler.h"
 
 using namespace std;
 using namespace glm;
@@ -36,6 +37,7 @@ void save(string filename, Terrain& terr, Renderer &r,PathHandler& p)
 
 int main(int argc, char **argv)
 {
+	int bindCounter=1;
 	int width,height;
 	Camera cam;
 	int mousedx=0;
@@ -53,24 +55,25 @@ int main(int argc, char **argv)
 	app.UseVerticalSync(true);
 
 	GLenum err = glewInit();
-	if (GLEW_OK != err)
-	{
+	if (GLEW_OK != err) {
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
-	
+
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
-	
+
 	gui.init();
 	//sets up the terrain
 	Terrain terrain(0);
 	PathHandler ph;
+	LightHandler lh;
+	lh.init();
 	ph.init();
 	terrain.setRadius(gui.getSliderRadius());
 	terrain.setOpacity(gui.getSliderOpacity());
 	gui.setSurfaceTexHandles(terrain.getSurfaceTexHandles());
-	
+
 	//the gui needs the textures for browsing
 	gui.setTerrainInfo(terrain.getTerrInfo());
 	rend.updateProjMatrix(width,height);
@@ -82,28 +85,28 @@ int main(int argc, char **argv)
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
-	MeshHandler mhPath("./models/paths/");
-	ph.setMesh(mhPath.getMeshInfo(0),mhPath.getBoundingBox(0));
+
 	
-	for(int i=0;i<mh.getNrOfMeshes();i++)
+
+	for(int i=0; i<mh.getNrOfMeshes(); i++)
 	{
 		Model tmp;
 		tmp.setMesh(mh.getMeshInfo(i));
 		tmp.setBoundingBox(mh.getBoundingBox(i));
 		tmp.setMeshName(mh.getMeshName(i));
+		tmp.setType(mh.getMeshType(i));
 		gui.addDisplayModel(tmp);
 	}
-	
-	 
+
+
 	sf::Event event;
-	
+
 	Model m;
-	
-	while (app.IsOpened())
-	{
+
+	while (app.IsOpened()) {
 		float normalisedx = 0;
 		float normalisedy = 0;
-		
+
 		getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 		//events
 		while(app.GetEvent(event))
@@ -137,53 +140,64 @@ int main(int argc, char **argv)
 				terrain.updateViewMatrix(cam.getViewMatrix());
 				ph.updateViewMatrix(cam.getViewMatrix());
 			}
-			
+
 			if(event.Type == sf::Event::MouseButtonPressed)
 			{
-				if(event.MouseButton.Button==sf::Mouse::Right)
-				{
+				if(event.MouseButton.Button==sf::Mouse::Right) {
 					gui.showMenu(true);
 					gui.setRightClickXY(normalisedx,normalisedy);
 				}
 			}
-			
+
 			if(event.Type == sf::Event::MouseButtonPressed)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					cout<< normalisedx<< " " << normalisedy<<endl;
+					//cout<< normalisedx<< " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					
+					if(gui.getState()==GUIstate::LIGHT)
+					{
+						if(gui.isInDrawWindow(normalisedx,normalisedy))
+						{
+							lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+						}
+						if(gui.checkDialogAnswer()=="DEL")
+						{
+							lh.removeSelectedLights();
+						}
+					}
+
 					if(gui.checkDialogAnswer()=="GRID")
 					{
 						terrain.showHideGridMap();
 						gui.resetDialogAns();
 					}
-					
+
 					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 					{
 						if(gui.getState()==GUIstate::ROAD)
 						{
-							if(gui.checkDialogAnswer()=="RS")
-							{
+							if(gui.checkDialogAnswer()=="RS") {
 								terrain.removeSelectedSurfaces();
 								gui.resetDialogAns();
 							}
 						}
 						if(gui.getState()==GUIstate::NONE)
 						{
-							if(gui.checkDialogAnswer()=="DEL")
-							{
+							if(gui.checkDialogAnswer()=="DEL") 
+								{
 								vector<Model> rm = rend.removeSelectedModels();
+								lh.removeLightsBoundToModels(rm);
 								vector<Model> tm =rend.getModels();
 								terrain.recalcGridAroundModel(rm,tm);
-								
+
 								terrain.removeSelectedSurfaces();
 								gui.resetDialogAns();
 							}
 						}
-						
+
 						if(gui.getState()==GUIstate::PATH)
 						{
 							if(gui.checkDialogAnswer()=="DEL")
@@ -204,8 +218,7 @@ int main(int argc, char **argv)
 									float x=-1;
 									float z=1;
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									if(x!=-1)
-									{
+									if(x!=-1) {
 										ph.addFlagToCurrentPath(vec3(x,0,-z));
 									}
 								}
@@ -227,6 +240,14 @@ int main(int argc, char **argv)
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
 									if(x!=-1)
 									{
+										if(m.getType()=="light")
+										{
+											m.bindId(bindCounter);
+											vec3 lpos = m.getPos();
+											lpos.y+=1;
+											lh.addPointLight(lpos,vec3(0.0f,1.0f,0.0f),2,bindCounter);
+											bindCounter++;
+										}
 										rend.addModel(m);
 										terrain.setWorldXY(cam.getPos(),ray);
 										terrain.makeGridUnderModel(m);
@@ -239,7 +260,7 @@ int main(int argc, char **argv)
 								{
 									int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
 									rend.selectModelAtIndex(index);
-									
+
 								}
 							}
 						}
@@ -250,7 +271,7 @@ int main(int argc, char **argv)
 							terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
 						}
 					}
-					
+
 					if(gui.isSaveMapDialogUp())
 					{
 						if(gui.checkDialogAnswer()=="svOK")
@@ -286,11 +307,11 @@ int main(int argc, char **argv)
 				}
 			}
 		}
-		
+
 		//realtime input
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-	
+
 			if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 			{
 				if(gui.isInDrawWindow(normalisedx,normalisedy))
@@ -306,8 +327,8 @@ int main(int argc, char **argv)
 						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
 						terrain.addSurface(cam.getPos(),ray, 0);
 					}
-				}
-				else
+				} 
+				else 
 				{
 					gui.moveSliders(normalisedx,normalisedy);
 					{
@@ -320,13 +341,13 @@ int main(int argc, char **argv)
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
-				gui.setMouseXY(normalisedx,normalisedy);
-				terrain.deselectAllSurfaceTex();
-				
-				//cout << normalisedx <<" " << normalisedy<<endl;
+			gui.setMouseXY(normalisedx,normalisedy);
+			terrain.deselectAllSurfaceTex();
+
+			//cout << normalisedx <<" " << normalisedy<<endl;
 		}
-		
-		
+
+
 		//if the user isnt in text mode, it should be able to move
 		if(!gui.isInTextMode())
 		{
@@ -366,7 +387,7 @@ int main(int argc, char **argv)
 			terrain.updateViewMatrix(cam.getViewMatrix());
 			ph.updateViewMatrix(cam.getViewMatrix());
 		}
-		
+
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
 			gui.showMenu(true);
@@ -377,13 +398,17 @@ int main(int argc, char **argv)
 
 		glClearColor(0.75f, 0.87f, 0.85f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		terrain.draw();
 		rend.draw();
-		
+
 		if(gui.getState()==GUIstate::PATH)
 		{
 			ph.drawPaths();
+		}
+		if(gui.getState()==GUIstate::LIGHT)
+		{
+			lh.drawLights(rend.getProjMatrix(),cam.getViewMatrix());
 		}
 		if(gui.getState()==GUIstate::MODEL &&gui.isInDrawWindow(normalisedx,normalisedy) )
 		{
