@@ -785,7 +785,7 @@ void GUI::setMouseXY(float x, float y)
 		{
 			this->state=GUIstate::NONE;
 		}
-		if(this->inCircle(ax,ay,-0.135,0,0.06))
+		if(this->inCircle(ax,ay,-0.134,0,0.0666))
 		{
 			this->state=GUIstate::LIGHT;
 		}

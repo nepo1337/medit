@@ -23,6 +23,9 @@ public:
 	string getMeshName(int i);
 	BoundingBox *getBoundingBox(int i);
 	int getNrOfMeshes();
+	string getMeshType(int i);
+	int getMeshByName(string name);
+	void load(string dir);
 };
 
 #endif // MESHHANDLER_H

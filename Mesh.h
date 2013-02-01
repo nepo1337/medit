@@ -31,12 +31,15 @@ private:
 	
 	//uploads vbos etc to gfx
 	void uploadToGFX();
+	string type;
 public:
 	Mesh();
 	~Mesh();
 	bool import(string path,string filename);
 	string getFilename();
 	void freeGFX();
+	string getType();
+	void setType(string);
 	
 	//returns pointer to the meshinfo vector, one for each object
 	vector<MeshInfo>* getMeshInfo();

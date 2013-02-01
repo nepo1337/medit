@@ -4,6 +4,7 @@ Mesh::Mesh()
 {
 	this->debug=true;
 	path="";
+	this->type="";
 }
 
 Mesh::~Mesh()
@@ -20,7 +21,16 @@ bool Mesh::import(string path,string filename)
 	imported = this->fishImp.getFishFile()->FMeshes.size()>0;
 	if(imported)
 	{
-		this->setFilename(filename);
+		bool ended=false;
+		string tmpFilename;
+		for(unsigned int i=0;i<filename.length()&&!ended;i++)
+		{
+			if(filename[i]!='.')
+				tmpFilename+=filename[i];
+			else
+				ended=true;
+		}
+		this->setFilename(tmpFilename);
 		this->uploadToGFX();
 	}
 	return imported;
@@ -256,4 +266,13 @@ void Mesh::freeGFX()
 BoundingBox* Mesh::getBoundingBox()
 {
 	return &this->bBox;
+}
+
+void Mesh::setType(string type)
+{
+	this->type=type;
+}
+string Mesh::getType()
+{
+	return this->type;
 }

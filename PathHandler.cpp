@@ -30,6 +30,10 @@ void PathHandler::init()
 	this->lineRenderer.link();
 	//cout<<this->lineRenderer.log();
 	srand(time(NULL));
+	
+	this->meshes.load("./models/paths/");
+	this->meshInfo = this->meshes.getMeshInfo(0);
+	this->bb = this->meshes.getBoundingBox(0);
 }
 
 void PathHandler::setMesh(vector<MeshInfo> *meshInfo,BoundingBox * bb)
