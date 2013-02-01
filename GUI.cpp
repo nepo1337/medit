@@ -504,7 +504,7 @@ void GUI::setRightClickXY(float x, float y)
 
 void GUI::moveSliders(float x, float y)
 {
-	if(GUIstate::PAINT)
+	if(this->state==GUIstate::PAINT)
 	{
 		//move the sliders
 		if(this->sliderSize.isInsideSliderSpace(x,y))
@@ -516,7 +516,7 @@ void GUI::moveSliders(float x, float y)
 		if(this->sliderOpacity.isInsideSliderSpace(x,y))
 			this->sliderOpacity.setPositionX(x);
 	}
-	if(GUIstate::MODEL)
+	if(this->state==GUIstate::MODEL)
 	{
 		if(this->sliderScale.isInsideSliderSpace(x,y))
 		{
@@ -526,7 +526,7 @@ void GUI::moveSliders(float x, float y)
 			
 		}
 	}
-	if(GUIstate::LIGHT)
+	if(this->state==GUIstate::LIGHT)
 	{
 		if(this->sliderColorPicker.isInsideSliderSpace(x,y))
 		{
