@@ -501,7 +501,7 @@ void Terrain::increasePixelPaint(sf::Color &pix1, sf::Color &pix2,int blendIndex
 		float dist=distance;
 		//if(dist<0.1)
 		//	dist=0.1;
-		pixBlends[blendIndex]+=30*this->opacity*(((this->radius)-dist)*this->dropoff);
+		pixBlends[blendIndex]+=(255*this->opacity)+(((this->radius)-dist)*this->dropoff);
 		
 		float sum = 0;
 		
