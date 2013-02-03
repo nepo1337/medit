@@ -7,7 +7,7 @@ SurfaceTex::SurfaceTex()
 SurfaceTex::~SurfaceTex()
 {
 	glDeleteTextures(1,&this->texHandle);
-	glDeleteBuffers(3,this->vbohs);
+	glDeleteBuffers(4,this->vbohs);
 	glDeleteVertexArrays(1, &this->vaoh);
 }
 

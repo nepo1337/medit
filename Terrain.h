@@ -17,6 +17,7 @@
 #include <fstream>
 #include <vector>
 #include "Model.h"
+#include "SurfaceCircle.h"
 
 using namespace std;
 using namespace glm;
@@ -77,6 +78,8 @@ private:
 	SurfaceTex stoneSurface;
 	float worldClickX,worldClickZ;
 	bool showGridMap;
+	SurfaceCircle surfC;
+	bool drawCircle;
 	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
@@ -106,6 +109,8 @@ public:
 	void showHideGridMap();
 	void makeGridUnderModel(Model m);
 	void recalcGridAroundModel(vector<Model> removedModels, vector<Model> models);
+	void showCircle();
+	void hideCircle();
 };
 
 #endif // TERRAIN_H

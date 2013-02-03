@@ -103,7 +103,8 @@ int main(int argc, char **argv)
 
 	Model m;
 
-	while (app.IsOpened()) {
+	while (app.IsOpened())
+	{
 		float normalisedx = 0;
 		float normalisedy = 0;
 
@@ -118,6 +119,14 @@ int main(int argc, char **argv)
 			if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::Escape))
 			{
 				app.Close();
+			}
+			if(event.Type==sf::Event::MouseMoved)
+			{
+				if(gui.getState()==GUIstate::PAINT)
+				{
+					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+					terrain.setWorldXY(cam.getPos(),ray);
+				}
 			}
 
 
@@ -143,7 +152,8 @@ int main(int argc, char **argv)
 
 			if(event.Type == sf::Event::MouseButtonPressed)
 			{
-				if(event.MouseButton.Button==sf::Mouse::Right) {
+				if(event.MouseButton.Button==sf::Mouse::Right)
+				{
 					gui.showMenu(true);
 					gui.setRightClickXY(normalisedx,normalisedy);
 				}
@@ -156,6 +166,7 @@ int main(int argc, char **argv)
 					//cout<< normalisedx<< " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
+					
 					
 					if(gui.getState()==GUIstate::LIGHT)
 					{
@@ -187,7 +198,7 @@ int main(int argc, char **argv)
 						if(gui.getState()==GUIstate::NONE)
 						{
 							if(gui.checkDialogAnswer()=="DEL") 
-								{
+							{
 								vector<Model> rm = rend.removeSelectedModels();
 								lh.removeLightsBoundToModels(rm);
 								vector<Model> tm =rend.getModels();
@@ -309,6 +320,7 @@ int main(int argc, char **argv)
 		}
 
 		//realtime input
+		
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
 
@@ -351,6 +363,11 @@ int main(int argc, char **argv)
 		//if the user isnt in text mode, it should be able to move
 		if(!gui.isInTextMode())
 		{
+			if(gui.getState()==GUIstate::PAINT)
+				{
+					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+					terrain.setWorldXY(cam.getPos(),ray);
+				}
 			if(app.GetInput().IsKeyDown(sf::Key::W))
 			{
 				cam.moveForeward(0.1);
@@ -391,6 +408,12 @@ int main(int argc, char **argv)
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Right))
 		{
 			gui.showMenu(true);
+			if(gui.getState()==GUIstate::PAINT)
+			{
+				terrain.showCircle();
+			}
+			else
+				terrain.hideCircle();
 		}
 		//saves the position of the mouse, used for rotation
 		mousedx=app.GetInput().GetMouseX();

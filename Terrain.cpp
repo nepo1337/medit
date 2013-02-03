@@ -81,6 +81,8 @@ Terrain::Terrain(int size)
 	this->terrInf.blendmap2H=0;
 	this->gridTexHandle=0;
 	
+	this->drawCircle=false;
+	
 	//creating blendmaps
 	this->blendmap1.Create(256*this->blendsc,256*this->blendsc,sf::Color(255,0,0,0));
 	this->blendmap2.Create(256*this->blendsc,256*this->blendsc,sf::Color(0,0,0,0));
@@ -241,6 +243,17 @@ Terrain::Terrain(int size)
 	this->terrInf.vaoh=this->vaoh;
 	this->stoneSurface.init("terrain/textures/set1/","stone.png");
 	
+	this->surfC.init();
+}
+
+void Terrain::showCircle()
+{
+	this->drawCircle=true;
+}
+
+void Terrain::hideCircle()
+{
+	this->drawCircle=false;
 }
 
 void Terrain::draw()
@@ -297,6 +310,12 @@ void Terrain::draw()
 			this->surfaceTexShader.setUniform("MVP",mvp);
 			glDrawArrays(GL_LINE_STRIP,0,5);
 		}
+	}
+	
+	if(this->drawCircle)
+	{
+		this->surfC.setPosition(vec3(this->worldClickX,0,-this->worldClickZ));
+		this->surfC.draw(this->projMatrix,this->viewMatrix);
 	}
 	
 	glDisable(GL_BLEND);
@@ -513,6 +532,7 @@ bool Terrain::inCircle(float cx, float cy, float x, float y)
 void Terrain::setRadius(float rad)
 {
 	this->radius=rad*100;
+	this->surfC.setScale((this->radius/1.55));
 }
 void Terrain::setOpacity(float opa)
 {
