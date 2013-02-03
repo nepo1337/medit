@@ -142,9 +142,9 @@ int main(int argc, char **argv)
 			if(event.Type == sf::Event::MouseWheelMoved)
 			{
 				if(event.MouseWheel.Delta>0)
-					cam.zoomIn(event.MouseWheel.Delta*0.5);
+					cam.zoomIn(event.MouseWheel.Delta*2);
 				else
-					cam.zoomOut(-event.MouseWheel.Delta*0.5);
+					cam.zoomOut(-event.MouseWheel.Delta*2);
 				rend.updateViewMatrix(cam.getViewMatrix());
 				terrain.updateViewMatrix(cam.getViewMatrix());
 				ph.updateViewMatrix(cam.getViewMatrix());
