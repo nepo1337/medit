@@ -14,6 +14,7 @@
 #include "MeshHandler.h"
 #include "MeshInfo.h"
 #include "Model.h"
+#include "RadiusRing.h"
 
 
 using namespace std;
@@ -26,15 +27,19 @@ private:
 	vector<Light> pointLights;
 	MeshHandler meshes;
 	int spotLightMeshPos;
+	RadiusRing radRing;
 public:
 	LightHandler();
 	~LightHandler();
 	void init();
 	void addPointLight(vec3 pos, vec3 color,float radius,int id);
+	void addPointLight(Light l);
 	void drawLights(mat4 projectionMatrix, mat4 viewMatrix);
 	void removeLightsBoundToModels(vector<Model> models);
 	int selectLight(float normalizedX, float normalizedY,vec3 pos, mat4 projMatrix,mat4 viewMatrix);
 	void removeSelectedLights();
+	void deselectAllLights();
+	void free();
+	Light getSelectedLight();
 };
-
 #endif // LIGHTHANDLER_H

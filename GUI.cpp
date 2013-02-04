@@ -19,6 +19,12 @@ void GUI::init()
 	this->sliderOpacity=Slider(vec3(0.675f,-0.88f,0.0f));
 	this->sliderScale=Slider(vec3(0.672,-0.68,0.0));
 	this->sliderColorPicker=Slider(vec3(0.8245,0.4975,0));
+	this->sliderContrast = Slider(vec3(0.85f,-0.25f,0.0f));
+	this->sliderContrast.setMinPos(0.54f,-0.275f);
+	this->sliderContrast.setMaxPos(0.85f,-0.21f);
+	this->sliderRadius = Slider(vec3(0.695f,-0.452f,0.0f));
+	this->sliderRadius.setMinPos(0.54f,-0.475f);
+	this->sliderRadius.setMaxPos(0.85f,-0.41f);
 	
 	this->sliderScale.setMinPos(0.56,-0.7);
 	this->sliderScale.setMaxPos(0.784,-0.65f);
@@ -48,12 +54,21 @@ void GUI::init()
 	this->modelDisplayShader.bindAttribLocation(1,"vertexNormal");
 	this->modelDisplayShader.bindAttribLocation(2,"vertexUv");
 	
+	this->modelDisplayShader.setUniform("tex1",0);
+	
 		
 	this->modelDisplayShader.link();
+	
+	this->colorPlaneShader.compileShaderFromFile("colorPlane.vsh",GLSLShader::VERTEX);
+	this->colorPlaneShader.compileShaderFromFile("colorPlane.fsh",GLSLShader::FRAGMENT);
+	this->colorPlaneShader.bindAttribLocation(0,"vertexPosition");
+	
+	cout << this->colorPlaneShader.log();
+	this->colorPlaneShader.link();
+		cout << this->colorPlaneShader.log();
+	
 		
-	this->modelDisplayShader.setUniform("tex1",0);
-		
-	glUseProgram(0);
+
 	
 	//le color picker sprite
 	this->colorPickerSprite.init(vec3(this->sliderColorPicker.getPosition().x,this->sliderColorPicker.getPosition().y,0),0.015,0.015,"gui/marker.png");
@@ -100,9 +115,29 @@ void GUI::init()
 	this->loadMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Load.png");
 	
 	text.init("", 350, 360,0.25,1280,720,"gui/Text100.png",100,100);
-	
+	this->colorPlaneSprite.init(vec3(0.89f,0.8f,0.0f),0.05,0.08);
 	
 	this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
+	this->colorScale.LoadFromFile("gui/colorScale.png");
+	
+	float xm = this->sliderColorPicker.getMaxX()-this->sliderColorPicker.getMinX();
+	float ym = this->sliderColorPicker.getMaxY()-this->sliderColorPicker.getMinY();
+	float xp = sliderColorPicker.getPosition().x-this->sliderColorPicker.getMinX();
+	float yp = sliderColorPicker.getPosition().y-this->sliderColorPicker.getMinY();
+
+	float colorCordX=xp*(this->colorScale.GetWidth()/xm);
+	float colorCordY=this->colorScale.GetHeight()-(yp*(this->colorScale.GetHeight()/ym));
+	sf::Color colorPicked = this->colorScale.GetPixel(colorCordX,colorCordY);
+	this->colorPlaneShader.use();
+
+	this->normalizedColor.x = (float)colorPicked.r/255;
+	this->normalizedColor.y = (float)colorPicked.g/255;
+	this->normalizedColor.z = (float)colorPicked.b/255;
+	this->colorPlaneShader.setUniform("ro",normalizedColor.x);
+	this->colorPlaneShader.setUniform("go",normalizedColor.y);
+	this->colorPlaneShader.setUniform("bo",normalizedColor.z);
+	glUseProgram(0);
+	
 
 }
 
@@ -270,18 +305,46 @@ void GUI::draw()
 	//The lights panel
 	if(this->state == GUIstate::LIGHT)
 	{		
+		//draws the color choosed
+		mat4 modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->colorPlaneSprite.getPosition());
+		this->colorPlaneShader.use();
+		this->colorPlaneShader.setUniform("modelMatrix",modelMatrix);
+		glBindVertexArray(this->colorPlaneSprite.getVaoHandle());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		this->GUIshader.use();
+		
 		//draws the panels in the right slot
 		glBindTexture(GL_TEXTURE_2D, this->lightPanel.getTextureHandle());
 		glBindVertexArray(this->lightPanel.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",lightPanel.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
+		//draws the "x", the picker
 		glBindTexture(GL_TEXTURE_2D, this->colorPickerSprite.getTextureHandle());
-		mat4 modelMatrix=mat4(1.0f);
+		modelMatrix=mat4(1.0f);
 		modelMatrix*=translate(this->sliderColorPicker.getPosition());
 		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glBindVertexArray(this->colorPickerSprite.getVaoHandle());
 		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		//the contrast slider
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderContrast.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		
+		//draw the radius slider
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderRadius.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
 	}
 	
 	//The particle panel
@@ -501,7 +564,10 @@ void GUI::setRightClickXY(float x, float y)
 	this->menuRoad.setPosition(vec3(x,y,0));
 	this->selectRoad=false;
 }
-
+float GUI::getSliderLightRadius()
+{
+	return this->sliderRadius.getSliderValueX()*5;
+}
 void GUI::moveSliders(float x, float y)
 {
 	if(this->state==GUIstate::PAINT)
@@ -528,10 +594,43 @@ void GUI::moveSliders(float x, float y)
 	}
 	if(this->state==GUIstate::LIGHT)
 	{
+		if(this->sliderContrast.isInsideSliderSpace(x,y))
+		{
+			this->sliderContrast.setPositionX(x);
+			this->colorPlaneShader.use();
+			this->colorPlaneShader.setUniform("ro",(this->normalizedColor.x)*this->sliderContrast.getSliderValueX());
+			this->colorPlaneShader.setUniform("go",(this->normalizedColor.y)*this->sliderContrast.getSliderValueX());
+			this->colorPlaneShader.setUniform("bo",(this->normalizedColor.z)*this->sliderContrast.getSliderValueX());
+			glUseProgram(0);
+		}
+		if(this->sliderRadius.isInsideSliderSpace(x,y))
+		{
+			this->sliderRadius.setPositionX(x);
+		}
+			
 		if(this->sliderColorPicker.isInsideSliderSpace(x,y))
 		{
 			this->sliderColorPicker.setPositionX(x);
 			this->sliderColorPicker.setPositionY(y);
+			
+			float xm = this->sliderColorPicker.getMaxX()-this->sliderColorPicker.getMinX();
+			float ym = this->sliderColorPicker.getMaxY()-this->sliderColorPicker.getMinY();
+			float xp = x-this->sliderColorPicker.getMinX();
+			float yp = y-this->sliderColorPicker.getMinY();
+
+			float colorCordX=xp*((this->colorScale.GetWidth()-1)/xm);
+			float colorCordY=(this->colorScale.GetHeight()-1)-(yp*((this->colorScale.GetHeight()-1)/ym));
+			sf::Color colorPicked = this->colorScale.GetPixel(colorCordX,colorCordY);
+			
+			this->normalizedColor.x = ((float)colorPicked.r/255);
+			this->normalizedColor.y = ((float)colorPicked.g/255);
+			this->normalizedColor.z = ((float)colorPicked.b/255);
+			
+			this->colorPlaneShader.use();
+			this->colorPlaneShader.setUniform("ro",this->normalizedColor.x*this->sliderContrast.getSliderValueX());
+			this->colorPlaneShader.setUniform("go",this->normalizedColor.y*this->sliderContrast.getSliderValueX());
+			this->colorPlaneShader.setUniform("bo",this->normalizedColor.z*this->sliderContrast.getSliderValueX());
+			glUseProgram(0);
 		}
 	}
 }
@@ -959,4 +1058,28 @@ void GUI::rotateActiveModelRight(float f)
 bool GUI::isSelectingRoad()
 {
 	return this->selectRoad;
+}
+vec3 GUI::getNormalizedColor()
+{
+	return this->normalizedColor;
+}
+
+float GUI::getContrast()
+{
+	return this->sliderContrast.getSliderValueX();
+}
+
+void GUI::setSliderLightRadius(float s)
+{
+	this->sliderRadius.setPos(vec3(this->sliderRadius.getMinX()+(this->sliderRadius.getMaxX()-this->sliderRadius.getMinX())*(s/5),this->sliderRadius.getPosition().y,0));
+}
+
+void GUI::setNormalizedColor(vec3 col,float contrast)
+{
+	this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*contrast,this->sliderContrast.getPosition().y,0));
+	this->normalizedColor=col;
+	this->colorPlaneShader.use();
+	this->colorPlaneShader.setUniform("ro",col.x*contrast);
+	this->colorPlaneShader.setUniform("go",col.y*contrast);
+	this->colorPlaneShader.setUniform("bo",col.z*contrast);
 }

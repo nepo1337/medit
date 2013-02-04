@@ -133,3 +133,12 @@ float Light::getRadius()
 {
 	return this->radius;
 }
+
+void Light::setContrast(float con)
+{
+	this->contrast=con;
+}
+float Light::getContrast()
+{
+	return this->contrast;
+}

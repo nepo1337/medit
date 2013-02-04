@@ -14,6 +14,7 @@
 #include <fstream>
 #include "PathHandler.h"
 #include "LightHandler.h"
+#include "Light.h"
 
 using namespace std;
 using namespace glm;
@@ -55,7 +56,8 @@ int main(int argc, char **argv)
 	app.UseVerticalSync(true);
 
 	GLenum err = glewInit();
-	if (GLEW_OK != err) {
+	if (GLEW_OK != err)
+	{
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
 
@@ -163,7 +165,7 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
-					//cout<< normalisedx<< " " << normalisedy<<endl;
+					cout<< normalisedx<< " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					
@@ -172,7 +174,12 @@ int main(int argc, char **argv)
 					{
 						if(gui.isInDrawWindow(normalisedx,normalisedy))
 						{
-							lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+							if(lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix())>=0)
+							{
+								Light tmpl = lh.getSelectedLight();
+								gui.setSliderLightRadius(tmpl.getRadius());
+								gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
+							}
 						}
 						if(gui.checkDialogAnswer()=="DEL")
 						{
@@ -256,7 +263,13 @@ int main(int argc, char **argv)
 											m.bindId(bindCounter);
 											vec3 lpos = m.getPos();
 											lpos.y+=1;
-											lh.addPointLight(lpos,vec3(0.0f,1.0f,0.0f),2,bindCounter);
+											Light tmpLight;
+											tmpLight.setColor(gui.getNormalizedColor());
+											tmpLight.setPos(lpos);
+											tmpLight.setRadius(gui.getSliderLightRadius());
+											tmpLight.bindId(bindCounter);
+											tmpLight.setContrast(gui.getContrast());
+											lh.addPointLight(tmpLight);
 											bindCounter++;
 										}
 										rend.addModel(m);
@@ -355,8 +368,7 @@ int main(int argc, char **argv)
 		{
 			gui.setMouseXY(normalisedx,normalisedy);
 			terrain.deselectAllSurfaceTex();
-
-			//cout << normalisedx <<" " << normalisedy<<endl;
+			lh.deselectAllLights();
 		}
 
 
@@ -364,10 +376,10 @@ int main(int argc, char **argv)
 		if(!gui.isInTextMode())
 		{
 			if(gui.getState()==GUIstate::PAINT)
-				{
+			{
 					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
 					terrain.setWorldXY(cam.getPos(),ray);
-				}
+			}
 			if(app.GetInput().IsKeyDown(sf::Key::W))
 			{
 				cam.moveForeward(0.1);
@@ -453,5 +465,7 @@ int main(int argc, char **argv)
 		app.Display();
 	}
 
+	lh.free();
+	
 	return EXIT_SUCCESS;
 }

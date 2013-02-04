@@ -27,6 +27,7 @@ private:
 	int id;
 	vec3 color;
 	float radius;
+	float contrast;
 public:
 	Light();
 	~Light();
@@ -52,6 +53,8 @@ public:
 	void setRadius(float rad);
 	vec3 getColor();
 	float getRadius();
+	void setContrast(float con);
+	float getContrast();
 };
 
 #endif // LIGHT_H

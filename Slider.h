@@ -33,6 +33,11 @@ public:
 	void setMinPos(float x, float y);
 	bool isInsideSliderSpace(float x, float y);
 	void resetPosition();
+	float getMinX();
+	float getMaxX();
+	float getMinY();
+	float getMaxY();
+	void setPos(vec3 pos);
 };
 
 #endif // SLIDER_H

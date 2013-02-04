@@ -25,6 +25,13 @@ void LightHandler::init()
 	this->bBoxShader.bindAttribLocation(3,"bBoxCordsVertex");
 	
 	this->bBoxShader.link();
+	
+	this->radRing.init();
+}
+
+void LightHandler::free()
+{
+	this->radRing.free();
 }
 
 void LightHandler::addPointLight(vec3 pos, vec3 color, float radius,int id)
@@ -37,15 +44,22 @@ void LightHandler::addPointLight(vec3 pos, vec3 color, float radius,int id)
 	l.setMesh(this->meshes.getMeshInfo(this->spotLightMeshPos));
 	this->pointLights.push_back(l);
 }
+
+void LightHandler::addPointLight(Light l)
+{
+	Light t = l;
+	t.setMesh(this->meshes.getMeshInfo(this->spotLightMeshPos));
+	this->pointLights.push_back(t);
+}
 void LightHandler::drawLights(mat4 projectionMatrix,mat4 viewMatrix)
 {
 	this->lightShader.use();
 	mat4 mvp;
 	for(unsigned int i=0;i<this->pointLights.size();i++)
 	{
-		this->lightShader.setUniform("ro",this->pointLights[i].getColor().x);
-		this->lightShader.setUniform("go",this->pointLights[i].getColor().y);
-		this->lightShader.setUniform("bo",this->pointLights[i].getColor().z);
+		this->lightShader.setUniform("ro",this->pointLights[i].getColor().x*this->pointLights[i].getContrast());
+		this->lightShader.setUniform("go",this->pointLights[i].getColor().y*this->pointLights[i].getContrast());
+		this->lightShader.setUniform("bo",this->pointLights[i].getColor().z*this->pointLights[i].getContrast());
 		//set upp uniforms for rendering call
 		mvp=projectionMatrix*viewMatrix*this->pointLights[i].getModelMatrix();
 		this->lightShader.setUniform("MVP",mvp);
@@ -74,10 +88,29 @@ void LightHandler::drawLights(mat4 projectionMatrix,mat4 viewMatrix)
 		{
 			//set upp uniforms for rendering call
 			mvp=projectionMatrix*viewMatrix*this->pointLights[i].getModelMatrix();
-			this->lightShader.setUniform("MVP",mvp);
+			this->bBoxShader.setUniform("MVP",mvp);
 			
 			glBindVertexArray(this->meshes.getBoundingBox(spotLightMeshPos)->getVaoh());
 			glDrawArrays(GL_LINE_STRIP,0,16);
+			
+			mvp=scale(mvp,vec3(this->pointLights[i].getRadius()));
+			this->bBoxShader.setUniform("MVP",mvp);
+			glBindVertexArray(this->radRing.getVaoh());
+			glDrawArrays(GL_LINE_STRIP,0,this->radRing.getNrOfLines());
+			
+			mvp*=rotate(90.0f,glm::vec3(0.0f,0.0f,1.0f));
+			this->bBoxShader.setUniform("MVP",mvp);
+			this->bBoxShader.setUniform("ro",1.0f);
+			this->bBoxShader.setUniform("go",0.0f);
+			this->bBoxShader.setUniform("bo",0.0f);
+			glDrawArrays(GL_LINE_STRIP,0,this->radRing.getNrOfLines());
+			
+			mvp*=rotate(90.0f,glm::vec3(1.0f,0.0f,0.0f));
+			this->bBoxShader.setUniform("MVP",mvp);
+			this->bBoxShader.setUniform("ro",0.0f);
+			this->bBoxShader.setUniform("go",0.0f);
+			this->bBoxShader.setUniform("bo",1.0f);
+			glDrawArrays(GL_LINE_STRIP,0,this->radRing.getNrOfLines());
 			
 		}
 	}
@@ -88,14 +121,14 @@ void LightHandler::drawLights(mat4 projectionMatrix,mat4 viewMatrix)
 void LightHandler::removeLightsBoundToModels(vector<Model> models)
 {
 	vector<int> modelIds;
-	for(int i=0;i<models.size();i++)
+	for(unsigned int i=0;i<models.size();i++)
 	{
 		if(models[i].getId()>0)
 			modelIds.push_back(models[i].getId());
 	}
-	for(int i=0;i<this->pointLights.size();i++)
+	for(unsigned int i=0;i<this->pointLights.size();i++)
 	{
-		for(int j=0;j<modelIds.size();j++)
+		for(unsigned int j=0;j<modelIds.size();j++)
 		{
 			if(modelIds[j]==this->pointLights[i].getId())
 			{
@@ -196,7 +229,7 @@ int LightHandler::selectLight(float normalizedX, float normalizedY,vec3 pos, mat
 
 void LightHandler::removeSelectedLights()
 {
-	for(int i=0;i<this->pointLights.size();i++)
+	for(unsigned int i=0;i<this->pointLights.size();i++)
 	{
 		if(this->pointLights[i].isSelected())
 		{
@@ -205,4 +238,26 @@ void LightHandler::removeSelectedLights()
 			i--;
 		}
 	}
+}
+void LightHandler::deselectAllLights()
+{
+	for(unsigned int i=0;i<this->pointLights.size();i++)
+	{
+		this->pointLights[i].unSelect();
+	}
+}
+
+Light LightHandler::getSelectedLight()
+{
+	bool found=false;
+	Light tmp;
+	for(unsigned int i=0;i<this->pointLights.size()&&!found;i++)
+	{
+		if(this->pointLights[i].isSelected())
+		{
+			found=true;
+			tmp = this->pointLights[i];
+		}
+	}
+	return tmp;
 }

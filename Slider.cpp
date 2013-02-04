@@ -79,3 +79,25 @@ void Slider::resetPosition()
 {
 	this->pos=this->startPos;
 }
+
+float Slider::getMaxX()
+{
+	return this->maxXVal;
+}
+float Slider::getMaxY()
+{
+	return this->maxYVal;
+}
+float Slider::getMinX()
+{
+	return this->minXVal;
+}
+float Slider::getMinY()
+{
+	return this->minYVal;
+}
+
+void Slider::setPos(vec3 pos)
+{
+	this->pos = pos;
+}
