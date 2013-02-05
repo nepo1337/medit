@@ -12,12 +12,12 @@ void main()
 {
   vec4 texColor1 = texture(tex1,texCoord);
   
-  vec3 ka = vec3(0.2,0.2,0.2);
+  vec3 ka = vec3(0.3,0.3,0.3);
   vec3 kd = vec3(0.7,0.7,0.7);
   vec3 n = normalize(normal);
   vec3 s;
   vec4 lightPos = vec4(1,10,1,0);
-  vec3 lightIntens = vec3(0.8,0.8,0.8);
+  vec3 lightIntens = vec3(1.0,1.0,1.0);
   
  // if(lightPos.w==0)
  // {

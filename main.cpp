@@ -28,11 +28,12 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 	y = 1 - 2 * (float)mouseY / height;
 }
 
-void save(string filename, Terrain& terr, Renderer &r,PathHandler& p)
+void save(string filename, Terrain& terr, Renderer &r,PathHandler& p,LightHandler &l)
 {
 	terr.save(path,filename);
 	r.saveModels(path,filename);
 	p.save(path,filename);
+	l.save(path,filename);
 }
 
 
@@ -174,11 +175,27 @@ int main(int argc, char **argv)
 					{
 						if(gui.isInDrawWindow(normalisedx,normalisedy))
 						{
-							if(lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix())>=0)
+							if(gui.isPlacingLightMode())
 							{
-								Light tmpl = lh.getSelectedLight();
-								gui.setSliderLightRadius(tmpl.getRadius());
-								gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
+								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+								float x=-1;
+								float z=1;
+								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+								Light l = gui.getActiveLight();
+								lh.deselectAllLights();
+								l.setPos(vec3(x,l.getPos().y,-z));
+								lh.addLight(l);
+							}
+							else
+							{
+								int lightPos=lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+								if(lightPos>=0)
+								{
+									Light tmpl = lh.getSelectedLight();
+									gui.setSliderLightRadius(tmpl.getRadius());
+									gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
+									gui.setActiveLightModel(tmpl);
+								}
 							}
 						}
 						if(gui.checkDialogAnswer()=="DEL")
@@ -269,7 +286,8 @@ int main(int argc, char **argv)
 											tmpLight.setRadius(gui.getSliderLightRadius());
 											tmpLight.bindId(bindCounter);
 											tmpLight.setContrast(gui.getContrast());
-											lh.addPointLight(tmpLight);
+											tmpLight.setLightType(LightType::POINTLIGHTSHADOW);
+											lh.addLight(tmpLight);
 											bindCounter++;
 										}
 										rend.addModel(m);
@@ -300,7 +318,7 @@ int main(int argc, char **argv)
 					{
 						if(gui.checkDialogAnswer()=="svOK")
 						{
-							save(gui.getInputText(),terrain,rend,ph);
+							save(gui.getInputText(),terrain,rend,ph,lh);
 							gui.hideSaveMapDialog();
 						}
 						if(gui.checkDialogAnswer()=="svC")
@@ -356,11 +374,13 @@ int main(int argc, char **argv)
 				else 
 				{
 					gui.moveSliders(normalisedx,normalisedy);
-					{
-						terrain.setRadius(gui.getSliderRadius());
-						terrain.setOpacity(gui.getSliderOpacity());
-						terrain.setDropoff(gui.getSliderDropoff());
-					}
+					terrain.setRadius(gui.getSliderRadius());
+					terrain.setOpacity(gui.getSliderOpacity());
+					terrain.setDropoff(gui.getSliderDropoff());
+					
+					int lightPos=lh.getSelectedLightIndex();
+					if(lightPos>=0)
+						lh.assignLightAnotherLight(lightPos,gui.getActiveLight());
 				}
 			}
 		}
@@ -444,6 +464,18 @@ int main(int argc, char **argv)
 		if(gui.getState()==GUIstate::LIGHT)
 		{
 			lh.drawLights(rend.getProjMatrix(),cam.getViewMatrix());
+			
+			if(gui.isPlacingLightMode())
+			{
+				vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+				float x=-1;
+				float z=1;
+				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+				Light l = gui.getActiveLight();
+				l.setPos(vec3(x,l.getPos().y,-z));
+				l.select();
+				lh.drawLight(rend.getProjMatrix(),cam.getViewMatrix(),l);
+			}
 		}
 		if(gui.getState()==GUIstate::MODEL &&gui.isInDrawWindow(normalisedx,normalisedy) )
 		{
@@ -460,6 +492,7 @@ int main(int argc, char **argv)
 				rend.drawModel(m);
 			}
 		}
+
 		gui.draw();
 
 		app.Display();

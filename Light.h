@@ -11,6 +11,15 @@
 using namespace std;
 using namespace glm;
 
+namespace LightType
+{
+  enum LightTypes
+  {
+    AMBIENT,POINTLIGHT,POINTLIGHTSHADOW,SPOTLIGHT
+  };
+};
+
+
 class Light
 {
 private:
@@ -28,6 +37,7 @@ private:
 	vec3 color;
 	float radius;
 	float contrast;
+	LightType::LightTypes lightType;
 public:
 	Light();
 	~Light();
@@ -55,6 +65,8 @@ public:
 	float getRadius();
 	void setContrast(float con);
 	float getContrast();
+	void setLightType(LightType::LightTypes type);
+	LightType::LightTypes getLightType();
 };
 
 #endif // LIGHT_H

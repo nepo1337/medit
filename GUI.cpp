@@ -5,6 +5,7 @@ GUI::GUI()
 }
 void GUI::init()
 {
+	this->isPlacingLights=false;
 	this->selectRoad=false;
 	this->activeModelIndex=2;
 	this->ans="";
@@ -25,6 +26,9 @@ void GUI::init()
 	this->sliderRadius = Slider(vec3(0.695f,-0.452f,0.0f));
 	this->sliderRadius.setMinPos(0.54f,-0.475f);
 	this->sliderRadius.setMaxPos(0.85f,-0.41f);
+	this->sliderHeight= Slider(vec3(0.54,-0.67,0));
+	this->sliderHeight.setMinPos(0.54,-0.7);
+	this->sliderHeight.setMaxPos(0.85,-0.62);
 	
 	this->sliderScale.setMinPos(0.56,-0.7);
 	this->sliderScale.setMaxPos(0.784,-0.65f);
@@ -95,6 +99,12 @@ void GUI::init()
 	this->menuQuest.init(vec3(0.0f),0.21,0.29,"gui/C-Quest.png");
 	this->menuRoad.init(vec3(0.0f),0.21,0.29,"gui/C-Road.png");
 	
+	//the texture for light representing the type of light used
+	this->spriteAmbient.init(vec3(0.525,0.0447,0),0.04,0.08,"gui/Ambient.png");
+	this->spritePointLight.init(vec3(0.626,0.0447,0),0.04,0.08,"gui/PointLight.png");
+	this->spritePointLightShadow.init(vec3(0.77,0.0447,0),0.04,0.08,"gui/PointLightShadow.png");
+	this->spriteSpotLight.init(vec3(0.87,0.0447,0),0.04,0.08,"gui/SpotLight.png");
+	
 	//the textures you can browse thorugh
 	this->mainTex.init(vec3(0.7f,0.53f,0),0.15,0.27);
 	this->stp1.init(vec3(0.521,0.043,0),0.04,0.07);
@@ -138,7 +148,10 @@ void GUI::init()
 	this->colorPlaneShader.setUniform("bo",normalizedColor.z);
 	glUseProgram(0);
 	
-
+	this->activeLight.setColor(this->normalizedColor);
+	this->activeLight.setContrast(this->sliderContrast.getSliderValueX());
+	this->activeLight.setRadius(this->sliderRadius.getSliderValueX()*5);
+	this->activeLight.setLightType(LightType::POINTLIGHTSHADOW);
 }
 
 GUI::~GUI()
@@ -314,6 +327,37 @@ void GUI::draw()
 		glDrawArrays(GL_TRIANGLES,0,6);
 		this->GUIshader.use();
 		
+		//draws the types of light
+		//ambient
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->spriteAmbient.getPosition());
+		this->GUIshader.setUniform("modelMatrix",spriteAmbient.getModelMatrix());
+		glBindTexture(GL_TEXTURE_2D, this->spriteAmbient.getTextureHandle());
+		glBindVertexArray(this->spriteAmbient.getVaoHandle());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		//pointlight
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->spritePointLight.getPosition());
+		this->GUIshader.setUniform("modelMatrix",spritePointLight.getModelMatrix());
+		glBindTexture(GL_TEXTURE_2D, this->spritePointLight.getTextureHandle());
+		glBindVertexArray(this->spritePointLight.getVaoHandle());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		//pointLightShadow
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->spritePointLightShadow.getPosition());
+		this->GUIshader.setUniform("modelMatrix",spritePointLightShadow.getModelMatrix());
+		glBindTexture(GL_TEXTURE_2D, this->spritePointLightShadow.getTextureHandle());
+		glBindVertexArray(this->spritePointLightShadow.getVaoHandle());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		//spotLight
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->spriteSpotLight.getPosition());
+		this->GUIshader.setUniform("modelMatrix",spriteSpotLight.getModelMatrix());
+		glBindTexture(GL_TEXTURE_2D, this->spriteSpotLight.getTextureHandle());
+		glBindVertexArray(this->spriteSpotLight.getVaoHandle());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		
 		//draws the panels in the right slot
 		glBindTexture(GL_TEXTURE_2D, this->lightPanel.getTextureHandle());
 		glBindVertexArray(this->lightPanel.getVaoHandle());
@@ -342,6 +386,14 @@ void GUI::draw()
 		glBindVertexArray(this->dragArrow.getVaoHandle());
 		modelMatrix=mat4(1.0f);
 		modelMatrix*=translate(this->sliderRadius.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		//draws the height slider
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderHeight.getPosition());
 		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
@@ -563,6 +615,7 @@ void GUI::setRightClickXY(float x, float y)
 	this->menuQuest.setPosition(vec3(x,y,0));
 	this->menuRoad.setPosition(vec3(x,y,0));
 	this->selectRoad=false;
+	this->isPlacingLights=false;
 }
 float GUI::getSliderLightRadius()
 {
@@ -602,10 +655,17 @@ void GUI::moveSliders(float x, float y)
 			this->colorPlaneShader.setUniform("go",(this->normalizedColor.y)*this->sliderContrast.getSliderValueX());
 			this->colorPlaneShader.setUniform("bo",(this->normalizedColor.z)*this->sliderContrast.getSliderValueX());
 			glUseProgram(0);
+			this->activeLight.setContrast(this->sliderContrast.getSliderValueX());
+		}
+		if(this->sliderHeight.isInsideSliderSpace(x,y))
+		{
+			this->sliderHeight.setPositionX(x);
+			this->activeLight.setPos(vec3(0,this->sliderHeight.getSliderValueX()*10,0));
 		}
 		if(this->sliderRadius.isInsideSliderSpace(x,y))
 		{
 			this->sliderRadius.setPositionX(x);
+			this->activeLight.setRadius(this->sliderRadius.getSliderValueX()*5);
 		}
 			
 		if(this->sliderColorPicker.isInsideSliderSpace(x,y))
@@ -631,6 +691,8 @@ void GUI::moveSliders(float x, float y)
 			this->colorPlaneShader.setUniform("go",this->normalizedColor.y*this->sliderContrast.getSliderValueX());
 			this->colorPlaneShader.setUniform("bo",this->normalizedColor.z*this->sliderContrast.getSliderValueX());
 			glUseProgram(0);
+			
+			this->activeLight.setColor(this->normalizedColor);
 		}
 	}
 }
@@ -756,6 +818,68 @@ void GUI::setLeftClick(float x, float y)
 				this->ans="RMP";
 				this->ans="DEL";
 			}
+		}
+	}
+	if(this->state == GUIstate::LIGHT)
+	{
+		if(this->inCircle(x,y,0.525,0.044,0.06))
+		{
+			this->activeLight.setLightType(LightType::AMBIENT);
+			this->isPlacingLights=true;
+			this->activeLight.rotateX(0);
+			this->activeLight.rotateY(0);
+			this->activeLight.rotateZ(0);
+		}
+		if(this->inCircle(x,y,0.628,0.044,0.06))
+		{
+			this->activeLight.setLightType(LightType::POINTLIGHT);
+			this->isPlacingLights=true;
+			this->activeLight.rotateX(0);
+			this->activeLight.rotateY(0);
+			this->activeLight.rotateZ(0);
+		}
+
+		if(this->inCircle(x,y,0.77,0.044,0.06))
+		{
+			this->activeLight.setLightType(LightType::POINTLIGHTSHADOW);
+			this->isPlacingLights=true;
+			this->activeLight.rotateX(0);
+			this->activeLight.rotateY(0);
+			this->activeLight.rotateZ(0);
+		}
+
+		if(this->inCircle(x,y,0.87,0.044,0.06))
+		{
+			this->activeLight.setLightType(LightType::SPOTLIGHT);
+			this->isPlacingLights=true;
+			this->activeLight.rotateX(0);
+			this->activeLight.rotateY(0);
+			this->activeLight.rotateZ(0);
+		}
+		float rotAmount=10;
+		if(this->inCircle(x,y,0.54,-0.91,0.02))
+		{
+			this->activeLight.rotateX(this->activeLight.getRot().x+rotAmount);
+		}
+		if(this->inCircle(x,y,0.562,-0.872,0.02))
+		{
+			this->activeLight.rotateX(this->activeLight.getRot().x-rotAmount);
+		}
+		if(this->inCircle(x,y,0.695,-0.916,0.02))
+		{
+			this->activeLight.rotateY(this->activeLight.getRot().y+rotAmount);
+		}
+		if(this->inCircle(x,y,0.712,-0.872,0.02))
+		{
+			this->activeLight.rotateY(this->activeLight.getRot().y-rotAmount);
+		}
+		if(this->inCircle(x,y,0.837,-0.916,0.02))
+		{
+			this->activeLight.rotateZ(this->activeLight.getRot().z+rotAmount);
+		}
+		if(this->inCircle(x,y,0.853,-0.872,0.02))
+		{
+			this->activeLight.rotateZ(this->activeLight.getRot().z-rotAmount);
 		}
 	}
 	//when clicking on the top bar
@@ -1082,4 +1206,17 @@ void GUI::setNormalizedColor(vec3 col,float contrast)
 	this->colorPlaneShader.setUniform("ro",col.x*contrast);
 	this->colorPlaneShader.setUniform("go",col.y*contrast);
 	this->colorPlaneShader.setUniform("bo",col.z*contrast);
+}
+Light GUI::getActiveLight()
+{
+	return this->activeLight;
+}
+void GUI::setActiveLightModel(Light l)
+{
+	this->activeLight=l;
+	this->sliderHeight.setPos(vec3(this->sliderHeight.getMinX()+(this->sliderHeight.getMaxX()-this->sliderHeight.getMinX())*(l.getPos().y/10),this->sliderHeight.getPosition().y,0));
+}
+bool GUI::isPlacingLightMode()
+{
+	return this->isPlacingLights;
 }

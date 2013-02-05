@@ -15,6 +15,7 @@
 #include "Model.h"
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include "Light.h"
 
 class Renderer;
 
@@ -37,14 +38,14 @@ private:
 	GLuint k;
 	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,
 	questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,
-	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap,menuRoad,roadPanel,colorPickerSprite,colorPlaneSprite;
+	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap,menuRoad,roadPanel,colorPickerSprite,colorPlaneSprite, spriteAmbient, spritePointLight,spritePointLightShadow,spriteSpotLight;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;
 	vector<GLuint> surfaceTexHandles;
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
-	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker,sliderContrast,sliderRadius;
+	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker,sliderContrast,sliderRadius,sliderHeight;
 	
 	GLSLProgram GUIshader,modelDisplayShader,colorPlaneShader;
 	//textur handles to paintable textures
@@ -64,6 +65,8 @@ private:
 	bool selectRoad;
 	sf::Image colorScale;
 	vec3 normalizedColor;
+	Light activeLight;
+	bool isPlacingLights;
 public:
 	GUI();
 	~GUI();
@@ -105,6 +108,9 @@ public:
 	float getSliderLightRadius();
 	void setSliderLightRadius(float s);
 	void setNormalizedColor(vec3 col,float contrast);
+	Light getActiveLight();
+	void setActiveLightModel(Light l);
+	bool isPlacingLightMode();
 };
 
 #endif // GUI_H

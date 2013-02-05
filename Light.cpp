@@ -142,3 +142,11 @@ float Light::getContrast()
 {
 	return this->contrast;
 }
+void Light::setLightType(LightType::LightTypes type)
+{
+	this->lightType=type;
+}
+LightType::LightTypes Light::getLightType()
+{
+	return this->lightType;
+}
