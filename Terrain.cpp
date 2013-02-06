@@ -89,9 +89,9 @@ Terrain::Terrain(int size)
 	
 	//creates a gridmap
 	this->gridMap.Create(512*this->blendsc/4,512*this->blendsc/4,sf::Color(0,0,0,0));
-	for(int i=1;i<this->gridMap.GetHeight();i+=2)
+	for(unsigned int i=1;i<this->gridMap.GetHeight();i+=2)
 	{
-		for(int j=1;j<this->gridMap.GetWidth();j+=2)
+		for(unsigned int j=1;j<this->gridMap.GetWidth();j+=2)
 		{
 			this->gridMap.SetPixel(j,i,sf::Color(0,255,0,0));
 		}
@@ -241,7 +241,15 @@ Terrain::Terrain(int size)
 	glVertexAttribPointer(3,2,GL_FLOAT,GL_FALSE,0,NULL);
 	
 	this->terrInf.vaoh=this->vaoh;
-	this->stoneSurface.init("terrain/textures/set1/","stone.png");
+	SurfaceTex tmp;
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures[0].init("terrain/textures/set1/","s1.png");
+	this->surfacesTextures[1].init("terrain/textures/set1/","s2.png");
+	this->surfacesTextures[2].init("terrain/textures/set1/","s3.png");
+	this->surfacesTextures[3].init("terrain/textures/set1/","s4.png");
 	
 	this->surfC.init();
 }
@@ -274,41 +282,47 @@ void Terrain::draw()
 	
 	
 	this->surfaceTexShader.use();
+	this->surfaceTexShader.setUniform("outAlpha",1.0f);
 	glActiveTexture(GL_TEXTURE0);
-	glBindVertexArray(this->stoneSurface.getVaoH());
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
-	this->surfaceTexShader.setUniform("outAlpha",1.0f);
-	for(unsigned int i=0; i<this->stoneSurface.getRotations()->size();i++)
+	for(int j=0;j<this->surfacesTextures.size();j++)
 	{
-		modelMatrix=mat4(1.0f);
-		modelMatrix*=glm::translate(this->stoneSurface.getPositions()->at(i));
-		modelMatrix*=glm::rotate(this->stoneSurface.getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
-		
-		mvp=this->projMatrix*this->viewMatrix*modelMatrix;
-		this->surfaceTexShader.setUniform("normalMatrix",mat3(modelMatrix));
-		this->surfaceTexShader.setUniform("MVP",mvp);
-		glBindTexture(GL_TEXTURE_2D,this->stoneSurface.getTexHandle());
-		glDrawArrays(GL_TRIANGLES,0,6);
+		glBindVertexArray(this->surfacesTextures[j].getVaoH());
+		for(unsigned int i=0; i<this->surfacesTextures[j].getRotations()->size();i++)
+		{
+			modelMatrix=mat4(1.0f);
+			modelMatrix*=glm::translate(this->surfacesTextures[j].getPositions()->at(i));
+			modelMatrix*=glm::rotate(this->surfacesTextures[j].getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
+			
+			mvp=this->projMatrix*this->viewMatrix*modelMatrix;
+			this->surfaceTexShader.setUniform("normalMatrix",mat3(modelMatrix));
+			this->surfaceTexShader.setUniform("MVP",mvp);
+			glBindTexture(GL_TEXTURE_2D,this->surfacesTextures[j].getTexHandle());
+			glDrawArrays(GL_TRIANGLES,0,6);
+		}
 	}
 	
 	this->surfaceBboxShader.use();
 	this->surfaceBboxShader.setUniform("ro",0.0f);
 	this->surfaceBboxShader.setUniform("go",1.0f);
 	this->surfaceBboxShader.setUniform("bo",0.0f);
-			
-	for(unsigned int i=0; i<this->stoneSurface.getRotations()->size();i++)
-	{
-		if(this->stoneSurface.getDrawBbox()->at(i))
+	
+	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
+	{		
+		for(unsigned int i=0; i<this->surfacesTextures[j].getRotations()->size();i++)
 		{
-			modelMatrix=mat4(1.0f);
-			modelMatrix*=glm::translate(this->stoneSurface.getPositions()->at(i));
-			modelMatrix*=glm::rotate(this->stoneSurface.getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
-			
-			mvp=this->projMatrix*this->viewMatrix*modelMatrix;
-			this->surfaceTexShader.setUniform("MVP",mvp);
-			glDrawArrays(GL_LINE_STRIP,0,5);
+			if(this->surfacesTextures[j].getDrawBbox()->at(i))
+			{
+				modelMatrix=mat4(1.0f);
+				modelMatrix*=glm::translate(this->surfacesTextures[j].getPositions()->at(i));
+				modelMatrix*=glm::rotate(this->surfacesTextures[j].getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
+				
+				mvp=this->projMatrix*this->viewMatrix*modelMatrix;
+				this->surfaceTexShader.setUniform("MVP",mvp);
+				glDrawArrays(GL_LINE_STRIP,0,5);
+			}
 		}
 	}
 	
@@ -579,12 +593,15 @@ void Terrain::save(string path, string filename)
 	
 	//starts saving the surface planes
 	out << endl<<"Surfaceplanes: (format rotY, posX,posZ) "<<endl;
-	out << "SF: " << this->stoneSurface.getName()<<endl;
-	for(int i=0;i<this->stoneSurface.getRotations()->size();i++)
+	for(int j=0;j<this->surfacesTextures.size();j++)
 	{
-		out << this->stoneSurface.getRotations()->at(i) << " " <<
-		this->stoneSurface.getPositions()->at(i).x << " " <<
-		this->stoneSurface.getPositions()->at(i).z << " " <<endl;
+		out << "SF: " << this->surfacesTextures[j].getName()<<endl;
+		for(int i=0;i<this->surfacesTextures[j].getRotations()->size();i++)
+		{
+			out << this->surfacesTextures[j].getRotations()->at(i) << " " <<
+			this->surfacesTextures[j].getPositions()->at(i).x << " " <<
+			this->surfacesTextures[j].getPositions()->at(i).z << " " <<endl;
+		}
 	}
 	out << "end"<<endl;
 	
@@ -776,7 +793,7 @@ void Terrain::addSurface(vec3 origin, vec3 ray, int id)
 			float dz = -pos.z-this->worldClickZ;//needs to turn z, since i turned it b4
 			float a = atan2(dz,dx)*180/PI+90;
 
-			this->stoneSurface.addSurface(a,pos);
+			this->surfacesTextures[id].addSurface(a,pos);
 			this->worldClickX=x;
 			this->worldClickZ=z;
 		}
@@ -791,12 +808,15 @@ bool Terrain::selectTexSurfaces(float radius, vec3 origin, vec3 ray)
 {
 	this->setWorldXY(origin,ray);
 	bool found=false;
-	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
+	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
 	{
-		if(this->inCircle(this->worldClickX,-this->worldClickZ, this->stoneSurface.getPositions()->at(i).x,this->stoneSurface.getPositions()->at(i).z,radius))
+		for(unsigned int i=0;i<this->surfacesTextures[j].getPositions()->size();i++)
 		{
-			this->stoneSurface.select(i);
-			found = true;
+			if(this->inCircle(this->worldClickX,-this->worldClickZ, this->surfacesTextures[j].getPositions()->at(i).x,this->surfacesTextures[j].getPositions()->at(i).z,radius))
+			{
+				this->surfacesTextures[j].select(i);
+				found = true;
+			}
 		}
 	}
 	return found;
@@ -804,9 +824,12 @@ bool Terrain::selectTexSurfaces(float radius, vec3 origin, vec3 ray)
 
 void Terrain::deselectAllSurfaceTex()
 {
-	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
+	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
 	{
-		this->stoneSurface.deSelect(i);
+		for(unsigned int i=0;i<this->surfacesTextures[j].getPositions()->size();i++)
+		{
+			this->surfacesTextures[j].deSelect(i);
+		}
 	}
 }
 
@@ -825,20 +848,26 @@ void Terrain::setTerState(TerrState::TerrStates state)
 vector<GLuint> Terrain::getSurfaceTexHandles()
 {
 	vector<GLuint> th;
-	th.push_back(this->stoneSurface.getTexHandle());
+	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
+	{
+		th.push_back(this->surfacesTextures[j].getTexHandle());
+	}
 	return th;
 }
 
 void Terrain::removeSelectedSurfaces()
 {
-	for(unsigned int i=0;i<this->stoneSurface.getPositions()->size();i++)
+	for(unsigned int j=0; j<this->surfacesTextures.size();j++)
 	{
-		if(this->stoneSurface.isSelected(i))
+		for(unsigned int i=0;i<this->surfacesTextures[j].getPositions()->size();i++)
 		{
-			this->stoneSurface.remove(i);
-			//lowers the index, since the remove function removes an element
-			//if not, it would cause to make a miss in the vector
-			i--;
+			if(this->surfacesTextures[j].isSelected(i))
+			{
+				this->surfacesTextures[j].remove(i);
+				//lowers the index, since the remove function removes an element
+				//if not, it would cause to make a miss in the vector
+				i--;
+			}
 		}
 	}
 }
@@ -969,9 +998,9 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 	for(int o=0;o<removedModels.size();o++)
 	{
 		
-		float rad= removedModels[o].getBoundingBox()->getBboxSide().z+0.1;
+		float rad= removedModels[o].getBoundingBox()->getBboxSide().z+2;
 		if(rad<removedModels[o].getBoundingBox()->getBboxSide().x)
-			rad=rad<removedModels[o].getBoundingBox()->getBboxSide().x+0.1;
+			rad=rad<removedModels[o].getBoundingBox()->getBboxSide().x+2;
 		
 		rad*=1.5;
 		int minX = (removedModels[o].getPos().x-rad)*(this->gridMap.GetWidth()/this->width)-1;

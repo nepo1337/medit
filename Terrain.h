@@ -75,7 +75,8 @@ private:
 	mat4 projMatrix;
 	
 	//SurfacesTex class holds a texture to the surface and positions/rotations for each surface using that tex
-	SurfaceTex stoneSurface;
+	vector<SurfaceTex> surfacesTextures;
+	
 	float worldClickX,worldClickZ;
 	bool showGridMap;
 	SurfaceCircle surfC;

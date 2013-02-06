@@ -309,7 +309,7 @@ void LightHandler::save(string path, string filename)
 		}
 		if(this->lights[i].getLightType() == LightType::AMBIENT)
 		{
-			vec3 dir=vec3(1.0,1.0,1.0);
+			vec3 dir=vec3(0.0,-1.0,0.0);
 			mat4 rot=mat4(1.0f);
 			rot*=rotate(this->lights[i].getRot().x,vec3(1.0,0.0,0.0));
 			rot*=rotate(this->lights[i].getRot().y,vec3(0.0,1.0,0.0));
@@ -321,7 +321,7 @@ void LightHandler::save(string path, string filename)
 		}
 		if(this->lights[i].getLightType() == LightType::SPOTLIGHT)
 		{
-			vec3 dir=vec3(1.0,1.0,1.0);
+			vec3 dir=vec3(0.0,-1.0,0.0);
 			mat4 rot=mat4(1.0f);
 			rot*=rotate(this->lights[i].getRot().x,vec3(1.0,0.0,0.0));
 			rot*=rotate(this->lights[i].getRot().y,vec3(0.0,1.0,0.0));

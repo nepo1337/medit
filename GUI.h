@@ -36,7 +36,7 @@ private:
 	GUIstate::GUIstates state;
 	Spritetext text;
 	GLuint k;
-	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,
+	Sprite frontPanel,backPanel,drawPanel,modelPanel,lightPanel,splashScreen,
 	questPanel,particlePanel,pathPanel,menuOff,menuDraw,menuLight,
 	menuModel,menuParticle,menuPath,menuQuest,newMap,loadMap,saveMap,menuRoad,roadPanel,colorPickerSprite,colorPlaneSprite, spriteAmbient, spritePointLight,spritePointLightShadow,spriteSpotLight;
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
@@ -45,7 +45,7 @@ private:
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
-	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker,sliderContrast,sliderRadius,sliderHeight;
+	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker,sliderContrast,sliderRadius,sliderHeight,sliderModelHeight;
 	
 	GLSLProgram GUIshader,modelDisplayShader,colorPlaneShader;
 	//textur handles to paintable textures
@@ -67,6 +67,7 @@ private:
 	vec3 normalizedColor;
 	Light activeLight;
 	bool isPlacingLights;
+	int activeSurfaceTex;
 public:
 	GUI();
 	~GUI();
@@ -74,6 +75,7 @@ public:
 	void draw();
 	void setTerrainInfo(TerrainInfo *t);
 	int getActiveTex();
+	int getActiveSurfaceTexHandle();
 	void setGuiState(GUIstate::GUIstates state);
 	void showMenu(bool ans);
 	//maybe there should be some inputclass so the gui would be realeased from checking coordinates
@@ -101,6 +103,8 @@ public:
 	Model getActiveModel();
 	void rotateActiveModelLeft(float f);
 	void rotateActiveModelRight(float f);
+	void raiseActiveModel(float f);
+	void lowerActiveModel(float f);
 	bool isSelectingRoad();
 	vec3 getNormalizedColor();
 	float getContrast();
@@ -111,6 +115,7 @@ public:
 	Light getActiveLight();
 	void setActiveLightModel(Light l);
 	bool isPlacingLightMode();
+	void drawSplashScreen();
 };
 
 #endif // GUI_H

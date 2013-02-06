@@ -20,7 +20,7 @@ using namespace std;
 using namespace glm;
 
 Intersection inters;
-string path="maps/";
+const string path="maps/";
 
 void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, float &y)
 {
@@ -49,9 +49,9 @@ int main(int argc, char **argv)
 	width=1280;
 	height=720;
 	sf::WindowSettings settings;
-	settings.DepthBits         = 24; // Request a 24 bits depth buffer
-	settings.StencilBits       = 8;  // Request a 8 bits stencil buffer
-	settings.AntialiasingLevel = 2;  // Request 2 levels of antialiasing
+	settings.DepthBits         = 24;
+	settings.StencilBits       = 8;
+	settings.AntialiasingLevel = 1;  
 	sf::Window app;
 	app.Create(sf::VideoMode(width, height, 32), "Saints Edit", sf::Style::Close|sf::Style::Resize, settings);
 	app.UseVerticalSync(true);
@@ -67,6 +67,9 @@ int main(int argc, char **argv)
 	GUI gui;
 
 	gui.init();
+	gui.drawSplashScreen();
+	app.Display();
+	
 	//sets up the terrain
 	Terrain terrain(0);
 	PathHandler ph;
@@ -170,39 +173,6 @@ int main(int argc, char **argv)
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					
-					
-					if(gui.getState()==GUIstate::LIGHT)
-					{
-						if(gui.isInDrawWindow(normalisedx,normalisedy))
-						{
-							if(gui.isPlacingLightMode())
-							{
-								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-								float x=-1;
-								float z=1;
-								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-								Light l = gui.getActiveLight();
-								lh.deselectAllLights();
-								l.setPos(vec3(x,l.getPos().y,-z));
-								lh.addLight(l);
-							}
-							else
-							{
-								int lightPos=lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
-								if(lightPos>=0)
-								{
-									Light tmpl = lh.getSelectedLight();
-									gui.setSliderLightRadius(tmpl.getRadius());
-									gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
-									gui.setActiveLightModel(tmpl);
-								}
-							}
-						}
-						if(gui.checkDialogAnswer()=="DEL")
-						{
-							lh.removeSelectedLights();
-						}
-					}
 
 					if(gui.checkDialogAnswer()=="GRID")
 					{
@@ -214,7 +184,8 @@ int main(int argc, char **argv)
 					{
 						if(gui.getState()==GUIstate::ROAD)
 						{
-							if(gui.checkDialogAnswer()=="RS") {
+							if(gui.checkDialogAnswer()=="RS")
+							{
 								terrain.removeSelectedSurfaces();
 								gui.resetDialogAns();
 							}
@@ -312,6 +283,39 @@ int main(int argc, char **argv)
 							terrain.setWorldXY(cam.getPos(),ray);
 							terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
 						}
+						
+						if(gui.getState()==GUIstate::LIGHT)
+						{
+							if(gui.isInDrawWindow(normalisedx,normalisedy))
+							{
+								if(gui.isPlacingLightMode())
+								{
+									vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+									float x=-1;
+									float z=1;
+									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+									Light l = gui.getActiveLight();
+									lh.deselectAllLights();
+									l.setPos(vec3(x,l.getPos().y,-z));
+									lh.addLight(l);
+								}
+								else
+								{
+									int lightPos=lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+									if(lightPos>=0)
+									{
+										Light tmpl = lh.getSelectedLight();
+										gui.setSliderLightRadius(tmpl.getRadius());
+										gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
+										gui.setActiveLightModel(tmpl);
+									}
+								}
+							}
+							if(gui.checkDialogAnswer()=="DEL")
+							{
+								lh.removeSelectedLights();
+							}
+						}
 					}
 
 					if(gui.isSaveMapDialogUp())
@@ -368,7 +372,7 @@ int main(int argc, char **argv)
 					{
 						terrain.setTerState(TerrState::DRAWSURFACE);
 						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-						terrain.addSurface(cam.getPos(),ray, 0);
+						terrain.addSurface(cam.getPos(),ray, 3);
 					}
 				} 
 				else 
@@ -426,6 +430,10 @@ int main(int argc, char **argv)
 
 				if(app.GetInput().IsKeyDown(sf::Key::E))
 					gui.rotateActiveModelRight(1.0f);
+				if(app.GetInput().IsKeyDown(sf::Key::R))
+					gui.raiseActiveModel(0.01);
+				if(app.GetInput().IsKeyDown(sf::Key::F))
+					gui.raiseActiveModel(-0.01);
 			}
 		}
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Middle))
@@ -473,7 +481,7 @@ int main(int argc, char **argv)
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
 				Light l = gui.getActiveLight();
 				l.setPos(vec3(x,l.getPos().y,-z));
-				l.select();
+				//l.select();
 				lh.drawLight(rend.getProjMatrix(),cam.getViewMatrix(),l);
 			}
 		}
@@ -486,7 +494,7 @@ int main(int argc, char **argv)
 			if(x!=-1)
 			{
 				m=gui.getActiveModel();
-				m.setPos(vec3(x,0,-z));
+				m.setPos(vec3(x,gui.getActiveModel().getPos().y,-z));
 				m.scaleXYZ(m.getScale());
 				m.rotateY(m.getRot().y);
 				rend.drawModel(m);

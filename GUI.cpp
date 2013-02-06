@@ -5,6 +5,7 @@ GUI::GUI()
 }
 void GUI::init()
 {
+	this->activeSurfaceTex=2;
 	this->isPlacingLights=false;
 	this->selectRoad=false;
 	this->activeModelIndex=2;
@@ -29,6 +30,10 @@ void GUI::init()
 	this->sliderHeight= Slider(vec3(0.54,-0.67,0));
 	this->sliderHeight.setMinPos(0.54,-0.7);
 	this->sliderHeight.setMaxPos(0.85,-0.62);
+	
+	this->sliderModelHeight=Slider(vec3(0.542,-0.34,0));
+	this->sliderModelHeight.setMinPos(0.542, -0.36);
+	this->sliderModelHeight.setMaxPos(0.855,-0.31);
 	
 	this->sliderScale.setMinPos(0.56,-0.7);
 	this->sliderScale.setMaxPos(0.784,-0.65f);
@@ -124,6 +129,8 @@ void GUI::init()
 	
 	this->loadMap.init(vec3(-0.2f,0.0f,0.0f),0.4,0.45,"gui/GUI-Load.png");
 	
+	this->splashScreen.init(vec3(0.0f,0.0f,0.0f),1,1,"gui/splash.png");
+	
 	text.init("", 350, 360,0.25,1280,720,"gui/Text100.png",100,100);
 	this->colorPlaneSprite.init(vec3(0.89f,0.8f,0.0f),0.05,0.08);
 	
@@ -152,6 +159,8 @@ void GUI::init()
 	this->activeLight.setContrast(this->sliderContrast.getSliderValueX());
 	this->activeLight.setRadius(this->sliderRadius.getSliderValueX()*5);
 	this->activeLight.setLightType(LightType::POINTLIGHTSHADOW);
+	
+	this->activeModel.setPos(vec3(this->activeModel.getPos().x,this->sliderModelHeight.getSliderValueX(),this->activeModel.getPos().z));
 }
 
 GUI::~GUI()
@@ -239,7 +248,7 @@ void GUI::draw()
 	//for placing and editing models
 	if(this->state == GUIstate::MODEL)
 	{
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 		//draws the models meshes
 		
 		//renderin models
@@ -298,7 +307,7 @@ void GUI::draw()
 		//draws the main panel
 		
 		this->GUIshader.use();
-		glDisable(GL_DEPTH_TEST);
+		//glDisable(GL_DEPTH_TEST);
 		
 		//draws the panels in the right slot
 		glBindTexture(GL_TEXTURE_2D, this->modelPanel.getTextureHandle());
@@ -313,6 +322,15 @@ void GUI::draw()
 		modelMatrix*=translate(this->sliderScale.getPosition());
 		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderModelHeight.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		
 	}
 	
 	//The lights panel
@@ -431,9 +449,30 @@ void GUI::draw()
 	
 	if(this->state == GUIstate::ROAD)
 	{
-		glBindTexture(GL_TEXTURE_2D, this->surfaceTexHandles[0]);
+		//displays the road textures
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[0]);
+		glBindVertexArray(this->stp1.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp1.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[1]);
+		glBindVertexArray(this->stp2.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp2.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[2]);
 		glBindVertexArray(this->mainTex.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",this->mainTex.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[3]);
+		glBindVertexArray(this->stp3.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp3.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[3]);
+		glBindVertexArray(this->stp4.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp4.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
 		//draws the panels in the right slot
@@ -640,10 +679,13 @@ void GUI::moveSliders(float x, float y)
 		if(this->sliderScale.isInsideSliderSpace(x,y))
 		{
 			this->sliderScale.setPositionX(x);
-			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
-			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
-			
 		}
+		if(this->sliderModelHeight.isInsideSliderSpace(x,y))
+		{
+			this->sliderModelHeight.setPositionX(x);
+			this->activeModel.setPos(vec3(this->activeModel.getPos().x,this->sliderModelHeight.getSliderValueX(),this->activeModel.getPos().z));
+		}
+		
 	}
 	if(this->state==GUIstate::LIGHT)
 	{
@@ -704,36 +746,92 @@ void GUI::setLeftClick(float x, float y)
 	if(this->state==GUIstate::PAINT)
 	{
 		//for browsing textures, could be replaced with a button class
-		if(this->inCircle(x,y, 0.5,0.52,0.03))
+		if(this->inCircle(x,y, 0.46,0.04,0.03))
 			this->incActiveTex();
-		if(this->inCircle(x,y, 0.9,0.52,0.03))
+		if(this->inCircle(x,y, 0.93,0.04,0.03))
 			this->decActiveTex();
+			
+		//the most left tex plane
+		if(this->inCircle(x,y, 0.523,0.05,0.045))
+			this->activeTex=(this->activeTex+6)%8;
+		//left
+		if(this->inCircle(x,y, 0.625,0.05,0.045))
+			this->activeTex=(this->activeTex+7)%8;
+			
+		//right
+		if(this->inCircle(x,y, 0.77,0.05,0.045))
+			this->activeTex=(this->activeTex+1)%8;
+		//most right
+		if(this->inCircle(x,y, 0.87,0.05,0.045))
+			this->activeTex=(this->activeTex+2)%8;
+			
 	
 	}
 	if(this->state==GUIstate::MODEL)
 	{
+		//resets the height slider for the model, if the left arrow is pressed
+		if(this->inCircle(x,y,0.518,-0.28,0.02))
+		{cout<<"FACKIT"<<endl;
+			this->sliderModelHeight.setPos(vec3(this->sliderModelHeight.getMinX(),this->sliderModelHeight.getPosition().y,this->sliderModelHeight.getPosition().z));
+		}
+		
 		//if switching model (left)
-		if(this->inCircle(x,y, 0.5,0.52,0.03))
+		if(this->inCircle(x,y, 0.46,0.04,0.03))
 		{
 			this->activeModelIndex++;
 			if(this->activeModelIndex>this->displayModels.size()-1)
 				this->activeModelIndex=0;
 			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
-			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}	
 		//switching model (right)
-		if(this->inCircle(x,y, 0.9,0.52,0.03))
+		if(this->inCircle(x,y, 0.93,0.04,0.03))
 		{
 			this->activeModelIndex--;
 			if(this->activeModelIndex<0)
 				this->activeModelIndex=this->displayModels.size()-1;
 			this->activeModel=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()];
-			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}
+		if(this->inCircle(x,y, 0.523,0.05,0.045))
+		{
+			this->activeModel=this->displayModels[abs(this->activeModelIndex)%this->displayModels.size()];
+			this->activeModelIndex--;
+			if(this->activeModelIndex<0)
+				this->activeModelIndex=this->displayModels.size()-1;
+			this->activeModelIndex--;
+			if(this->activeModelIndex<0)
+				this->activeModelIndex=this->displayModels.size()-1;
+		}
+		if(this->inCircle(x,y, 0.625,0.05,0.045))
+		{
+			this->activeModel=this->displayModels[abs(this->activeModelIndex+1)%this->displayModels.size()];
+			this->activeModelIndex--;
+			if(this->activeModelIndex<0)
+				this->activeModelIndex=this->displayModels.size()-1;
+
+		}
+		
+		if(this->inCircle(x,y, 0.77,0.05,0.045))
+		{
+			this->activeModel=this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()];
+			this->activeModelIndex++;
+			if(this->activeModelIndex>this->displayModels.size()-1)
+				this->activeModelIndex=0;
+		}
+		if(this->inCircle(x,y, 0.87,0.05,0.045))
+		{
+			this->activeModel=this->displayModels[abs(this->activeModelIndex+4)%this->displayModels.size()];
+			this->activeModelIndex++;
+			if(this->activeModelIndex>this->displayModels.size()-1)
+				this->activeModelIndex=0;
+			this->activeModelIndex++;
+			if(this->activeModelIndex>this->displayModels.size()-1)
+				this->activeModelIndex=0;
+		}
+		
+		
 		if(this->inCircle(x,y,0.84,-0.53,0.05))
 		{
 			this->sliderScale.resetPosition();
-			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}
 		float rotAmount=22.5f;
 		//checks for rotation x right
@@ -766,9 +864,6 @@ void GUI::setLeftClick(float x, float y)
 		{
 			this->activeModel.rotateZ(this->activeModel.getRot().z-rotAmount);
 		}
-		
-		
-		
 		//all the code below just scales the display window models
 		float scaleX=this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
 		float scaleY=this->displayModels[abs(this->activeModelIndex+3)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
@@ -791,6 +886,29 @@ void GUI::setLeftClick(float x, float y)
 			scale=scaleZ;
 		this->displayModels[abs(this->activeModelIndex+1)%this->displayModels.size()].scaleXYZ(0.04/(scale));
 		
+		
+		scaleX=this->displayModels[abs(this->activeModelIndex)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
+		scaleY=this->displayModels[abs(this->activeModelIndex)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
+		scaleZ=this->displayModels[abs(this->activeModelIndex)%this->displayModels.size()].getBoundingBox()->getBboxSide().z;
+		scale=scaleY;
+		if(scaleX>scaleY)
+			scale=scaleX;
+		if(scaleZ>scaleX)
+			scale=scaleZ;
+		this->displayModels[abs(this->activeModelIndex)%this->displayModels.size()].scaleXYZ(0.04/(scale));
+		
+		scaleX=this->displayModels[abs(this->activeModelIndex+4)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
+		scaleY=this->displayModels[abs(this->activeModelIndex+4)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
+		scaleZ=this->displayModels[abs(this->activeModelIndex+4)%this->displayModels.size()].getBoundingBox()->getBboxSide().z;
+		scale=scaleY;
+		if(scaleX>scaleY)
+			scale=scaleX;
+		if(scaleZ>scaleX)
+			scale=scaleZ;
+		this->displayModels[abs(this->activeModelIndex+4)%this->displayModels.size()].scaleXYZ(0.04/(scale));
+		
+		
+		
 		scaleX=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getBoundingBox()->getBboxSide().x;
 		scaleY=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getBoundingBox()->getBboxSide().y;
 		scaleZ=this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].getBoundingBox()->getBboxSide().z;
@@ -800,7 +918,7 @@ void GUI::setLeftClick(float x, float y)
 		if(scaleZ>scaleX)
 			scale=scaleZ;
 		this->displayModels[abs(this->activeModelIndex+2)%this->displayModels.size()].scaleXYZ(0.16/(scale));
-		
+		this->activeModel.setPos(vec3(this->activeModel.getPos().x,this->sliderModelHeight.getSliderValueX(),this->activeModel.getPos().z));
 	}
 	if(this->state == GUIstate::PATH)
 	{
@@ -1153,7 +1271,6 @@ void GUI::addDisplayModel(Model m)
 		this->displayModels[4].scaleXYZ(0.16/(scale));
 		{
 			this->activeModel=this->displayModels[4];
-			this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 		}
 	}
 
@@ -1168,6 +1285,7 @@ void GUI::resetDialogAns()
 }
 Model GUI::getActiveModel()
 {
+	this->activeModel.scaleXYZ(this->sliderScale.getSliderValueX()*2);
 	return this->activeModel;
 }
 void GUI::rotateActiveModelLeft(float f)
@@ -1219,4 +1337,29 @@ void GUI::setActiveLightModel(Light l)
 bool GUI::isPlacingLightMode()
 {
 	return this->isPlacingLights;
+}
+void GUI::raiseActiveModel(float f)
+{
+	this->activeModel.setPos(vec3(this->activeModel.getPos().x,this->activeModel.getPos().y+f,this->activeModel.getPos().z));
+}
+void GUI::lowerActiveModel(float f)
+{
+	this->activeModel.setPos(vec3(this->activeModel.getPos().x,this->activeModel.getPos().y-f,this->activeModel.getPos().z));
+}
+void GUI::drawSplashScreen()
+{
+	glDisable(GL_DEPTH_TEST);
+	this->GUIshader.use();
+
+	glBindTexture(GL_TEXTURE_2D, this->splashScreen.getTextureHandle());
+	glBindVertexArray(this->splashScreen.getVaoHandle());
+	this->GUIshader.setUniform("modelMatrix",splashScreen.getModelMatrix());
+	glDrawArrays(GL_TRIANGLES,0,6);
+	glEnable(GL_DEPTH_TEST);
+	glUseProgram(0);
+	glBindVertexArray(0);
+}
+int GUI::getActiveSurfaceTexHandle()
+{
+	return this->activeSurfaceTex;
 }

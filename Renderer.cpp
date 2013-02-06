@@ -242,10 +242,10 @@ void Renderer::saveModels(string path, string filename)
 	fstream file;
 	string p = path+filename+".txt";
 	file.open(p.c_str(),fstream::out|fstream::app);
-	file << "MODELS: name, pos x,y,z, rot x,y,z"<<endl;
+	file << "MODELS: name, pos x,y,z, rot x,y,z, scale"<<endl;
 	for(unsigned int i = 0; i< this->models.size();i++)
 	{
-		file << models[i].getMeshName() <<" " << models[i].getPos().x<< " " << models[i].getPos().y<< " " << models[i].getPos().z<< " " << models[i].getRot().x<< " " << models[i].getRot().y<< " " << models[i].getRot().z<< " "<<endl;
+		file << models[i].getMeshName() <<" " << models[i].getPos().x<< " " << models[i].getPos().y<< " " << models[i].getPos().z<< " " << models[i].getRot().x<< " " << models[i].getRot().y<< " " << models[i].getRot().z<< " "<<models[i].getScale()<<endl;
 	}
 	file << "end"<<endl;
 	file.close();
@@ -257,7 +257,7 @@ void Renderer::drawModel(Model m)
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
 	this->modelShader.use();
-		this->modelShader.setUniform("outAlpha",0.5f);
+		this->modelShader.setUniform("outAlpha",0.7f);
 	mat4 mvp=mat4(0.0f);
 	glActiveTexture(GL_TEXTURE0);
 	
