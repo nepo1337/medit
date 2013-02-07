@@ -247,7 +247,7 @@ int main(int argc, char **argv)
 									if(x!=-1)
 									{
 										if(m.getType()=="light")
-										{
+										{cout<<"f"<<endl;
 											m.bindId(bindCounter);
 											vec3 lpos = m.getPos();
 											lpos.y+=1;
@@ -372,15 +372,23 @@ int main(int argc, char **argv)
 					{
 						terrain.setTerState(TerrState::DRAWSURFACE);
 						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-						terrain.addSurface(cam.getPos(),ray, 3);
+						terrain.addSurface(cam.getPos(),ray, gui.getActiveSurfaceTexHandle());
 					}
 				} 
 				else 
 				{
 					gui.moveSliders(normalisedx,normalisedy);
-					terrain.setRadius(gui.getSliderRadius());
-					terrain.setOpacity(gui.getSliderOpacity());
-					terrain.setDropoff(gui.getSliderDropoff());
+					if(gui.getState()==GUIstate::PAINT)
+					{
+						terrain.setRadius(gui.getSliderRadius());
+						terrain.setOpacity(gui.getSliderOpacity());
+						terrain.setDropoff(gui.getSliderDropoff());
+					}
+					if(gui.getState()==GUIstate::ROAD)
+					{
+						terrain.setRoadSpacing(gui.getRoadSliderSpacing());
+						terrain.setRoadScale(gui.getRoadSliderScale());
+					}
 					
 					int lightPos=lh.getSelectedLightIndex();
 					if(lightPos>=0)
@@ -468,6 +476,19 @@ int main(int argc, char **argv)
 		if(gui.getState()==GUIstate::PATH)
 		{
 			ph.drawPaths();
+			if(gui.isSelectingRoad())
+			{
+				vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+				float x=-1;
+				float z=1;
+				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+				ph.drawFlag(vec3(x,0,-z));
+			}
+		}
+		if(gui.getState()==GUIstate::ROAD)
+		{
+			vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+			terrain.drawSurface(cam.getPos(),ray, gui.getActiveSurfaceTexHandle());
 		}
 		if(gui.getState()==GUIstate::LIGHT)
 		{

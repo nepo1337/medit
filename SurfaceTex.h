@@ -19,9 +19,11 @@ private:
 	GLuint texHandle;
 	GLuint vaoh;
 	GLuint vbohs[4];
-	vector<float> rotations;
+	vector<mat4> modelMatrices;
 	vector<vec3> positions;
+	vector<float> rotations;
 	vector<bool> showBbox;
+	vector<float> scales;
 	string name;
 public:
 	SurfaceTex();
@@ -29,16 +31,17 @@ public:
 	void init(string path, string texName);
 	GLuint getTexHandle();
 	GLuint getVaoH();
-	vector<float>* getRotations();
 	vector<vec3>* getPositions();
+	vector<float>* getRotations();
 	vector<bool>* getDrawBbox();
-	void addSurface(float rot, vec3 pos);
+	vector<float>* getScales();
+	void addSurface(float rot, vec3 pos,float scale);
 	string getName();
 	void select(int index);
 	void deSelect(int index);
 	bool isSelected(int index);
 	void remove(int index);
-
+	vector<mat4>* getModelMatrices();
 };
 
 #endif // SURFACETEX_H

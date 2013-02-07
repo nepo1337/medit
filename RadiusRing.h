@@ -17,6 +17,7 @@ class RadiusRing
 {
 private:
 	vec3 pos;
+	float scale;
 	GLuint vaoh;
 	GLuint vboH;
 	int nrOfLines;
@@ -24,8 +25,10 @@ public:
 	RadiusRing();
 	~RadiusRing();
 	void setPos(vec3 pos);
+	void setScale(float f);
+	float getScale();
 	vec3 getPos();
-	void init();
+	void init(int nrOfLines);
 	void free();
 	GLuint getVaoh();
 	int getNrOfLines();

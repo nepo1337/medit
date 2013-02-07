@@ -18,6 +18,7 @@
 #include <vector>
 #include "Model.h"
 #include "SurfaceCircle.h"
+#include "RadiusRing.h"
 
 using namespace std;
 using namespace glm;
@@ -79,8 +80,10 @@ private:
 	
 	float worldClickX,worldClickZ;
 	bool showGridMap;
-	SurfaceCircle surfC;
+	RadiusRing radiusMarker;
 	bool drawCircle;
+	float roadSpacing;
+	float surfaceScale;
 	
 public:
 	//the terrain has predefined sizes,0 small, 1 medium, 2 large
@@ -99,6 +102,7 @@ public:
 	void updateViewMatrix(mat4 viewMatrix);
 	void updateProjMatrix(float width, float height);
 	void addSurface(vec3 origin, vec3 ray, int id);
+	void drawSurface(vec3 origin, vec3 ray, int id);
 	void setWorldXY(vec3 origin, vec3 ray);
 	bool inCircle(float cx, float cy, float x, float y,float rad);
 	void setTerState(TerrState::TerrStates state);
@@ -112,6 +116,8 @@ public:
 	void recalcGridAroundModel(vector<Model> removedModels, vector<Model> models);
 	void showCircle();
 	void hideCircle();
+	void setRoadSpacing(float f);
+	void setRoadScale(float f);
 };
 
 #endif // TERRAIN_H

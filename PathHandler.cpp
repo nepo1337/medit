@@ -71,6 +71,30 @@ void PathHandler::updateViewMatrix(mat4 view)
 {
 	this->viewMatrix=view;
 }
+
+void PathHandler::drawFlag(vec3 pos)
+{
+	mat4 mvp=mat4(1.0f);
+	mat4 mm = mat4(1.0f);
+	
+	this->pathRenderer.use();
+	this->pathRenderer.setUniform("ro",1.0f);
+	this->pathRenderer.setUniform("go",1.0f);
+	this->pathRenderer.setUniform("bo",1.0f);
+	this->pathRenderer.setUniform("outAlpha",1);
+		
+	mm*=translate(pos);
+	mvp=this->projectionMatrix*this->viewMatrix*mm;
+	this->pathRenderer.setUniform("MVP",mvp);
+	mat3 normalMatrix=mat3(mm);
+	this->pathRenderer.setUniform("normalMatrix",normalMatrix);
+	glBindVertexArray(this->meshInfo->at(0).getVaoh());
+	glDrawArrays(GL_TRIANGLES,0,this->meshInfo->at(0).getNrOfVerts());
+	
+	glUseProgram(0);
+	glBindVertexArray(0);
+	
+}
 void PathHandler::drawPaths()
 {
 	this->pathRenderer.use();

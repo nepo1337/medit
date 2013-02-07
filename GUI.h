@@ -45,7 +45,7 @@ private:
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
-	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker,sliderContrast,sliderRadius,sliderHeight,sliderModelHeight;
+	Slider sliderOpacity,sliderSize,sliderDropoff,sliderScale,sliderColorPicker,sliderContrast,sliderRadius,sliderHeight,sliderModelHeight,sliderRoadSpacing,sliderRoadScale;
 	
 	GLSLProgram GUIshader,modelDisplayShader,colorPlaneShader;
 	//textur handles to paintable textures
@@ -116,6 +116,8 @@ public:
 	void setActiveLightModel(Light l);
 	bool isPlacingLightMode();
 	void drawSplashScreen();
+	float getRoadSliderSpacing();
+	float getRoadSliderScale();
 };
 
 #endif // GUI_H

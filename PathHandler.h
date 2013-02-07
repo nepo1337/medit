@@ -39,6 +39,7 @@ public:
 	void selectPaths(float normalizedX, float normalizedY,vec3 pos);
 	void removeSelectedPaths();
 	void save(string path, string filename);
+	void drawFlag(vec3 pos);
 };
 
 #endif // PATHHANDLER_H

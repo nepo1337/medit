@@ -41,7 +41,7 @@ void main()
 	texColor += texture(tex8,texCoord)*blendColors2.a;
 
   
-	vec3 ka = vec3(0.2,0.2,0.2);
+	vec3 ka = vec3(0.5,0.5,0.5);
 	vec3 kd = vec3(0.7,0.7,0.7);
 	vec3 n = normalize(normal);
 	vec3 s;

@@ -4,16 +4,19 @@
 
 RadiusRing::RadiusRing()
 {
+	this->scale=1.0f;
+	this->pos=vec3(1.0f);
+	this->nrOfLines=20;
 }
 
 RadiusRing::~RadiusRing()
 {
 }
 
-void RadiusRing::init()
+void RadiusRing::init(int nrOfLines)
 {
 	vector<float> points;
-	this->nrOfLines=40;
+	this->nrOfLines=nrOfLines;
 	for(int i=0;i<nrOfLines;i++)
 	{
 		points.push_back(cos((PI*i*2)/nrOfLines));
@@ -61,4 +64,12 @@ GLuint RadiusRing::getVaoh()
 int RadiusRing::getNrOfLines()
 {
 	return this->nrOfLines;
+}
+float RadiusRing::getScale()
+{
+	return this->scale;
+}
+void RadiusRing::setScale(float f)
+{
+	this->scale=f;
 }

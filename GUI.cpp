@@ -30,6 +30,12 @@ void GUI::init()
 	this->sliderHeight= Slider(vec3(0.54,-0.67,0));
 	this->sliderHeight.setMinPos(0.54,-0.7);
 	this->sliderHeight.setMaxPos(0.85,-0.62);
+	this->sliderRoadSpacing = Slider(vec3(0.85,-0.57,0));
+	this->sliderRoadSpacing.setMinPos(0.54,-0.59);
+	this->sliderRoadSpacing.setMaxPos(0.85,-0.53);
+	this->sliderRoadScale = Slider(vec3(0.54, -0.87,0));
+	this->sliderRoadScale.setMinPos(0.54,-0.88);
+	this->sliderRoadScale.setMaxPos(0.85,-0.83);
 	
 	this->sliderModelHeight=Slider(vec3(0.542,-0.34,0));
 	this->sliderModelHeight.setMinPos(0.542, -0.36);
@@ -450,27 +456,27 @@ void GUI::draw()
 	if(this->state == GUIstate::ROAD)
 	{
 		//displays the road textures
-		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[0]);
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[(this->activeSurfaceTex-2)%(this->surfaceTexHandles.size())]);
 		glBindVertexArray(this->stp1.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",this->stp1.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
-		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[1]);
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[(this->activeSurfaceTex-1)%(this->surfaceTexHandles.size())]);
 		glBindVertexArray(this->stp2.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",this->stp2.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
-		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[2]);
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[(this->activeSurfaceTex)%(this->surfaceTexHandles.size())]);
 		glBindVertexArray(this->mainTex.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",this->mainTex.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
-		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[3]);
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[(this->activeSurfaceTex+1)%(this->surfaceTexHandles.size())]);
 		glBindVertexArray(this->stp3.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",this->stp3.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
 		
-		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[3]);
+		glBindTexture(GL_TEXTURE_2D, surfaceTexHandles[(this->activeSurfaceTex+2)%(this->surfaceTexHandles.size())]);
 		glBindVertexArray(this->stp4.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",this->stp4.getModelMatrix());
 		glDrawArrays(GL_TRIANGLES,0,6);
@@ -479,6 +485,18 @@ void GUI::draw()
 		glBindTexture(GL_TEXTURE_2D, this->roadPanel.getTextureHandle());
 		glBindVertexArray(this->roadPanel.getVaoHandle());
 		this->GUIshader.setUniform("modelMatrix",roadPanel.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->dragArrow.getTextureHandle());
+		glBindVertexArray(this->dragArrow.getVaoHandle());
+		mat4 modelMatrix;
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderRoadSpacing.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
+		glDrawArrays(GL_TRIANGLES,0,6);
+		modelMatrix=mat4(1.0f);
+		modelMatrix*=translate(this->sliderRoadScale.getPosition());
+		this->GUIshader.setUniform("modelMatrix",modelMatrix);
 		glDrawArrays(GL_TRIANGLES,0,6);
 	}
 	
@@ -662,6 +680,14 @@ float GUI::getSliderLightRadius()
 }
 void GUI::moveSliders(float x, float y)
 {
+	if(this->state==GUIstate::ROAD)
+	{
+		if(this->sliderRoadSpacing.isInsideSliderSpace(x,y))
+			this->sliderRoadSpacing.setPositionX(x);
+		if(this->sliderRoadScale.isInsideSliderSpace(x,y))
+			this->sliderRoadScale.setPositionX(x);
+		
+	}
 	if(this->state==GUIstate::PAINT)
 	{
 		//move the sliders
@@ -771,7 +797,7 @@ void GUI::setLeftClick(float x, float y)
 	{
 		//resets the height slider for the model, if the left arrow is pressed
 		if(this->inCircle(x,y,0.518,-0.28,0.02))
-		{cout<<"FACKIT"<<endl;
+		{
 			this->sliderModelHeight.setPos(vec3(this->sliderModelHeight.getMinX(),this->sliderModelHeight.getPosition().y,this->sliderModelHeight.getPosition().z));
 		}
 		
@@ -1097,8 +1123,36 @@ void GUI::setLeftClick(float x, float y)
 
 	if(this->state==GUIstate::ROAD)
 	{
+		if(this->inCircle(x,y, 0.46,0.04,0.03))
+		{
+			this->activeSurfaceTex+=this->surfaceTexHandles.size()-1;
+		}
+		if(this->inCircle(x,y, 0.93,0.04,0.03))
+			this->activeSurfaceTex++;
+			
+		//the most left tex plane
+		if(this->inCircle(x,y, 0.523,0.05,0.045))
+			this->activeSurfaceTex+=this->surfaceTexHandles.size()-2;
+		//left
+		if(this->inCircle(x,y, 0.625,0.05,0.045))
+			this->activeSurfaceTex+=this->surfaceTexHandles.size()-1;
+			
+		//right
+		if(this->inCircle(x,y, 0.77,0.05,0.045))
+			this->activeSurfaceTex=this->activeSurfaceTex+1;
+		//most right
+		if(this->inCircle(x,y, 0.87,0.05,0.045))
+			this->activeSurfaceTex=this->activeSurfaceTex+2;
+		
+		//so the activeSurfaceTex wont overflow the storage of int
+		if(this->activeSurfaceTex>60000)
+			this->activeSurfaceTex=2;
+			
 		if(x>0.63 && x < 0.77 && y>-0.25&&y<-0.177)
 		{
+			if(this->inCircle(x,y, 0.93,0.04,0.03))
+				this->decActiveTex();
+			
 			this->ans="RS";
 		}
 	}
@@ -1361,5 +1415,14 @@ void GUI::drawSplashScreen()
 }
 int GUI::getActiveSurfaceTexHandle()
 {
-	return this->activeSurfaceTex;
+	return (this->activeSurfaceTex)%(this->surfaceTexHandles.size());
+}
+
+float GUI::getRoadSliderSpacing()
+{
+	return this->sliderRoadSpacing.getSliderValueX();
+}
+float GUI::getRoadSliderScale()
+{
+	return 1+(this->sliderRoadScale.getSliderValueX()*5);
 }

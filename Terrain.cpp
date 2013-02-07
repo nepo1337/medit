@@ -3,6 +3,9 @@
 
 Terrain::Terrain(int size)
 {
+	this->radiusMarker.init(80);
+	this->surfaceScale=1.0f;
+	this->roadSpacing=1.0f;
 	this->opacity=0.5;
 	this->dropoff=0.5;
 	this->activeTex=0;
@@ -246,12 +249,22 @@ Terrain::Terrain(int size)
 	this->surfacesTextures.push_back(tmp);
 	this->surfacesTextures.push_back(tmp);
 	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
+	this->surfacesTextures.push_back(tmp);
 	this->surfacesTextures[0].init("terrain/textures/set1/","s1.png");
 	this->surfacesTextures[1].init("terrain/textures/set1/","s2.png");
 	this->surfacesTextures[2].init("terrain/textures/set1/","s3.png");
 	this->surfacesTextures[3].init("terrain/textures/set1/","s4.png");
-	
-	this->surfC.init();
+	this->surfacesTextures[4].init("terrain/textures/set1/","s5.png");
+	this->surfacesTextures[5].init("terrain/textures/set1/","s6.png");
+	this->surfacesTextures[6].init("terrain/textures/set1/","s7.png");
+	this->surfacesTextures[7].init("terrain/textures/set1/","s8.png");
+	this->surfacesTextures[8].init("terrain/textures/set1/","s9.png");
+	this->surfacesTextures[9].init("terrain/textures/set1/","s10.png");
 }
 
 void Terrain::showCircle()
@@ -287,17 +300,13 @@ void Terrain::draw()
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
-	for(int j=0;j<this->surfacesTextures.size();j++)
+	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
 	{
 		glBindVertexArray(this->surfacesTextures[j].getVaoH());
-		for(unsigned int i=0; i<this->surfacesTextures[j].getRotations()->size();i++)
-		{
-			modelMatrix=mat4(1.0f);
-			modelMatrix*=glm::translate(this->surfacesTextures[j].getPositions()->at(i));
-			modelMatrix*=glm::rotate(this->surfacesTextures[j].getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
-			
-			mvp=this->projMatrix*this->viewMatrix*modelMatrix;
-			this->surfaceTexShader.setUniform("normalMatrix",mat3(modelMatrix));
+		for(unsigned int i=0; i<this->surfacesTextures[j].getModelMatrices()->size();i++)
+		{			
+			mvp=this->projMatrix*this->viewMatrix*this->surfacesTextures[j].getModelMatrices()->at(i);
+			this->surfaceTexShader.setUniform("normalMatrix",mat3(this->surfacesTextures[j].getModelMatrices()->at(i)));
 			this->surfaceTexShader.setUniform("MVP",mvp);
 			glBindTexture(GL_TEXTURE_2D,this->surfacesTextures[j].getTexHandle());
 			glDrawArrays(GL_TRIANGLES,0,6);
@@ -308,28 +317,31 @@ void Terrain::draw()
 	this->surfaceBboxShader.setUniform("ro",0.0f);
 	this->surfaceBboxShader.setUniform("go",1.0f);
 	this->surfaceBboxShader.setUniform("bo",0.0f);
-	
+	glLineWidth(2);
 	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
 	{		
-		for(unsigned int i=0; i<this->surfacesTextures[j].getRotations()->size();i++)
+		for(unsigned int i=0; i<this->surfacesTextures[j].getModelMatrices()->size();i++)
 		{
 			if(this->surfacesTextures[j].getDrawBbox()->at(i))
 			{
-				modelMatrix=mat4(1.0f);
-				modelMatrix*=glm::translate(this->surfacesTextures[j].getPositions()->at(i));
-				modelMatrix*=glm::rotate(this->surfacesTextures[j].getRotations()->at(i),glm::vec3(0.0f,1.0f,0.0f));
-				
-				mvp=this->projMatrix*this->viewMatrix*modelMatrix;
+				mvp=this->projMatrix*this->viewMatrix*this->surfacesTextures[j].getModelMatrices()->at(i);
 				this->surfaceTexShader.setUniform("MVP",mvp);
 				glDrawArrays(GL_LINE_STRIP,0,5);
 			}
 		}
 	}
 	
+	glLineWidth(4);
+	this->surfaceBboxShader.setUniform("ro",0.1f);
+	this->surfaceBboxShader.setUniform("go",0.6f);
+	this->surfaceBboxShader.setUniform("bo",0.8f);
 	if(this->drawCircle)
 	{
-		this->surfC.setPosition(vec3(this->worldClickX,0,-this->worldClickZ));
-		this->surfC.draw(this->projMatrix,this->viewMatrix);
+		this->radiusMarker.setPos(vec3(this->worldClickX,0,-this->worldClickZ));
+		mat4 mvp = this->projMatrix*this->viewMatrix*translate(vec3(this->worldClickX,0,-this->worldClickZ))*scale(mat4(1.0f),vec3(this->radiusMarker.getScale()));
+		this->surfaceTexShader.setUniform("MVP",mvp);
+		glBindVertexArray(this->radiusMarker.getVaoh());
+		glDrawArrays(GL_LINE_STRIP,0,this->radiusMarker.getNrOfLines());
 	}
 	
 	glDisable(GL_BLEND);
@@ -546,7 +558,7 @@ bool Terrain::inCircle(float cx, float cy, float x, float y)
 void Terrain::setRadius(float rad)
 {
 	this->radius=rad*100;
-	this->surfC.setScale((this->radius/1.55));
+	this->radiusMarker.setScale((rad*100)/16);
 }
 void Terrain::setOpacity(float opa)
 {
@@ -592,24 +604,25 @@ void Terrain::save(string path, string filename)
 	this->swapImg(this->blendmap2);
 	
 	//starts saving the surface planes
-	out << endl<<"Surfaceplanes: (format rotY, posX,posZ) "<<endl;
-	for(int j=0;j<this->surfacesTextures.size();j++)
+	out << endl<<"Surfaceplanes: (format rotY, posX,posZ, scale ) "<<endl;
+	for(unsigned int j=0;j<this->surfacesTextures.size();j++)
 	{
 		out << "SF: " << this->surfacesTextures[j].getName()<<endl;
-		for(int i=0;i<this->surfacesTextures[j].getRotations()->size();i++)
+		for(unsigned int i=0;i<this->surfacesTextures[j].getRotations()->size();i++)
 		{
 			out << this->surfacesTextures[j].getRotations()->at(i) << " " <<
 			this->surfacesTextures[j].getPositions()->at(i).x << " " <<
-			this->surfacesTextures[j].getPositions()->at(i).z << " " <<endl;
+			this->surfacesTextures[j].getPositions()->at(i).z << " " <<
+			this->surfacesTextures[j].getScales()->at(i)<<endl;
 		}
 	}
 	out << "end"<<endl;
 	
 	out << "GRID "<<endl;
 	out << "width, height " << this->gridMap.GetWidth()/2<<" " << this->gridMap.GetHeight()/2<<endl;
-	for(int j=1;j<this->gridMap.GetHeight()-1;j+=2)
+	for(unsigned int j=1;j<this->gridMap.GetHeight()-1;j+=2)
 	{
-		for(int i=1;i<this->gridMap.GetWidth()-1;i+=2)
+		for(unsigned int i=1;i<this->gridMap.GetWidth()-1;i+=2)
 		{
 			if(this->gridMap.GetPixel(i,j).r>0)
 				out << 1;
@@ -773,14 +786,14 @@ void Terrain::updateProjMatrix(float width, float height)
 	
 	glUseProgram(0);
 }
-void Terrain::addSurface(vec3 origin, vec3 ray, int id)
+void Terrain::drawSurface(vec3 origin, vec3 ray, int id)
 {
-	float x=0;
-	float z=0;
-	this->rayIntersectTerrain(origin,ray,x,z);
-	
-	if(!this->inCircle(this->worldClickX,this->worldClickZ,x,z,0.9))
+	if(id>=0&&id<this->surfacesTextures.size())
 	{
+		float x=0;
+		float z=0;
+		this->rayIntersectTerrain(origin,ray,x,z);
+		
 		if(x>0)
 		{
 			//calculates position and rotation for the surfaceplanes
@@ -793,9 +806,58 @@ void Terrain::addSurface(vec3 origin, vec3 ray, int id)
 			float dz = -pos.z-this->worldClickZ;//needs to turn z, since i turned it b4
 			float a = atan2(dz,dx)*180/PI+90;
 
-			this->surfacesTextures[id].addSurface(a,pos);
-			this->worldClickX=x;
-			this->worldClickZ=z;
+			SurfaceTex t;
+			t.addSurface(a,pos,this->surfaceScale);
+			
+			this->surfaceTexShader.use();
+			this->surfaceTexShader.setUniform("outAlpha",1.0f);
+			glActiveTexture(GL_TEXTURE0);
+			glEnable (GL_BLEND);
+			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glDisable(GL_DEPTH_TEST);
+
+
+			glBindVertexArray(this->surfacesTextures[id].getVaoH());
+
+			mat4 mvp=this->projMatrix*this->viewMatrix*t.getModelMatrices()->at(0);
+			this->surfaceTexShader.setUniform("normalMatrix",mat3(t.getModelMatrices()->at(0)));
+			this->surfaceTexShader.setUniform("MVP",mvp);
+			glBindTexture(GL_TEXTURE_2D,this->surfacesTextures[id].getTexHandle());
+			glDrawArrays(GL_TRIANGLES,0,6);
+
+			glDisable(GL_BLEND);
+			glEnable(GL_DEPTH_TEST);
+			glUseProgram(0);
+			glBindVertexArray(0);
+		}
+	}
+}
+void Terrain::addSurface(vec3 origin, vec3 ray, int id)
+{
+	if(id>=0&&id<this->surfacesTextures.size())
+	{
+		float x=0;
+		float z=0;
+		this->rayIntersectTerrain(origin,ray,x,z);
+		
+		if(!this->inCircle(this->worldClickX,this->worldClickZ,x,z,this->roadSpacing*this->surfaceScale))
+		{
+			if(x>0)
+			{
+				//calculates position and rotation for the surfaceplanes
+				vec3 pos;
+				pos.x=x;
+				pos.y=0;
+				pos.z=-z;
+
+				float dx = pos.x-this->worldClickX;
+				float dz = -pos.z-this->worldClickZ;//needs to turn z, since i turned it b4
+				float a = atan2(dz,dx)*180/PI+90;
+
+				this->surfacesTextures[id].addSurface(a,pos,this->surfaceScale);
+				this->worldClickX=x;
+				this->worldClickZ=z;
+			}
 		}
 	}
 }
@@ -812,7 +874,7 @@ bool Terrain::selectTexSurfaces(float radius, vec3 origin, vec3 ray)
 	{
 		for(unsigned int i=0;i<this->surfacesTextures[j].getPositions()->size();i++)
 		{
-			if(this->inCircle(this->worldClickX,-this->worldClickZ, this->surfacesTextures[j].getPositions()->at(i).x,this->surfacesTextures[j].getPositions()->at(i).z,radius))
+			if(this->inCircle(this->worldClickX,-this->worldClickZ, this->surfacesTextures[j].getPositions()->at(i).x,this->surfacesTextures[j].getPositions()->at(i).z,radius*this->surfacesTextures[j].getScales()->at(i)))
 			{
 				this->surfacesTextures[j].select(i);
 				found = true;
@@ -995,7 +1057,7 @@ void Terrain::makeGridUnderModel(Model m)
 
 void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> models)
 {
-	for(int o=0;o<removedModels.size();o++)
+	for(unsigned int o=0;o<removedModels.size();o++)
 	{
 		
 		float rad= removedModels[o].getBoundingBox()->getBboxSide().z+2;
@@ -1117,4 +1179,13 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 	glActiveTexture(GL_TEXTURE11);
 	this->makeBlendMap(this->gridTexHandle,this->gridMap);
 
+}
+
+void Terrain::setRoadSpacing(float f)
+{
+	this->roadSpacing=f;
+}
+void Terrain::setRoadScale(float f)
+{
+	this->surfaceScale=f;
 }

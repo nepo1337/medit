@@ -28,7 +28,7 @@ void LightHandler::init()
 	
 	this->bBoxShader.link();
 	
-	this->radRing.init();
+	this->radRing.init(30);
 }
 
 void LightHandler::free()
@@ -295,14 +295,14 @@ void LightHandler::save(string path, string filename)
 	{
 		if(this->lights[i].getLightType() == LightType::POINTLIGHTSHADOW)
 		{
-			file << "PLS"<<" " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
+			file << "PLS " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
 			<< " " <<this->lights[i].getRot().x << " " << this->lights[i].getRot().y <<" " << this->lights[i].getRot().z<< " "
 			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z << " " <<
 			this->lights[i].getRadius()<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::POINTLIGHT)
 		{
-			file << "PL"<<" " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
+			file << "PL " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
 			<< " " <<this->lights[i].getRot().x << " " << this->lights[i].getRot().y <<" " << this->lights[i].getRot().z<< " "
 			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z << " " <<
 			this->lights[i].getRadius()<<endl;
@@ -316,7 +316,7 @@ void LightHandler::save(string path, string filename)
 			rot*=rotate(this->lights[i].getRot().z,vec3(0.0,0.0,1.0));
 			dir=mat3(rot)*dir;
 
-			file << "AM"<<" " << " " <<dir.x << " " << dir.y <<" " << dir.z<< " "
+			file << "AM " << " " <<dir.x << " " << dir.y <<" " << dir.z<< " "
 			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::SPOTLIGHT)

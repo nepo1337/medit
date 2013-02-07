@@ -108,9 +108,17 @@ vector<vec3>* SurfaceTex::getPositions()
 {
 	return &this->positions;
 }
+vector<float>* SurfaceTex::getScales()
+{
+	return &this->scales;
+}
 vector<bool>* SurfaceTex::getDrawBbox()
 {
 	return &this->showBbox;
+}
+vector<mat4>* SurfaceTex::getModelMatrices()
+{
+	return &this->modelMatrices;
 }
 
 GLuint SurfaceTex::getTexHandle()
@@ -121,10 +129,16 @@ GLuint SurfaceTex::getVaoH()
 {
 	return this->vaoh;
 }
-void SurfaceTex::addSurface(float rot, vec3 pos)
+void SurfaceTex::addSurface(float rot, vec3 pos,float scale)
 {
 	this->rotations.push_back(rot);
 	this->positions.push_back(vec3(pos.x,0,pos.z));
+	this->scales.push_back(scale);
+	mat4 modelMatrix=mat4(1.0f);
+	modelMatrix*=translate(pos);
+	modelMatrix*=glm::scale(mat4(1.0f),vec3(scale));
+	modelMatrix*=rotate(rot,glm::vec3(0.0f,1.0f,0.0f));
+	this->modelMatrices.push_back(modelMatrix);
 	this->showBbox.push_back(false);
 }
 
@@ -149,5 +163,7 @@ void SurfaceTex::remove(int i)
 {
 	this->positions.erase(positions.begin()+i);
 	this->rotations.erase(rotations.begin()+i);
+	this->scales.erase(scales.begin()+i);
+	this->modelMatrices.erase(modelMatrices.begin()+i);
 	this->showBbox.erase(showBbox.begin()+i);
 }
