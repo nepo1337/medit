@@ -786,7 +786,7 @@ void Terrain::updateProjMatrix(float width, float height)
 	
 	glUseProgram(0);
 }
-void Terrain::drawSurface(vec3 origin, vec3 ray, int id)
+void Terrain::drawSurface(vec3 origin, vec3 ray, int id,bool isMouseDown)
 {
 	if(id>=0&&id<this->surfacesTextures.size())
 	{
@@ -807,8 +807,15 @@ void Terrain::drawSurface(vec3 origin, vec3 ray, int id)
 			float a = atan2(dz,dx)*180/PI+90;
 
 			SurfaceTex t;
-			t.addSurface(a,pos,this->surfaceScale);
-			
+			if(isMouseDown)
+			{
+				t.addSurface(a,vec3(this->worldClickX,0,-this->worldClickZ),this->surfaceScale);
+				
+				glLineWidth(4);
+			}
+			else
+				t.addSurface(0,pos,this->surfaceScale);
+				
 			this->surfaceTexShader.use();
 			this->surfaceTexShader.setUniform("outAlpha",1.0f);
 			glActiveTexture(GL_TEXTURE0);
@@ -824,6 +831,20 @@ void Terrain::drawSurface(vec3 origin, vec3 ray, int id)
 			this->surfaceTexShader.setUniform("MVP",mvp);
 			glBindTexture(GL_TEXTURE_2D,this->surfacesTextures[id].getTexHandle());
 			glDrawArrays(GL_TRIANGLES,0,6);
+			
+			if(isMouseDown)
+			{
+				this->surfaceBboxShader.use();
+				this->surfaceBboxShader.setUniform("ro",0.7f);
+				this->surfaceBboxShader.setUniform("go",0.3f);
+				this->surfaceBboxShader.setUniform("bo",0.4f);
+
+				this->radiusMarker.setPos(vec3(this->worldClickX,0,-this->worldClickZ));
+				mat4 mvp = this->projMatrix*this->viewMatrix*translate(vec3(this->worldClickX,0,-this->worldClickZ))*scale(mat4(1.0f),vec3(this->roadSpacing*this->surfaceScale));
+				this->surfaceTexShader.setUniform("MVP",mvp);
+				glBindVertexArray(this->radiusMarker.getVaoh());
+				glDrawArrays(GL_LINE_STRIP,0,this->radiusMarker.getNrOfLines());
+			}
 
 			glDisable(GL_BLEND);
 			glEnable(GL_DEPTH_TEST);
@@ -854,7 +875,7 @@ void Terrain::addSurface(vec3 origin, vec3 ray, int id)
 				float dz = -pos.z-this->worldClickZ;//needs to turn z, since i turned it b4
 				float a = atan2(dz,dx)*180/PI+90;
 
-				this->surfacesTextures[id].addSurface(a,pos,this->surfaceScale);
+				this->surfacesTextures[id].addSurface(a,vec3(this->worldClickX,0,-this->worldClickZ),this->surfaceScale);
 				this->worldClickX=x;
 				this->worldClickZ=z;
 			}

@@ -13,7 +13,7 @@ using namespace glm;
 
 class Model
 {
-private:
+protected:
 	vec3 pos;
 	vector<MeshInfo>* meshInfo;
 	BoundingBox* bbox;

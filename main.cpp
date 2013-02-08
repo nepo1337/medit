@@ -15,6 +15,8 @@
 #include "PathHandler.h"
 #include "LightHandler.h"
 #include "Light.h"
+#include "ParticleHandler.h"
+#include "Particle.h"
 
 using namespace std;
 using namespace glm;
@@ -74,6 +76,8 @@ int main(int argc, char **argv)
 	Terrain terrain(0);
 	PathHandler ph;
 	LightHandler lh;
+	ParticleHandler particleHandler;
+	particleHandler.init();
 	lh.init();
 	ph.init();
 	terrain.setRadius(gui.getSliderRadius());
@@ -91,8 +95,6 @@ int main(int argc, char **argv)
 	glViewport(0,0,width,height);
 
 	MeshHandler mh("./models/");
-
-	
 
 	for(int i=0; i<mh.getNrOfMeshes(); i++)
 	{
@@ -162,6 +164,7 @@ int main(int argc, char **argv)
 				{
 					gui.showMenu(true);
 					gui.setRightClickXY(normalisedx,normalisedy);
+					particleHandler.unselectAllParticleModels();
 				}
 			}
 
@@ -169,6 +172,33 @@ int main(int argc, char **argv)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
 				{
+					if(gui.getState()==GUIstate::PARTICLE)
+					{
+						if(gui.isInDrawWindow(normalisedx,normalisedy))
+						{
+							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+							float x=-1;
+							float z=1;
+							terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+							if(gui.isPlacingParticleSystems())
+							{
+								if(x!=-1)
+								{
+									particleHandler.unselectAllParticleModels();
+									Particle p;
+									p=gui.getActiveParticleModel();
+									p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
+									particleHandler.addParticleModel(p);
+									gui.setActiveParticleModel(particleHandler.getSelectedParticle());
+								}
+							}
+							else
+							{
+								particleHandler.selectParticles(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+								gui.setActiveParticleModel(particleHandler.getSelectedParticle());
+							}
+						}
+					}
 					cout<< normalisedx<< " " << normalisedy<<endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
@@ -203,6 +233,14 @@ int main(int argc, char **argv)
 								gui.resetDialogAns();
 							}
 						}
+						if(gui.getState()==GUIstate::PARTICLE)
+						{
+							if(gui.checkDialogAnswer()=="DEL") 
+							{
+								particleHandler.removeSelectedParticles();
+								gui.resetDialogAns();
+							}
+						}
 
 						if(gui.getState()==GUIstate::PATH)
 						{
@@ -224,7 +262,8 @@ int main(int argc, char **argv)
 									float x=-1;
 									float z=1;
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									if(x!=-1) {
+									if(x!=-1)
+									{
 										ph.addFlagToCurrentPath(vec3(x,0,-z));
 									}
 								}
@@ -247,7 +286,7 @@ int main(int argc, char **argv)
 									if(x!=-1)
 									{
 										if(m.getType()=="light")
-										{cout<<"f"<<endl;
+										{
 											m.bindId(bindCounter);
 											vec3 lpos = m.getPos();
 											lpos.y+=1;
@@ -277,7 +316,7 @@ int main(int argc, char **argv)
 								}
 							}
 						}
-						if(gui.getState()==GUIstate::NONE || gui.getState()==GUIstate::ROAD)
+						if(gui.getState()==GUIstate::ROAD)
 						{
 							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
 							terrain.setWorldXY(cam.getPos(),ray);
@@ -389,6 +428,10 @@ int main(int argc, char **argv)
 						terrain.setRoadSpacing(gui.getRoadSliderSpacing());
 						terrain.setRoadScale(gui.getRoadSliderScale());
 					}
+					if(gui.getState()==GUIstate::PARTICLE)
+					{
+						particleHandler.assignParticleNewParticle(particleHandler.getSelectedParticleIndex(),gui.getActiveParticleModel());
+					}
 					
 					int lightPos=lh.getSelectedLightIndex();
 					if(lightPos>=0)
@@ -488,7 +531,7 @@ int main(int argc, char **argv)
 		if(gui.getState()==GUIstate::ROAD)
 		{
 			vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-			terrain.drawSurface(cam.getPos(),ray, gui.getActiveSurfaceTexHandle());
+			terrain.drawSurface(cam.getPos(),ray, gui.getActiveSurfaceTexHandle(),app.GetInput().IsMouseButtonDown(sf::Mouse::Left));
 		}
 		if(gui.getState()==GUIstate::LIGHT)
 		{
@@ -521,7 +564,21 @@ int main(int argc, char **argv)
 				rend.drawModel(m);
 			}
 		}
-
+		if(gui.getState()==GUIstate::PARTICLE)
+		{
+			particleHandler.drawParticleModels(rend.getProjMatrix(),cam.getViewMatrix());
+			
+			if(gui.isPlacingParticleSystems())
+			{
+				vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+				float x=-1;
+				float z=1;
+				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+				Particle p = gui.getActiveParticleModel();
+				p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
+				particleHandler.drawParticleModel(rend.getProjMatrix(),cam.getViewMatrix(),p);
+			}
+		}
 		gui.draw();
 
 		app.Display();

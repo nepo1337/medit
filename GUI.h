@@ -16,6 +16,7 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "Light.h"
+#include "Particle.h"
 
 class Renderer;
 
@@ -68,6 +69,8 @@ private:
 	Light activeLight;
 	bool isPlacingLights;
 	int activeSurfaceTex;
+	Particle activeParticle;
+	bool placingParticleSystems;
 public:
 	GUI();
 	~GUI();
@@ -118,6 +121,9 @@ public:
 	void drawSplashScreen();
 	float getRoadSliderSpacing();
 	float getRoadSliderScale();
+	Particle getActiveParticleModel();
+	bool isPlacingParticleSystems();
+	void setActiveParticleModel(Particle p);
 };
 
 #endif // GUI_H

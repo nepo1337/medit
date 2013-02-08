@@ -102,7 +102,7 @@ public:
 	void updateViewMatrix(mat4 viewMatrix);
 	void updateProjMatrix(float width, float height);
 	void addSurface(vec3 origin, vec3 ray, int id);
-	void drawSurface(vec3 origin, vec3 ray, int id);
+	void drawSurface(vec3 origin, vec3 ray, int id,bool isMouseDown);
 	void setWorldXY(vec3 origin, vec3 ray);
 	bool inCircle(float cx, float cy, float x, float y,float rad);
 	void setTerState(TerrState::TerrStates state);
