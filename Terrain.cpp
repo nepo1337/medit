@@ -1,6 +1,144 @@
 #include "Terrain.h"
 #define PI 3.14159265
 
+void Terrain::createNewMap(int size)
+{
+	this->mapsize=size;
+	if(this->mapsize>2)
+		this->mapsize=2;
+		
+	if(this->mapsize<0)
+		this->mapsize=0;
+		
+	this->blendsc=1;
+	if(size==2)
+	{
+		this->width=256;
+		this->height=256;
+		this->blendsc=16;
+	}
+	else if(size==1)
+	{
+		this->width=128;
+		this->height=128;
+		this->blendsc=8;
+	}
+	else
+	{
+		this->width=64;
+		this->height=64;
+		this->blendsc=4;
+	}
+	
+	glDeleteBuffers(4,&this->vbohs[4]);
+	glDeleteVertexArrays(1, &this->vaoh);
+	
+	float planeVerts[]=
+	{
+		0.0f,0.0f,0.0f,
+		0.0f,0.0f,-this->height,
+		this->width,0.0f,0.0f,
+		this->width,0.0f,-this->height,
+		this->width,0.0f,0.0f,
+		0.0f,0.0f,-this->height,
+	};
+
+	float planeNorms[]=
+	{
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+	};
+	
+	float planeUvs[]=
+	{
+		0.0f,0.0f,
+		0.0f,1.0f*width/8,
+		1.0f*height/8,0.0f,
+		1.0f*height/8,1.0f*width/8,
+		1.0f*height/8,0.0f,
+		0.0f,1.0f*width/8
+	};
+	
+	float blendmapUvs[]=
+	{
+		0.0f,0.0f,
+		0.0f,1.0f,
+		1.0f,0.0f,
+		1.0f,1.0f,
+		1.0f,0.0f,
+		0.0f,1.0f
+	};
+	glGenVertexArrays(1,&vaoh);
+	glGenBuffers(4,vbohs);
+	//vertex points
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVerts),planeVerts,GL_STATIC_DRAW);
+	
+	//normals
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeNorms), planeNorms, GL_STATIC_DRAW);
+	
+	//uvs
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[2]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeUvs), planeUvs, GL_STATIC_DRAW);
+	
+	//blendmapUvs
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[3]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(blendmapUvs), blendmapUvs, GL_STATIC_DRAW);
+	
+	//SETTING UP VAO
+	glBindVertexArray(vaoh);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	
+	//vertex
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[0]);
+	glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,NULL);
+	//normal
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[1]);
+	glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,0,NULL);
+	//uv
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[2]);
+	glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,0,NULL);
+	//uv blendmap
+	glBindBuffer(GL_ARRAY_BUFFER, vbohs[3]);
+	glVertexAttribPointer(3,2,GL_FLOAT,GL_FALSE,0,NULL);
+	
+	this->terrInf.vaoh=this->vaoh;
+	
+	//creating blendmaps
+	this->blendmap1.Create(256*this->blendsc,256*this->blendsc,sf::Color(255,0,0,0));
+	this->blendmap2.Create(256*this->blendsc,256*this->blendsc,sf::Color(0,0,0,0));
+	
+	//creates a gridmap
+	this->gridMap.Create(512*this->blendsc/4,512*this->blendsc/4,sf::Color(0,0,0,0));
+	for(unsigned int i=1;i<this->gridMap.GetHeight();i+=2)
+	{
+		for(unsigned int j=1;j<this->gridMap.GetWidth();j+=2)
+		{
+			this->gridMap.SetPixel(j,i,sf::Color(0,255,0,0));
+		}
+	}
+	
+	//uploads the blendmaps, filing the handle
+	glActiveTexture(GL_TEXTURE1);
+	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+	glActiveTexture(GL_TEXTURE2);
+	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+
+	glActiveTexture(GL_TEXTURE11);
+	this->makeBlendMap(this->gridTexHandle,this->gridMap);
+	for(int i=0;i<this->surfacesTextures.size();i++)
+	{
+		this->surfacesTextures[i].clear();
+	}
+}
 Terrain::Terrain(int size)
 {
 	this->radiusMarker.init(80);
@@ -558,7 +696,7 @@ bool Terrain::inCircle(float cx, float cy, float x, float y)
 void Terrain::setRadius(float rad)
 {
 	this->radius=rad*100;
-	this->radiusMarker.setScale((rad*100)/16);
+	this->radiusMarker.setScale((rad*100)/(16));
 }
 void Terrain::setOpacity(float opa)
 {

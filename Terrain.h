@@ -118,6 +118,7 @@ public:
 	void hideCircle();
 	void setRoadSpacing(float f);
 	void setRoadScale(float f);
+	void createNewMap(int size);
 };
 
 #endif // TERRAIN_H

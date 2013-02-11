@@ -38,6 +38,7 @@ public:
 	vector<Model> removeSelectedModels();
 	void unselectAllModels();
 	vector<Model> getModels();
+	void clear();
 	
 };
 

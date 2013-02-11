@@ -444,3 +444,7 @@ void LightHandler::assignLightAnotherLight(int pos, Light l)
 		this->lights[pos].rotateZ(l.getRot().z);
 	}
 }
+void LightHandler::clear()
+{
+	this->lights.clear();
+}

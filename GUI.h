@@ -43,6 +43,8 @@ private:
 	//sprites for browsing the textures in paint mode, stp = smalltextureplane
 	Sprite mainTex,stp1,stp2,stp3,stp4;
 	vector<GLuint> surfaceTexHandles;
+	vector<Sprite> particleImagesHandles;
+	vector<Particle> particles;
 	
 	//sprites/data drag thiny
 	Sprite dragArrow;
@@ -51,6 +53,8 @@ private:
 	GLSLProgram GUIshader,modelDisplayShader,colorPlaneShader;
 	//textur handles to paintable textures
 	GLuint texHandels[8];
+	
+	int activeParticleIndex;
 	int activeTex;
 	bool menuUp;
 	float rightClickX, rightClickY;
@@ -96,7 +100,9 @@ public:
 	bool removeChar();
 	bool isInTextMode();
 	string getInputText();
+	void hideNewMapDialog();
 	void hideSaveMapDialog();
+	void hideLoadMapDialog();
 	bool isSaveMapDialogUp();
 	bool isLoadMapDialogUp();
 	bool isNewMapDialogUp();

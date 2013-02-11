@@ -42,6 +42,7 @@ public:
 	bool isSelected(int index);
 	void remove(int index);
 	vector<mat4>* getModelMatrices();
+	void clear();
 };
 
 #endif // SURFACETEX_H

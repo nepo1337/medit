@@ -6,7 +6,7 @@ namespace ParticleType
 {
   enum ParticleTypes
   {
-    FIRE,SMOKE,WATER
+    EMIT,FIRE,FLOW,GLOWRING,SMOKE
   };
 };
 

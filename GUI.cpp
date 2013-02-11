@@ -6,6 +6,7 @@ GUI::GUI()
 void GUI::init()
 {
 	this->activeSurfaceTex=2;
+	this->activeParticleIndex=2;
 	this->isPlacingLights=false;
 	this->placingParticleSystems=false;
 	this->selectRoad=false;
@@ -169,6 +170,31 @@ void GUI::init()
 	
 	this->activeModel.setPos(vec3(this->activeModel.getPos().x,this->sliderModelHeight.getSliderValueX(),this->activeModel.getPos().z));
 	this->activeParticle.setColor(this->normalizedColor);
+	this->activeParticle.setParticleType(ParticleType::FIRE);
+	
+	Sprite p;
+	particleImagesHandles.push_back(p);
+	particleImagesHandles.push_back(p);
+	particleImagesHandles.push_back(p);
+	particleImagesHandles.push_back(p);
+	particleImagesHandles.push_back(p);
+	this->particleImagesHandles[0].init(vec3(0.0f),0.0,0.0,"models/particles/emit.png");
+	this->particleImagesHandles[1].init(vec3(0.0f),0.0,0.0,"models/particles/fire.png");
+	this->particleImagesHandles[2].init(vec3(0.57,0.50,0.0f),0.1,0.18,"models/particles/flow.png");
+	this->particleImagesHandles[3].init(vec3(0.0f),0.0,0.0,"models/particles/glowring.png");
+	this->particleImagesHandles[4].init(vec3(0.0f),0.0,0.0,"models/particles/smoke.png");
+	
+	Particle p1;
+	this->particles.push_back(p1);
+	this->particles.push_back(p1);
+	this->particles.push_back(p1);
+	this->particles.push_back(p1);
+	this->particles.push_back(p1);
+	this->particles[0].setParticleType(ParticleType::EMIT);
+	this->particles[1].setParticleType(ParticleType::FIRE);
+	this->particles[2].setParticleType(ParticleType::FLOW);
+	this->particles[3].setParticleType(ParticleType::GLOWRING);
+	this->particles[4].setParticleType(ParticleType::SMOKE);
 }
 
 GUI::~GUI()
@@ -428,6 +454,33 @@ void GUI::draw()
 	//The particle panel
 	if(this->state == GUIstate::PARTICLE)
 	{
+		//draws the browseble particle pictures
+		glBindTexture(GL_TEXTURE_2D, this->particleImagesHandles[(this->activeParticleIndex-2)%this->particleImagesHandles.size()].getTextureHandle());
+		glBindVertexArray(this->stp1.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp1.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->particleImagesHandles[(this->activeParticleIndex-1)%this->particleImagesHandles.size()].getTextureHandle());
+		glBindVertexArray(this->stp2.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp2.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->particleImagesHandles[(this->activeParticleIndex)%this->particleImagesHandles.size()].getTextureHandle());
+		glBindVertexArray(this->particleImagesHandles[2].getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->particleImagesHandles[2].getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->particleImagesHandles[(this->activeParticleIndex+1)%this->particleImagesHandles.size()].getTextureHandle());
+		glBindVertexArray(this->stp3.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp3.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		glBindTexture(GL_TEXTURE_2D, this->particleImagesHandles[(this->activeParticleIndex+2)%this->particleImagesHandles.size()].getTextureHandle());
+		glBindVertexArray(this->stp4.getVaoHandle());
+		this->GUIshader.setUniform("modelMatrix",this->stp4.getModelMatrix());
+		glDrawArrays(GL_TRIANGLES,0,6);
+		
+		
 		//draws the color choosed
 		mat4 modelMatrix=mat4(1.0f);
 		modelMatrix*=translate(this->colorPlaneSprite.getPosition());
@@ -687,6 +740,7 @@ void GUI::showMenu(bool ans)
 	this->menuUp=ans;
 	this->activeParticle = Particle();
 	this->activeParticle.setColor(this->normalizedColor);
+	this->activeParticle.setParticleType(ParticleType::FIRE);
 }
 
 void GUI::setGuiState(GUIstate::GUIstates state)
@@ -1151,7 +1205,7 @@ void GUI::setLeftClick(float x, float y)
 		{
 			cout<<"EXIT"<<endl;
 		}
-		//exit
+		//DELETE OBJECT
 		if(x>-0.62&&x<-0.44)
 		{
 			this->ans = "DEL";
@@ -1187,13 +1241,25 @@ void GUI::setLeftClick(float x, float y)
 		if(x>-0.367&&x<-0.212&&y>-0.16&&y<-0.09)
 		{
 			this->ans="nmOK";
-			this->showNewMapSprite=false;
+			//this->showNewMapSprite=false;
 		}
 		//if cancel
 		if(x>-0.181&&x<-0.02&&y>-0.16&&y<-0.09)
 		{
 			this->ans="nmC";
-			this->showNewMapSprite=false;
+			//this->showNewMapSprite=false;
+		}
+		if(this->inCircle(x,y,-0.31,0.01,0.07))
+		{
+			this->ans="nmCS";
+		}
+		if(this->inCircle(x,y,-0.196,0.01,0.07))
+		{
+			this->ans="nmCM";
+		}
+		if(this->inCircle(x,y,-0.082,0.01,0.07))
+		{
+			this->ans="nmCL";
 		}
 	}
 	
@@ -1203,14 +1269,14 @@ void GUI::setLeftClick(float x, float y)
 		if(x>-0.39&&x<-0.232&&y>-0.088&&y<-0.033)
 		{
 			this->ans="lmOK";
-			this->showLoadMapSprite=false;
+			//this->showLoadMapSprite=false;
 			this->textMode=false;
 		}
 		//if cancel
 		if(x>-0.2&&x<-0.045&&y>-0.09&&y<-0.02)
 		{
-			this->ans="loC";
-			this->showLoadMapSprite=false;
+			this->ans="lmC";
+			//this->showLoadMapSprite=false;
 			this->textMode=false;
 		}
 	}
@@ -1231,6 +1297,34 @@ void GUI::setLeftClick(float x, float y)
 			//this->showSaveMapSprite=false;
 			this->textMode=false;
 		}
+	}
+	
+	if(this->state==GUIstate::PARTICLE)
+	{
+		if(this->inCircle(x,y, 0.57,0.76,0.03))
+		{
+			this->activeParticleIndex+=this->particleImagesHandles.size()-1;
+		}
+		if(this->inCircle(x,y, 0.57,0.236,0.03))
+			this->activeParticleIndex++;
+			
+		//the most left tex plane
+		if(this->inCircle(x,y, 0.523,0.05,0.045))
+			this->activeParticleIndex+=this->particleImagesHandles.size()-2;
+		//left
+		if(this->inCircle(x,y, 0.625,0.05,0.045))
+			this->activeParticleIndex+=this->particleImagesHandles.size()-1;
+			
+		//right
+		if(this->inCircle(x,y, 0.77,0.05,0.045))
+			this->activeParticleIndex=this->activeParticleIndex+1;
+		//most right
+		if(this->inCircle(x,y, 0.87,0.05,0.045))
+			this->activeParticleIndex=this->activeParticleIndex+2;
+		
+		//so the activeSurfaceTex wont overflow the storage of int
+		if(this->activeParticleIndex>60000)
+			this->activeParticleIndex=2;
 	}
 
 	if(this->state==GUIstate::ROAD)
@@ -1393,6 +1487,10 @@ string GUI::getInputText()
 {
 	return this->text.getText();
 }
+void GUI::hideLoadMapDialog()
+{
+	this->showLoadMapSprite=false;
+}
 void GUI::hideSaveMapDialog()
 {
 	showSaveMapSprite=false;
@@ -1400,6 +1498,10 @@ void GUI::hideSaveMapDialog()
 bool GUI::isSaveMapDialogUp()
 {
 	return showSaveMapSprite;
+}
+void GUI::hideNewMapDialog()
+{
+	showNewMapSprite=false;
 }
 bool GUI::isLoadMapDialogUp()
 {
@@ -1540,6 +1642,7 @@ float GUI::getRoadSliderScale()
 }
 Particle GUI::getActiveParticleModel()
 {
+	this->activeParticle.setParticleType(this->particles[(this->activeParticleIndex)%this->particleImagesHandles.size()].getParticleType());
 	return this->activeParticle;
 }
 bool GUI::isPlacingParticleSystems()
@@ -1549,6 +1652,8 @@ bool GUI::isPlacingParticleSystems()
 void GUI::setActiveParticleModel(Particle p)
 {
 	this->activeParticle=p;
+	this->activeParticleIndex = p.getParticleType()+this->particleImagesHandles.size();
+	cout << this->activeParticleIndex<<endl;
 	this->sliderHeight.setPos(vec3(this->sliderHeight.getMinX()+(this->sliderHeight.getMaxX()-this->sliderHeight.getMinX())*(p.getPos().y/10),this->sliderHeight.getPosition().y,0));
 	
 	this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*p.getContrast(),this->sliderContrast.getPosition().y,0));

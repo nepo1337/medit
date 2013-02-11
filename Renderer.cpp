@@ -250,7 +250,10 @@ void Renderer::saveModels(string path, string filename)
 	file << "end"<<endl;
 	file.close();
 }
-
+void Renderer::clear()
+{
+	this->models.clear();
+}
 void Renderer::drawModel(Model m)
 {
 	glEnable(GL_BLEND);

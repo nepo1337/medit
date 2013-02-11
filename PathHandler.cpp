@@ -284,3 +284,8 @@ void PathHandler::save(string path, string filename)
 	}
 	file.close();
 }
+
+void PathHandler::clear()
+{
+	this->Paths.clear();
+}

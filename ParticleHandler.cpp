@@ -109,7 +109,7 @@ void ParticleHandler::drawParticleModels(mat4 projectionMatrix, mat4 viewMatrix)
 }
 void ParticleHandler::unselectAllParticleModels()
 {
-	for(unsigned i = 0;i<this->particleModels.size();i++)
+	for(unsigned int i = 0;i<this->particleModels.size();i++)
 	{
 		this->particleModels[i].unSelect();
 	}
@@ -125,10 +125,18 @@ void ParticleHandler::addParticleModel(Particle p)
 	this->selectedParticleIndex=this->particleModels.size()-1;
 }
 void ParticleHandler::removeSelectedParticles()
-{	for(unsigned i = 0;i<this->particleModels.size();i++)
+{	
+	/*
+	if(selectedParticleIndex>=0&&selectedParticleIndex<this->particleModels.size())
+	{
+		this->particleModels[selectedParticleIndex]=this->particleModels[this->particleModels.size()-1];
+		this->particleModels.pop_back();
+	}*/
+	for(int i = 0;i<this->particleModels.size();i++)
 	{
 		if(this->particleModels[i].isSelected())
 		{
+			cout << i << endl;
 			this->particleModels[i]=this->particleModels[this->particleModels.size()-1];
 			this->particleModels.pop_back();
 			i--;
@@ -203,6 +211,7 @@ int ParticleHandler::selectParticles(float normalizedX, float normalizedY,vec3 p
 			else if(-e-sides[i]>0 || -e+sides[i]<0)
 				found=false;
 		}
+		
 		if(found)
 		{
 			if(tmin>0)
@@ -236,9 +245,48 @@ void ParticleHandler::assignParticleNewParticle(int index, Particle p)
 		this->particleModels[index].setMesh(this->meshes.getMeshInfo(0));
 		this->particleModels[index].setBoundingBox(this->meshes.getBoundingBox(0));
 	}
+	
 }
 
 int ParticleHandler::getSelectedParticleIndex()
 {
-	return this->selectedParticleIndex;
+	int index =-1;
+	for(unsigned int i=0;i<this->particleModels.size();i++)
+	{
+		if(this->particleModels[i].isSelected())
+			index=i;
+	}
+	return index;
+}
+
+void ParticleHandler::save(string path, string filename)
+{
+	fstream file;
+	string p = path+filename+".txt";
+	file.open(p.c_str(),fstream::out|fstream::app);
+	file << "PARTICLESYSTEMS: type, pos x,y,z, rot x,y,z, color r,g,b"<<endl;
+	
+	for(int i=0;i<this->particleModels.size();i++)
+	{
+		if(this->particleModels[i].getParticleType()==ParticleType::GLOWRING)
+			file<<"GLOWRING ";
+		if(this->particleModels[i].getParticleType()==ParticleType::FIRE)
+			file<<"FIRE ";
+		if(this->particleModels[i].getParticleType()==ParticleType::EMIT)
+			file<<"EMIT ";
+		if(this->particleModels[i].getParticleType()==ParticleType::SMOKE)
+			file<<"SMOKE ";
+		if(this->particleModels[i].getParticleType()==ParticleType::FLOW)
+			file<<"FLOW ";
+		file << this->particleModels[i].getPos().x << " " << this->particleModels[i].getPos().y << " " << this->particleModels[i].getPos().z << " " 
+		<< this->particleModels[i].getRot().x << " " << this->particleModels[i].getRot().y << " " << this->particleModels[i].getRot().z << " " 
+		<< this->particleModels[i].getColor().x << " " << this->particleModels[i].getColor().y << " " << this->particleModels[i].getColor().z << endl;
+	}
+	file << "end"<<endl;
+	file.close();
+}
+
+void ParticleHandler::clear()
+{
+	this->particleModels.clear();
 }

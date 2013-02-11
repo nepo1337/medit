@@ -13,6 +13,7 @@
 #include "MeshInfo.h"
 #include "Particle.h"
 #include <vector>
+#include <fstream>
 
 using namespace std;
 using namespace glm;
@@ -38,6 +39,8 @@ public:
 	Particle getSelectedParticle();
 	void assignParticleNewParticle(int index, Particle p);
 	int getSelectedParticleIndex();
+	void save(string path, string filename);
+	void clear();
 };
 
 #endif // PARTICLEHANDLER_H

@@ -30,12 +30,13 @@ void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, fl
 	y = 1 - 2 * (float)mouseY / height;
 }
 
-void save(string filename, Terrain& terr, Renderer &r,PathHandler& p,LightHandler &l)
+void save(string filename, Terrain& terr, Renderer &r,PathHandler& p,LightHandler &l, ParticleHandler &part)
 {
 	terr.save(path,filename);
 	r.saveModels(path,filename);
 	p.save(path,filename);
 	l.save(path,filename);
+	part.save(path,filename);
 }
 
 
@@ -171,35 +172,7 @@ int main(int argc, char **argv)
 			if(event.Type == sf::Event::MouseButtonPressed)
 			{
 				if(event.MouseButton.Button==sf::Mouse::Left)
-				{
-					if(gui.getState()==GUIstate::PARTICLE)
-					{
-						if(gui.isInDrawWindow(normalisedx,normalisedy))
-						{
-							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-							float x=-1;
-							float z=1;
-							terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-							if(gui.isPlacingParticleSystems())
-							{
-								if(x!=-1)
-								{
-									particleHandler.unselectAllParticleModels();
-									Particle p;
-									p=gui.getActiveParticleModel();
-									p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
-									particleHandler.addParticleModel(p);
-									gui.setActiveParticleModel(particleHandler.getSelectedParticle());
-								}
-							}
-							else
-							{
-								particleHandler.selectParticles(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
-								gui.setActiveParticleModel(particleHandler.getSelectedParticle());
-							}
-						}
-					}
-					cout<< normalisedx<< " " << normalisedy<<endl;
+				{cout<<normalisedx<< " " << normalisedy << endl;
 					gui.setLeftClick(normalisedx,normalisedy);
 					terrain.setActiveTex(gui.getActiveTex());
 					
@@ -212,6 +185,34 @@ int main(int argc, char **argv)
 
 					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 					{
+						
+						if(gui.getState()==GUIstate::PARTICLE)
+						{
+							if(gui.isInDrawWindow(normalisedx,normalisedy))
+							{
+								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+								float x=-1;
+								float z=1;
+								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+								if(gui.isPlacingParticleSystems())
+								{
+									if(x!=-1)
+									{
+										particleHandler.unselectAllParticleModels();
+										Particle p;
+										p=gui.getActiveParticleModel();
+										p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
+										particleHandler.addParticleModel(p);
+										gui.setActiveParticleModel(particleHandler.getSelectedParticle());
+									}
+								}
+								else
+								{
+									particleHandler.selectParticles(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+									gui.setActiveParticleModel(particleHandler.getSelectedParticle());
+								}
+							}
+						}
 						if(gui.getState()==GUIstate::ROAD)
 						{
 							if(gui.checkDialogAnswer()=="RS")
@@ -361,11 +362,69 @@ int main(int argc, char **argv)
 					{
 						if(gui.checkDialogAnswer()=="svOK")
 						{
-							save(gui.getInputText(),terrain,rend,ph,lh);
+							save(gui.getInputText(),terrain,rend,ph,lh,particleHandler);
 							gui.hideSaveMapDialog();
 						}
 						if(gui.checkDialogAnswer()=="svC")
+						{
 							gui.hideSaveMapDialog();
+						}
+					}
+					if(gui.isNewMapDialogUp())
+					{
+						if(gui.checkDialogAnswer()=="nmCS")
+						{
+							terrain.createNewMap(0);
+							rend.clear();
+							ph.clear();
+							lh.clear();
+							particleHandler.clear();
+							gui.hideNewMapDialog();
+						}
+						
+						if(gui.checkDialogAnswer()=="nmCM")
+						{
+							terrain.createNewMap(1);
+							rend.clear();
+							ph.clear();
+							lh.clear();
+							particleHandler.clear();
+							gui.hideNewMapDialog();
+						}
+						
+						if(gui.checkDialogAnswer()=="nmCL")
+						{
+							terrain.createNewMap(2);
+							rend.clear();
+							ph.clear();
+							lh.clear();
+							particleHandler.clear();
+							gui.hideNewMapDialog();
+						}
+						if(gui.checkDialogAnswer()=="nmOK")
+						{
+							terrain.createNewMap(0);
+							rend.clear();
+							ph.clear();
+							lh.clear();
+							particleHandler.clear();
+							gui.hideNewMapDialog();
+						}
+						if(gui.checkDialogAnswer()=="nmC")
+						{
+							gui.hideNewMapDialog();
+						}
+					}
+					if(gui.isLoadMapDialogUp())
+					{
+						if(gui.checkDialogAnswer()=="lmOK")
+						{
+							gui.hideLoadMapDialog();
+						}
+						if(gui.checkDialogAnswer()=="lmC")
+						{
+							gui.hideLoadMapDialog();
+						}
 					}
 				}
 			}

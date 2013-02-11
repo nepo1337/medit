@@ -167,3 +167,11 @@ void SurfaceTex::remove(int i)
 	this->modelMatrices.erase(modelMatrices.begin()+i);
 	this->showBbox.erase(showBbox.begin()+i);
 }
+void SurfaceTex::clear()
+{
+	this->positions.clear();
+	this->rotations.clear();
+	this->scales.clear();
+	this->modelMatrices.clear();
+	this->showBbox.clear();
+}
