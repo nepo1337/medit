@@ -38,9 +38,9 @@ void ParticleHandler::drawParticleModel(mat4 projectionMatrix, mat4 viewMatrix,P
 	this->particleShader.setUniform("outAlpha",0.7f);
 	mat4 mvp;
 	
-	this->particleShader.setUniform("ro",particle.getColor().x*particle.getContrast());
-	this->particleShader.setUniform("go",particle.getColor().y*particle.getContrast());
-	this->particleShader.setUniform("bo",particle.getColor().z*particle.getContrast());
+	this->particleShader.setUniform("ro",particle.getColor().x);
+	this->particleShader.setUniform("go",particle.getColor().y);
+	this->particleShader.setUniform("bo",particle.getColor().z);
 	//set upp uniforms for rendering call
 	mvp=projectionMatrix*viewMatrix*particle.getModelMatrix();
 	this->particleShader.setUniform("MVP",mvp);
@@ -66,9 +66,9 @@ void ParticleHandler::drawParticleModels(mat4 projectionMatrix, mat4 viewMatrix)
 	mat4 mvp;
 	for(unsigned int i=0;i<this->particleModels.size();i++)
 	{
-		this->particleShader.setUniform("ro",this->particleModels[i].getColor().x*this->particleModels[i].getContrast());
-		this->particleShader.setUniform("go",this->particleModels[i].getColor().y*this->particleModels[i].getContrast());
-		this->particleShader.setUniform("bo",this->particleModels[i].getColor().z*this->particleModels[i].getContrast());
+		this->particleShader.setUniform("ro",this->particleModels[i].getColor().x);
+		this->particleShader.setUniform("go",this->particleModels[i].getColor().y);
+		this->particleShader.setUniform("bo",this->particleModels[i].getColor().z);
 		//set upp uniforms for rendering call
 		mvp=projectionMatrix*viewMatrix*this->particleModels[i].getModelMatrix();
 		this->particleShader.setUniform("MVP",mvp);
@@ -120,7 +120,7 @@ void ParticleHandler::addParticleModel(Particle p)
 	this->particleModels.push_back(p);
 	this->particleModels[this->particleModels.size()-1].setMesh(this->meshes.getMeshInfo(0));
 	this->particleModels[this->particleModels.size()-1].setBoundingBox(this->meshes.getBoundingBox(0));
-	this->particleModels[this->particleModels.size()-1].select();
+	//this->particleModels[this->particleModels.size()-1].select();
 	this->selectedParticle=this->particleModels[this->particleModels.size()-1];
 	this->selectedParticleIndex=this->particleModels.size()-1;
 }
@@ -280,7 +280,7 @@ void ParticleHandler::save(string path, string filename)
 			file<<"FLOW ";
 		file << this->particleModels[i].getPos().x << " " << this->particleModels[i].getPos().y << " " << this->particleModels[i].getPos().z << " " 
 		<< this->particleModels[i].getRot().x << " " << this->particleModels[i].getRot().y << " " << this->particleModels[i].getRot().z << " " 
-		<< this->particleModels[i].getColor().x << " " << this->particleModels[i].getColor().y << " " << this->particleModels[i].getColor().z << endl;
+		<< this->particleModels[i].getColor().x*this->particleModels[i].getContrast() << " " << this->particleModels[i].getColor().y*this->particleModels[i].getContrast() << " " << this->particleModels[i].getColor().z*this->particleModels[i].getContrast() << endl;
 	}
 	file << "end"<<endl;
 	file.close();

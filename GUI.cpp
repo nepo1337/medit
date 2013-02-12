@@ -23,7 +23,7 @@ void GUI::init()
 	this->sliderOpacity=Slider(vec3(0.675f,-0.88f,0.0f));
 	this->sliderScale=Slider(vec3(0.672,-0.68,0.0));
 	this->sliderColorPicker=Slider(vec3(0.8245,0.4975,0));
-	this->sliderContrast = Slider(vec3(0.85f,-0.25f,0.0f));
+	this->sliderContrast = Slider(vec3(0.695f,-0.25f,0.0f));
 	this->sliderContrast.setMinPos(0.54f,-0.275f);
 	this->sliderContrast.setMaxPos(0.85f,-0.21f);
 	this->sliderRadius = Slider(vec3(0.695f,-0.452f,0.0f));
@@ -164,7 +164,7 @@ void GUI::init()
 	glUseProgram(0);
 	
 	this->activeLight.setColor(this->normalizedColor);
-	this->activeLight.setContrast(this->sliderContrast.getSliderValueX());
+	this->activeLight.setContrast(1);
 	this->activeLight.setRadius(this->sliderRadius.getSliderValueX()*5);
 	this->activeLight.setLightType(LightType::POINTLIGHTSHADOW);
 	
@@ -811,11 +811,28 @@ void GUI::moveSliders(float x, float y)
 		{
 			this->sliderContrast.setPositionX(x);
 			this->colorPlaneShader.use();
-			this->colorPlaneShader.setUniform("ro",(this->normalizedColor.x)*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("go",(this->normalizedColor.y)*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("bo",(this->normalizedColor.z)*this->sliderContrast.getSliderValueX());
+			float sliderValue= (this->sliderContrast.getSliderValueX()*2)-1;
+			float r=0;
+			float g=0;
+			float b=0;
+			if(sliderValue<0)
+				r=std::max(this->normalizedColor.x+sliderValue,0.0f);
+			else
+				r=std::min(this->normalizedColor.x+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("ro",r);
+			if(sliderValue<0)
+				g=std::max(this->normalizedColor.y+sliderValue,0.0f);
+			else
+				g=std::min(this->normalizedColor.y+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("go",g);
+			if(sliderValue<0)
+				b=std::max(this->normalizedColor.z+sliderValue,0.0f);
+			else
+				b=std::min(this->normalizedColor.z+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("bo",b);
 			glUseProgram(0);
-			this->activeParticle.setContrast(this->sliderContrast.getSliderValueX());
+			this->activeParticle.setContrast(1.0f);
+			this->activeParticle.setColor(vec3(r,g,b));
 		}
 		
 		if(this->sliderColorPicker.isInsideSliderSpace(x,y))
@@ -837,11 +854,27 @@ void GUI::moveSliders(float x, float y)
 			this->normalizedColor.z = ((float)colorPicked.b/255);
 			
 			this->colorPlaneShader.use();
-			this->colorPlaneShader.setUniform("ro",this->normalizedColor.x*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("go",this->normalizedColor.y*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("bo",this->normalizedColor.z*this->sliderContrast.getSliderValueX());
+			float sliderValue= (this->sliderContrast.getSliderValueX()*2)-1;
+			float r=0;
+			float g=0;
+			float b=0;
+			if(sliderValue<0)
+				r=std::max(this->normalizedColor.x+sliderValue,0.0f);
+			else
+				r=std::min(this->normalizedColor.x+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("ro",r);
+			if(sliderValue<0)
+				g=std::max(this->normalizedColor.y+sliderValue,0.0f);
+			else
+				g=std::min(this->normalizedColor.y+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("go",g);
+			if(sliderValue<0)
+				b=std::max(this->normalizedColor.z+sliderValue,0.0f);
+			else
+				b=std::min(this->normalizedColor.z+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("bo",b);
 			glUseProgram(0);
-			this->activeParticle.setColor(this->normalizedColor);
+			this->activeParticle.setColor(vec3(r,g,b));
 		}
 		if(this->sliderHeight.isInsideSliderSpace(x,y))
 		{
@@ -855,11 +888,28 @@ void GUI::moveSliders(float x, float y)
 		{
 			this->sliderContrast.setPositionX(x);
 			this->colorPlaneShader.use();
-			this->colorPlaneShader.setUniform("ro",(this->normalizedColor.x)*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("go",(this->normalizedColor.y)*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("bo",(this->normalizedColor.z)*this->sliderContrast.getSliderValueX());
+			float sliderValue= (this->sliderContrast.getSliderValueX()*2)-1;
+			float r=0;
+			float g=0;
+			float b=0;
+			if(sliderValue<0)
+				r=std::max(this->normalizedColor.x+sliderValue,0.0f);
+			else
+				r=std::min(this->normalizedColor.x+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("ro",r);
+			if(sliderValue<0)
+				g=std::max(this->normalizedColor.y+sliderValue,0.0f);
+			else
+				g=std::min(this->normalizedColor.y+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("go",g);
+			if(sliderValue<0)
+				b=std::max(this->normalizedColor.z+sliderValue,0.0f);
+			else
+				b=std::min(this->normalizedColor.z+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("bo",b);
 			glUseProgram(0);
-			this->activeLight.setContrast(this->sliderContrast.getSliderValueX());
+			this->activeLight.setContrast(1.0f);
+			this->activeLight.setColor(vec3(r,g,b));
 		}
 		if(this->sliderHeight.isInsideSliderSpace(x,y))
 		{
@@ -891,12 +941,28 @@ void GUI::moveSliders(float x, float y)
 			this->normalizedColor.z = ((float)colorPicked.b/255);
 			
 			this->colorPlaneShader.use();
-			this->colorPlaneShader.setUniform("ro",this->normalizedColor.x*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("go",this->normalizedColor.y*this->sliderContrast.getSliderValueX());
-			this->colorPlaneShader.setUniform("bo",this->normalizedColor.z*this->sliderContrast.getSliderValueX());
+			float sliderValue= (this->sliderContrast.getSliderValueX()*2)-1;
+			float r=0;
+			float g=0;
+			float b=0;
+			if(sliderValue<0)
+				r=std::max(this->normalizedColor.x+sliderValue,0.0f);
+			else
+				r=std::min(this->normalizedColor.x+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("ro",r);
+			if(sliderValue<0)
+				g=std::max(this->normalizedColor.y+sliderValue,0.0f);
+			else
+				g=std::min(this->normalizedColor.y+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("go",g);
+			if(sliderValue<0)
+				b=std::max(this->normalizedColor.z+sliderValue,0.0f);
+			else
+				b=std::min(this->normalizedColor.z+sliderValue,1.0f);
+			this->colorPlaneShader.setUniform("bo",b);
 			glUseProgram(0);
-			
-			this->activeLight.setColor(this->normalizedColor);
+			this->activeLight.setContrast(1.0f);
+			this->activeLight.setColor(vec3(r,g,b));
 		}
 	}
 }
@@ -1653,14 +1719,14 @@ void GUI::setActiveParticleModel(Particle p)
 {
 	this->activeParticle=p;
 	this->activeParticleIndex = p.getParticleType()+this->particleImagesHandles.size();
-	cout << this->activeParticleIndex<<endl;
+
 	this->sliderHeight.setPos(vec3(this->sliderHeight.getMinX()+(this->sliderHeight.getMaxX()-this->sliderHeight.getMinX())*(p.getPos().y/10),this->sliderHeight.getPosition().y,0));
 	
-	this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*p.getContrast(),this->sliderContrast.getPosition().y,0));
+	//this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*p.getContrast(),this->sliderContrast.getPosition().y,0));
 	this->normalizedColor=p.getColor();
 	this->colorPlaneShader.use();
-	this->colorPlaneShader.setUniform("ro",p.getColor().x*p.getContrast());
-	this->colorPlaneShader.setUniform("go",p.getColor().y*p.getContrast());
-	this->colorPlaneShader.setUniform("bo",p.getColor().z*p.getContrast());
+	this->colorPlaneShader.setUniform("ro",p.getColor().x);
+	this->colorPlaneShader.setUniform("go",p.getColor().y);
+	this->colorPlaneShader.setUniform("bo",p.getColor().z);
 	glUseProgram(0);
 }

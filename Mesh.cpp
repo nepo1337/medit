@@ -2,7 +2,7 @@
 
 Mesh::Mesh()
 {
-	this->debug=true;
+	this->debug=false;
 	path="";
 	this->type="";
 }

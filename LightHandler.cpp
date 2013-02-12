@@ -64,9 +64,9 @@ void LightHandler::drawLights(mat4 projectionMatrix,mat4 viewMatrix)
 	mat4 mvp;
 	for(unsigned int i=0;i<this->lights.size();i++)
 	{
-		this->lightShader.setUniform("ro",this->lights[i].getColor().x*this->lights[i].getContrast());
-		this->lightShader.setUniform("go",this->lights[i].getColor().y*this->lights[i].getContrast());
-		this->lightShader.setUniform("bo",this->lights[i].getColor().z*this->lights[i].getContrast());
+		this->lightShader.setUniform("ro",this->lights[i].getColor().x);
+		this->lightShader.setUniform("go",this->lights[i].getColor().y);
+		this->lightShader.setUniform("bo",this->lights[i].getColor().z);
 		//set upp uniforms for rendering call
 		mvp=projectionMatrix*viewMatrix*this->lights[i].getModelMatrix();
 		this->lightShader.setUniform("MVP",mvp);
@@ -297,14 +297,14 @@ void LightHandler::save(string path, string filename)
 		{
 			file << "PLS " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
 			<< " " <<this->lights[i].getRot().x << " " << this->lights[i].getRot().y <<" " << this->lights[i].getRot().z<< " "
-			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z << " " <<
+			<< this->lights[i].getColor().x*this->lights[i].getContrast() << " " <<this->lights[i].getColor().y*this->lights[i].getContrast() << " " << this->lights[i].getColor().z*this->lights[i].getContrast() << " " <<
 			this->lights[i].getRadius()<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::POINTLIGHT)
 		{
 			file << "PL " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
 			<< " " <<this->lights[i].getRot().x << " " << this->lights[i].getRot().y <<" " << this->lights[i].getRot().z<< " "
-			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z << " " <<
+			<< this->lights[i].getColor().x*this->lights[i].getContrast() << " " <<this->lights[i].getColor().y*this->lights[i].getContrast() << " " << this->lights[i].getColor().z*this->lights[i].getContrast() << " " <<
 			this->lights[i].getRadius()<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::AMBIENT)
@@ -317,7 +317,10 @@ void LightHandler::save(string path, string filename)
 			dir=mat3(rot)*dir;
 
 			file << "AM " << " " <<dir.x << " " << dir.y <<" " << dir.z<< " "
-			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z<<endl;
+			<< this->lights[i].getColor().x*this->lights[i].getContrast() << " " <<this->lights[i].getColor().y*this->lights[i].getContrast() << " " << this->lights[i].getColor().z*this->lights[i].getContrast()<<" "
+			<< this->lights[i].getRot().x << " " <<this->lights[i].getRot().y << " " << this->lights[i].getRot().z<<" "
+			<< this->lights[i].getPos().x << " " <<this->lights[i].getPos().y << " " << this->lights[i].getPos().z
+			<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::SPOTLIGHT)
 		{
@@ -330,7 +333,9 @@ void LightHandler::save(string path, string filename)
 			
 			file << "SL " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z <<
 			" " <<dir.x << " " << dir.y <<" " << dir.z<< " "
-			<< this->lights[i].getColor().x << " " <<this->lights[i].getColor().y << " " << this->lights[i].getColor().z<<endl;
+			<< this->lights[i].getColor().x*this->lights[i].getContrast() << " " <<this->lights[i].getColor().y*this->lights[i].getContrast() << " " << this->lights[i].getColor().z*this->lights[i].getContrast()<<" "
+			<< this->lights[i].getRot().x << " " <<this->lights[i].getRot().y << " " << this->lights[i].getRot().z
+			<<endl;
 		}
 	}
 	file << "end"<<endl;
@@ -366,9 +371,9 @@ void LightHandler::drawLight(mat4 projectionMatrix, mat4 viewMatrix,Light l)
 	this->lightShader.setUniform("outAlpha",0.5f);
 	mat4 mvp;
 	
-	this->lightShader.setUniform("ro",light.getColor().x*light.getContrast());
-	this->lightShader.setUniform("go",light.getColor().y*light.getContrast());
-	this->lightShader.setUniform("bo",light.getColor().z*light.getContrast());
+	this->lightShader.setUniform("ro",light.getColor().x);
+	this->lightShader.setUniform("go",light.getColor().y);
+	this->lightShader.setUniform("bo",light.getColor().z);
 	//set upp uniforms for rendering call
 	mvp=projectionMatrix*viewMatrix*light.getModelMatrix();
 	this->lightShader.setUniform("MVP",mvp);

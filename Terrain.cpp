@@ -712,6 +712,22 @@ void Terrain::setActiveTex(int tex)
 	this->activeTex=tex;
 }
 
+void Terrain::loadMaps(string bmp1, string bmp2)
+{
+	this->blendmap1.LoadFromFile(bmp1);
+	this->blendmap2.LoadFromFile(bmp2);
+
+	this->swapImg(this->blendmap1);
+	this->swapImg(this->blendmap2);
+	
+	//uploads the blendmaps, filing the handle
+	glActiveTexture(GL_TEXTURE1);
+	this->makeBlendMap(this->terrInf.blendmap1H,this->blendmap1);
+	glActiveTexture(GL_TEXTURE2);
+	this->makeBlendMap(this->terrInf.blendmap2H,this->blendmap2);
+
+}
+
 void Terrain::save(string path, string filename)
 {
 	string fullName=path+filename+".txt";
@@ -1020,6 +1036,14 @@ void Terrain::addSurface(vec3 origin, vec3 ray, int id)
 		}
 	}
 }
+
+void Terrain::addSurface(vec3 pos, float rot, int id,float scale)
+{
+	if(id>=0&&id<this->surfacesTextures.size())
+	{
+		this->surfacesTextures[id].addSurface(rot,pos,scale);
+	}
+}
 void Terrain::setWorldXY(vec3 origin, vec3 ray)
 {
 	this->rayIntersectTerrain(origin,ray,this->worldClickX,this->worldClickZ);
@@ -1212,6 +1236,89 @@ void Terrain::makeGridUnderModel(Model m)
 	glActiveTexture(GL_TEXTURE11);
 	this->makeBlendMap(this->gridTexHandle,this->gridMap);
 
+}
+void Terrain::calcWholeGrid(vector<Model> models)
+{
+	for(int z=0;z<models.size();z++)
+	{
+			for(int j=1;j<this->gridMap.GetHeight();j+=2)
+			{
+				for(int i=1;i<this->gridMap.GetWidth();i+=2)
+				{
+					bool found=true;
+					float t1=0;
+					float t2=0;
+
+					//grid propertis
+					float wogmw = width/gridMap.GetWidth();
+					float hogmh = height/gridMap.GetHeight();
+					float gmwow = gridMap.GetWidth()/width;
+					float gmhoh = gridMap.GetHeight()/height;
+					float gmwowo2 = wogmw/2;
+					float gmhoho2 = hogmh/2;
+
+					vec4 mm = inverse(mat4(models[z].getModelMatrix()))*vec4(vec3(gmwowo2+(i+wogmw)/gmwow,0,-gmhoho2+(-j-hogmh)/gmhoh),1);
+					vec3 t = vec3(gmwowo2+(i+wogmw)/gmwow,1,-gmhoho2+(-j-hogmh)/gmhoh)-vec3(gmwowo2+(i+wogmw)/gmwow,0,-gmhoho2+(-j-hogmh)/gmhoh);
+					vec3 rayd=inverse(mat3(models[z].getModelMatrix()))*t;
+					rayd = (rayd);
+
+
+					float sides[3] =
+					{
+						models[z].getBoundingBox()->getBboxSide().x+0.1,
+						models[z].getBoundingBox()->getBboxSide().y,
+						models[z].getBoundingBox()->getBboxSide().z+0.1
+					};
+					
+					vec3 normalizedSides[3] = 
+					{
+						vec3(1,0,0),
+						vec3(0,1,0),
+						vec3(0,0,1)
+					};
+					
+					float tmin=-0.000001;
+					float tmax=99999999;
+					
+
+					vec3 p = models[z].getBoundingBox()->getBboxPos()-vec3(mm.x/mm.w,mm.y/mm.w,mm.z/mm.w);
+					
+					for(int k=0;k<3;k++)
+					{
+						float e = dot(normalizedSides[k],p);
+						float f = dot(normalizedSides[k],rayd);
+						if(abs(f)>0.000001)
+						{
+							t1=(e+sides[k])/f;
+							t2=(e-sides[k])/f;
+							if(t1>t2)
+							{
+								float tmp=t1;
+								t1=t2;
+								t2=tmp;
+							}
+							if(t1>tmin)
+								tmin=t1;
+							if(t2<tmax)
+								tmax=t2;
+							if(tmin>tmax)
+								found=false;
+							if(tmax<0)
+								found=false;
+						}
+						else if(-e-sides[k]>0 || -e+sides[k]<0)
+							found=false;
+					}
+					if(found)
+					{
+						this->gridMap.SetPixel(i,j,sf::Color(120,120,255,255));
+					}
+				}
+			}
+	}
+
+	glActiveTexture(GL_TEXTURE11);
+	this->makeBlendMap(this->gridTexHandle,this->gridMap);
 }
 
 void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> models)
