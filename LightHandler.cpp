@@ -298,14 +298,14 @@ void LightHandler::save(string path, string filename)
 			file << "PLS " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
 			<< " " <<this->lights[i].getRot().x << " " << this->lights[i].getRot().y <<" " << this->lights[i].getRot().z<< " "
 			<< this->lights[i].getColor().x*this->lights[i].getContrast() << " " <<this->lights[i].getColor().y*this->lights[i].getContrast() << " " << this->lights[i].getColor().z*this->lights[i].getContrast() << " " <<
-			this->lights[i].getRadius()<<endl;
+			this->lights[i].getRadius()<<" " << this->lights[i].getId()<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::POINTLIGHT)
 		{
 			file << "PL " << this->lights[i].getPos().x << " " << this->lights[i].getPos().y << " " << this->lights[i].getPos().z 
 			<< " " <<this->lights[i].getRot().x << " " << this->lights[i].getRot().y <<" " << this->lights[i].getRot().z<< " "
 			<< this->lights[i].getColor().x*this->lights[i].getContrast() << " " <<this->lights[i].getColor().y*this->lights[i].getContrast() << " " << this->lights[i].getColor().z*this->lights[i].getContrast() << " " <<
-			this->lights[i].getRadius()<<endl;
+			this->lights[i].getRadius()<<" " << this->lights[i].getId()<<endl;
 		}
 		if(this->lights[i].getLightType() == LightType::AMBIENT)
 		{

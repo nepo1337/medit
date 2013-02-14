@@ -11,6 +11,7 @@ Model::Model()
 	this->scale=1.0f;
 	this->selected=false;
 	this->meshName="";
+	this->id=0;
 }
 
 Model::~Model()

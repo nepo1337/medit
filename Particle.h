@@ -1,6 +1,6 @@
 #ifndef PARTICLE_H
 #define PARTICLE_H
-#include "model.h"
+#include "Model.h"
 
 namespace ParticleType
 {

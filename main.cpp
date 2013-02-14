@@ -17,6 +17,8 @@
 #include "Light.h"
 #include "ParticleHandler.h"
 #include "Particle.h"
+#include <stdio.h>
+#include <string.h>
 
 using namespace std;
 using namespace glm;
@@ -135,7 +137,8 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 					vec3 position;
 					vec3 rotation;
 					float scale;
-					sscanf(buf, "%s %f %f %f %f %f %f %f", &in, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &scale);
+					int id = 0;
+					sscanf(buf, "%s %f %f %f %f %f %f %f %f", &in, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &scale,&id);
 					Model model;
 					string modelName = string(in);
 					int meshIndex = m.getMeshByName(modelName);
@@ -147,6 +150,7 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 					model.rotateY(rotation.y);
 					model.rotateZ(rotation.z);
 					model.scaleXYZ(scale);
+					model.bindId(id);
 					r.addModel(model);
 				}
 			}
@@ -195,7 +199,8 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 						vec3 rotation;
 						vec3 color;
 						float radius;
-						sscanf(buf, "PLS %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z, &radius);
+						int id=0;
+						sscanf(buf, "PLS %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
 						
 						Light tmpLight;
 						tmpLight.setColor(color);
@@ -206,6 +211,7 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 						tmpLight.rotateX(rotation.x);
 						tmpLight.rotateY(rotation.y);
 						tmpLight.rotateZ(rotation.z);
+						tmpLight.bindId(id);
 						l.addLight(tmpLight);
 
 					}
@@ -215,7 +221,8 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 						vec3 rotation;
 						vec3 color;
 						float radius;
-						sscanf(buf, "PL %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.y, &rotation.x, &rotation.z, &color.x, &color.y, &color.z, &radius);
+						int id=0;
+						sscanf(buf, "PL %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.y, &rotation.x, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
 						
 						Light tmpLight;
 						tmpLight.setColor(color);
@@ -226,6 +233,7 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 						tmpLight.rotateX(rotation.x);
 						tmpLight.rotateY(rotation.y);
 						tmpLight.rotateZ(rotation.z);
+						tmpLight.bindId(id);
 						l.addLight(tmpLight);
 					}
 					else if(strcmp(key, "SL") == 0)
