@@ -3,7 +3,7 @@
 Particle::Particle()
 {
 	this->color=vec3(1.0f);
-	this->contrast=1.0f;
+	this->contrast=2.0f;
 	this->type = ParticleType::FIRE;
 }
 

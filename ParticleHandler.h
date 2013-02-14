@@ -24,8 +24,6 @@ private:
 	GLSLProgram particleShader,bBoxShader;
 	MeshHandler meshes;
 	vector<Particle> particleModels;
-	Particle selectedParticle;
-	int selectedParticleIndex;
 public:
 	ParticleHandler();
 	~ParticleHandler();
@@ -37,8 +35,7 @@ public:
 	int selectParticles(float normalizedX, float normalizedY,vec3 pos, mat4 projMatrix,mat4 viewMatrix);
 	void unselectAllParticleModels();
 	Particle getSelectedParticle();
-	void assignParticleNewParticle(int index, Particle p);
-	int getSelectedParticleIndex();
+	void assignParticleNewParticle(Particle p);
 	void save(string path, string filename);
 	void clear();
 };

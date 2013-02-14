@@ -605,8 +605,7 @@ int main(int argc, char **argv)
 							{
 								if(gui.isInDrawWindow(normalisedx,normalisedy))
 								{
-									int index = rend.rayIntersectModelBB(normalisedx,normalisedy,cam.getPos());
-									rend.selectModelAtIndex(index);
+									rend.selectModel(normalisedx,normalisedy,cam.getPos());
 
 								}
 							}
@@ -784,12 +783,11 @@ int main(int argc, char **argv)
 					}
 					if(gui.getState()==GUIstate::PARTICLE)
 					{
-						particleHandler.assignParticleNewParticle(particleHandler.getSelectedParticleIndex(),gui.getActiveParticleModel());
+						particleHandler.assignParticleNewParticle(gui.getActiveParticleModel());
 					}
 					
-					int lightPos=lh.getSelectedLightIndex();
-					if(lightPos>=0)
-						lh.assignLightAnotherLight(lightPos,gui.getActiveLight());
+					if(gui.getState()==GUIstate::LIGHT)
+						lh.assignLightAnotherLight(gui.getActiveLight());
 				}
 			}
 		}

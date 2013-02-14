@@ -155,7 +155,7 @@ mat4 Renderer::getProjMatrix()
 	return this->projMatrix;
 }
 
-int Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos)
+int Renderer::selectModel(float normalizedX, float normalizedY,vec3 pos)
 {
 	
 	float min=999999.0f;
@@ -236,6 +236,10 @@ int Renderer::rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos)
 	}
 	if(minIndex>=0)
 	{
+		if(this->models[minIndex].isSelected())
+			this->models[minIndex].unSelect();
+		else
+			this->models[minIndex].select();
 		return minIndex;
 	}
 	return -1;
@@ -285,16 +289,7 @@ void Renderer::drawModel(Model m)
 
 	glDisable(GL_BLEND);
 }
-bool Renderer::selectModelAtIndex(int i)
-{
-	bool ok=false;
-	if(i>=0&&i<this->models.size())
-	{
-		this->models[i].select();
-		ok=true;
-	}
-	return ok;
-}
+
 vector<Model> Renderer::removeSelectedModels()
 {
 	vector<Model> removedModels;

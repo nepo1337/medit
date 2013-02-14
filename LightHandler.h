@@ -47,7 +47,7 @@ public:
 	Light getSelectedLight();
 	int getSelectedLightIndex();
 	void save(string path, string filename);
-	void assignLightAnotherLight(int pos, Light l);
+	void assignLightAnotherLight(Light l);
 	void clear();
 };
 #endif // LIGHTHANDLER_H

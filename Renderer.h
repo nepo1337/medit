@@ -31,10 +31,9 @@ public:
 	void updateProjMatrix(float width, float height);
 	void addModel(Model m);
 	mat4 getProjMatrix();
-	int rayIntersectModelBB(float normalizedX, float normalizedY,vec3 pos);
+	int selectModel(float normalizedX, float normalizedY,vec3 pos);
 	void saveModels(string path, string filename);
 	void drawModel(Model m);
-	bool selectModelAtIndex(int i);
 	vector<Model> removeSelectedModels();
 	void unselectAllModels();
 	vector<Model> getModels();

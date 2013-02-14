@@ -96,7 +96,10 @@ void LightHandler::drawLights(mat4 projectionMatrix,mat4 viewMatrix)
 			//set upp uniforms for rendering call
 			mvp=projectionMatrix*viewMatrix*this->lights[i].getModelMatrix();
 			this->bBoxShader.setUniform("MVP",mvp);
-			
+			this->bBoxShader.setUniform("ro",0.0f);
+			this->bBoxShader.setUniform("go",1.0f);
+			this->bBoxShader.setUniform("bo",0.0f);
+	
 			glBindVertexArray(this->lights[i].getBoundingBox()->getVaoh());
 			glDrawArrays(GL_LINE_STRIP,0,16);
 			
@@ -104,6 +107,9 @@ void LightHandler::drawLights(mat4 projectionMatrix,mat4 viewMatrix)
 			{
 				mvp=scale(mvp,vec3(this->lights[i].getRadius()));
 				this->bBoxShader.setUniform("MVP",mvp);
+				this->bBoxShader.setUniform("ro",0.0f);
+				this->bBoxShader.setUniform("go",1.0f);
+				this->bBoxShader.setUniform("bo",0.0f);
 				glBindVertexArray(this->radRing.getVaoh());
 				glDrawArrays(GL_LINE_STRIP,0,this->radRing.getNrOfLines());
 				
@@ -155,7 +161,6 @@ int LightHandler::selectLight(float normalizedX, float normalizedY,vec3 pos, mat
 	int minIndex=-1;
 	for(unsigned int j=0;j<this->lights.size();j++)
 	{
-		this->lights[j].unSelect();
 		bool found=true;
 		float t1=0;
 		float t2=0;
@@ -230,6 +235,9 @@ int LightHandler::selectLight(float normalizedX, float normalizedY,vec3 pos, mat
 	}
 	if(minIndex>=0)
 	{
+		if(this->lights[minIndex].isSelected())
+			this->lights[minIndex].unSelect();
+		else
 			this->lights[minIndex].select();
 		return minIndex;
 	}
@@ -436,17 +444,20 @@ void LightHandler::drawLight(mat4 projectionMatrix, mat4 viewMatrix,Light l)
 	glDisable(GL_BLEND);
 }
 
-void LightHandler::assignLightAnotherLight(int pos, Light l)
+void LightHandler::assignLightAnotherLight(Light l)
 {
-	if(pos>=0&&pos<this->lights.size())
+	for(int i=0;i<this->lights.size();i++)
 	{
-		this->lights[pos].setColor(l.getColor());
-		this->lights[pos].setContrast(l.getContrast());
-		this->lights[pos].setRadius(l.getRadius());
-		this->lights[pos].setPos(vec3(this->lights[pos].getPos().x,l.getPos().y,this->lights[pos].getPos().z));
-		this->lights[pos].rotateX(l.getRot().x);
-		this->lights[pos].rotateY(l.getRot().y);
-		this->lights[pos].rotateZ(l.getRot().z);
+		if(this->lights[i].isSelected())
+		{
+			this->lights[i].setColor(l.getColor());
+			this->lights[i].setContrast(l.getContrast());
+			this->lights[i].setRadius(l.getRadius());
+			this->lights[i].setPos(vec3(this->lights[i].getPos().x,l.getPos().y,this->lights[i].getPos().z));
+			this->lights[i].rotateX(l.getRot().x);
+			this->lights[i].rotateY(l.getRot().y);
+			this->lights[i].rotateZ(l.getRot().z);
+		}
 	}
 }
 void LightHandler::clear()

@@ -1652,7 +1652,7 @@ void GUI::setSliderLightRadius(float s)
 
 void GUI::setNormalizedColor(vec3 col,float contrast)
 {
-	this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*contrast,this->sliderContrast.getPosition().y,0));
+	//this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*contrast,this->sliderContrast.getPosition().y,0));
 	this->normalizedColor=col;
 	this->colorPlaneShader.use();
 	this->colorPlaneShader.setUniform("ro",col.x*contrast);
@@ -1717,16 +1717,19 @@ bool GUI::isPlacingParticleSystems()
 }
 void GUI::setActiveParticleModel(Particle p)
 {
-	this->activeParticle=p;
-	this->activeParticleIndex = p.getParticleType()+this->particleImagesHandles.size();
+	if(p.getContrast()<1.5)
+	{
+		this->activeParticle=p;
+		this->activeParticleIndex = p.getParticleType()+this->particleImagesHandles.size();
 
-	this->sliderHeight.setPos(vec3(this->sliderHeight.getMinX()+(this->sliderHeight.getMaxX()-this->sliderHeight.getMinX())*(p.getPos().y/10),this->sliderHeight.getPosition().y,0));
-	
-	//this->sliderContrast.setPos(vec3(this->sliderContrast.getMinX()+(this->sliderContrast.getMaxX()-this->sliderContrast.getMinX())*p.getContrast(),this->sliderContrast.getPosition().y,0));
-	this->normalizedColor=p.getColor();
-	this->colorPlaneShader.use();
-	this->colorPlaneShader.setUniform("ro",p.getColor().x);
-	this->colorPlaneShader.setUniform("go",p.getColor().y);
-	this->colorPlaneShader.setUniform("bo",p.getColor().z);
+		this->sliderHeight.setPos(vec3(this->sliderHeight.getMinX()+(this->sliderHeight.getMaxX()-this->sliderHeight.getMinX())*(p.getPos().y/10),this->sliderHeight.getPosition().y,0));
+		
+		this->normalizedColor=p.getColor();
+		this->colorPlaneShader.use();
+		this->colorPlaneShader.setUniform("ro",p.getColor().x);
+		this->colorPlaneShader.setUniform("go",p.getColor().y);
+		this->colorPlaneShader.setUniform("bo",p.getColor().z);
+		
+	}
 	glUseProgram(0);
 }

@@ -2,7 +2,6 @@
 
 ParticleHandler::ParticleHandler()
 {
-	this->selectedParticleIndex=-1;
 }
 
 ParticleHandler::~ParticleHandler()
@@ -113,16 +112,12 @@ void ParticleHandler::unselectAllParticleModels()
 	{
 		this->particleModels[i].unSelect();
 	}
-	this->selectedParticleIndex=-1;
 }
 void ParticleHandler::addParticleModel(Particle p)
 {
 	this->particleModels.push_back(p);
 	this->particleModels[this->particleModels.size()-1].setMesh(this->meshes.getMeshInfo(0));
 	this->particleModels[this->particleModels.size()-1].setBoundingBox(this->meshes.getBoundingBox(0));
-	//this->particleModels[this->particleModels.size()-1].select();
-	this->selectedParticle=this->particleModels[this->particleModels.size()-1];
-	this->selectedParticleIndex=this->particleModels.size()-1;
 }
 void ParticleHandler::removeSelectedParticles()
 {	
@@ -136,7 +131,6 @@ void ParticleHandler::removeSelectedParticles()
 	{
 		if(this->particleModels[i].isSelected())
 		{
-			cout << i << endl;
 			this->particleModels[i]=this->particleModels[this->particleModels.size()-1];
 			this->particleModels.pop_back();
 			i--;
@@ -150,7 +144,6 @@ int ParticleHandler::selectParticles(float normalizedX, float normalizedY,vec3 p
 	int minIndex=-1;
 	for(unsigned int j=0;j<this->particleModels.size();j++)
 	{
-		this->particleModels[j].unSelect();
 		bool found=true;
 		float t1=0;
 		float t2=0;
@@ -226,38 +219,46 @@ int ParticleHandler::selectParticles(float normalizedX, float normalizedY,vec3 p
 	}
 	if(minIndex>=0)
 	{
-		this->particleModels[minIndex].select();
-		this->selectedParticle = this->particleModels[minIndex];
-		this->selectedParticleIndex=minIndex;
+		if(this->particleModels[minIndex].isSelected())
+			this->particleModels[minIndex].unSelect();
+		else
+			this->particleModels[minIndex].select();
 		return minIndex;
 	}
 	return -1;
 }
 Particle ParticleHandler::getSelectedParticle()
 {
-	return this->selectedParticle;
-}
-void ParticleHandler::assignParticleNewParticle(int index, Particle p)
-{
-	if(index>=0&&index<this->particleModels.size())
+	bool found =false;
+	Particle tmp;
+	for(int i=0;i<this->particleModels.size()&&!found;i++)
 	{
-		this->particleModels[index]=p;
-		this->particleModels[index].setMesh(this->meshes.getMeshInfo(0));
-		this->particleModels[index].setBoundingBox(this->meshes.getBoundingBox(0));
+		if(this->particleModels[i].isSelected())
+		{
+			tmp = this->particleModels[i];
+			found=true;
+		}
+	}
+	return tmp;
+}
+void ParticleHandler::assignParticleNewParticle(Particle p)
+{
+	for(int i=0;i<this->particleModels.size();i++)
+	{
+		if(this->particleModels[i].isSelected())
+		{
+			this->particleModels[i].setContrast(p.getContrast());
+			this->particleModels[i].setColor(p.getColor());
+			this->particleModels[i].setPos(vec3(this->particleModels[i].getPos().x,p.getPos().y,this->particleModels[i].getPos().z));
+			this->particleModels[i].rotateX(p.getRot().x);
+			this->particleModels[i].rotateY(p.getRot().y);
+			this->particleModels[i].rotateZ(p.getRot().z);
+			this->particleModels[i].setParticleType(p.getParticleType());
+		}
 	}
 	
 }
 
-int ParticleHandler::getSelectedParticleIndex()
-{
-	int index =-1;
-	for(unsigned int i=0;i<this->particleModels.size();i++)
-	{
-		if(this->particleModels[i].isSelected())
-			index=i;
-	}
-	return index;
-}
 
 void ParticleHandler::save(string path, string filename)
 {
