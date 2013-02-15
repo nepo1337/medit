@@ -73,7 +73,7 @@ Renderer::~Renderer()
 void Renderer::draw()
 {
 	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
+	glCullFace(GL_BACK);
 	
 	//renderin models
 	this->modelShader.use();
