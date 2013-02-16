@@ -115,13 +115,12 @@ public:
 	void showHideGridMap();
 	void makeGridUnderModel(Model m);
 	void recalcGridAroundModel(vector<Model> removedModels, vector<Model> models);
-	void calcWholeGrid(vector<Model> models);
 	void showCircle();
 	void hideCircle();
 	void setRoadSpacing(float f);
 	void setRoadScale(float f);
 	void createNewMap(int size);
-	void loadMaps(string bmp1, string bmp2);
+	void loadMaps(string bmp1, string bmp2,string gm);
 	void addSurface(vec3 pos, float rot, int id,float scale);
 };
 
