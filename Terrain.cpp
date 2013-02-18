@@ -754,7 +754,7 @@ void Terrain::save(string path, string filename)
 	this->swapImg(this->minimap);
 	this->swapImg(this->blendmap1);
 	this->swapImg(this->blendmap2);
-	this->gridMap.SaveToFile("maps/asd.png");
+
 	this->blendmap1.SaveToFile(p1.c_str());
 	this->blendmap2.SaveToFile(p2.c_str());
 	this->minimap.SaveToFile(p3);
@@ -1189,9 +1189,9 @@ void Terrain::makeGridUnderModel(Model m)
 
 			float sides[3] =
 			{
-				m.getBoundingBox()->getBboxSide().x+0.1,
+				m.getBoundingBox()->getBboxSide().x+0.3,
 				m.getBoundingBox()->getBboxSide().y,
-				m.getBoundingBox()->getBboxSide().z+0.1
+				m.getBoundingBox()->getBboxSide().z+0.3
 			};
 			
 			vec3 normalizedSides[3] = 
@@ -1311,9 +1311,9 @@ void Terrain::recalcGridAroundModel(vector<Model> removedModels, vector<Model> m
 
 							float sides[3] =
 							{
-								models[z].getBoundingBox()->getBboxSide().x+0.1,
+								models[z].getBoundingBox()->getBboxSide().x+0.3,
 								models[z].getBoundingBox()->getBboxSide().y,
-								models[z].getBoundingBox()->getBboxSide().z+0.1
+								models[z].getBoundingBox()->getBboxSide().z+0.3
 							};
 							
 							vec3 normalizedSides[3] = 

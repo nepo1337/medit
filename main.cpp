@@ -801,6 +801,33 @@ int main(int argc, char **argv)
 		//if the user isnt in text mode, it should be able to move
 		if(!gui.isInTextMode())
 		{
+			if(app.GetInput().IsKeyDown(sf::Key::Delete))
+			{
+				if(gui.getState()==GUIstate::MODEL||gui.getState()==GUIstate::NONE)
+				{
+					vector<Model> rm = rend.removeSelectedModels();
+					lh.removeLightsBoundToModels(rm);
+					vector<Model> tm =rend.getModels();
+					terrain.recalcGridAroundModel(rm,tm);
+				}
+				if(gui.getState()==GUIstate::PATH)
+				{
+					ph.removeSelectedPaths();
+				}
+				if(gui.getState()==GUIstate::PARTICLE)
+				{
+					particleHandler.removeSelectedParticles();
+				}
+				if(gui.getState()==GUIstate::ROAD)
+				{
+					terrain.removeSelectedSurfaces();
+				}
+				if(gui.getState()==GUIstate::LIGHT)
+				{
+					lh.removeSelectedLights();
+				}
+				
+			}
 			if(gui.getState()==GUIstate::PAINT)
 			{
 					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());

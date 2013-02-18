@@ -44,11 +44,25 @@ void PathHandler::setMesh(vector<MeshInfo> *meshInfo,BoundingBox * bb)
 
 void PathHandler::addPath()
 {
-	this->Paths.push_back(Path());
-	int r = rand()%256;
-	int g = rand()%256;
-	int b = rand()%256;
-	this->Paths[this->Paths.size()-1].setColor(vec3((float)r/255,(float)g/255,(float)b/255));
+	if(this->Paths.empty())
+	{
+		this->Paths.push_back(Path());
+		int r = rand()%256;
+		int g = rand()%256;
+		int b = rand()%256;
+		this->Paths[this->Paths.size()-1].setColor(vec3((float)r/255,(float)g/255,(float)b/255));
+	}
+	else
+	{
+		if(this->Paths[this->Paths.size()-1].getNrOfFlags()>0)
+		{
+			this->Paths.push_back(Path());
+			int r = rand()%256;
+			int g = rand()%256;
+			int b = rand()%256;
+			this->Paths[this->Paths.size()-1].setColor(vec3((float)r/255,(float)g/255,(float)b/255));
+		}
+	}
 }
 
 void PathHandler::addFlagToCurrentPath(vec3 pos)
