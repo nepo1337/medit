@@ -79,7 +79,7 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 			if(width==256)
 				mapsize=2;
 			terr.createNewMap(mapsize);
-			terr.loadMaps(path+bmp1,path+bmp2);
+			terr.loadMaps(path+bmp1,path+bmp2,path+filename+"gm.png");
 		}
 		else if(strcmp(key, "width:") == 0)
 		{
@@ -330,7 +330,6 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 		sscanf("bugfix", "%s", key);
 	}		
 	stream.close();
-	terr.calcWholeGrid(r.getModels());
 }
 
 
