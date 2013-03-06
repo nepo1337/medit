@@ -41,6 +41,7 @@ public:
 	void save(string path, string filename);
 	void drawFlag(vec3 pos);
 	void clear();
+	int getNrOfPaths();
 };
 
 #endif // PATHHANDLER_H

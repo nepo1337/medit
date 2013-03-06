@@ -291,3 +291,7 @@ void ParticleHandler::clear()
 {
 	this->particleModels.clear();
 }
+int ParticleHandler::getNrOfParticleSystems()
+{
+	return this->particleModels.size();
+}

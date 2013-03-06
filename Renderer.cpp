@@ -317,3 +317,8 @@ vector<Model> Renderer::getModels()
 {
 	return this->models;
 }
+
+int Renderer::getNrOfModels()
+{
+	return this->models.size();
+}

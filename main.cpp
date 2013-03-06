@@ -3,6 +3,7 @@
 #include <glew.h>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <MeshHandler.h>
 #include "glm/glm.hpp"
 #include "Model.h"
@@ -19,6 +20,7 @@
 #include "Particle.h"
 #include <stdio.h>
 #include <string.h>
+#include "AntTweakBar.h"
 
 using namespace std;
 using namespace glm;
@@ -340,6 +342,18 @@ int main(int argc, char **argv)
 	Camera cam;
 	int mousedx=0;
 	int mousedy=0;
+	int fps=0;
+	int nrOfObjects=0;
+	int nrOfLights=0;
+	float tdropoff=0.0f;
+	float topacity=0.0f;
+	float tradius=0.0f;
+	int nrOfPaths=0;
+	int nrOfParticleSystems=0;
+	float gr=0.0f;
+	float gg=0.0f;
+	float gb=0.0f;
+	sf::Clock clock;
 
 	//window options
 	width=1280;
@@ -357,7 +371,8 @@ int main(int argc, char **argv)
 	{
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
-
+	
+	
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
@@ -404,11 +419,44 @@ int main(int argc, char **argv)
 	sf::Event event;
 
 	Model m;
+	
+	TwInit(TW_OPENGL_CORE,NULL);
+	TwWindowSize(width,height);
+	TwBar *myBar;
+	myBar = TwNewBar("info");
+	TwDefine(" info position='25 40' size='240 320' resizable=false movable=false help='Information about the map etc.' refresh=0.1 ");
+	TwAddButton(myBar, "gi", NULL, NULL, " label='General info' ");
+	TwAddVarRO(myBar,"fps ", TW_TYPE_INT32, &fps,NULL);
+	TwAddVarRO(myBar,"# Models ", TW_TYPE_INT32, &nrOfObjects,NULL);
+	TwAddVarRO(myBar,"# Lights ", TW_TYPE_INT32, &nrOfLights,NULL);
+	TwAddVarRO(myBar,"# Particlesystems ", TW_TYPE_INT32, &nrOfParticleSystems,NULL);
+	TwAddVarRO(myBar,"# Paths ", TW_TYPE_INT32, &nrOfPaths,NULL);
+	TwAddSeparator(myBar, "sep1", NULL);
+	TwAddButton(myBar, "di", NULL, NULL, " label='Brush info' ");
+	TwAddVarRO(myBar,"Radius", TW_TYPE_FLOAT, &tradius,NULL);
+	TwAddVarRO(myBar,"Dropoff", TW_TYPE_FLOAT, &tdropoff,NULL);
+	TwAddVarRO(myBar,"Opacity", TW_TYPE_FLOAT, &topacity,NULL);
+	TwAddSeparator(myBar, "sep2", NULL);
+	TwAddButton(myBar, "ci", NULL, NULL, " label='Color selected' ");
+	TwAddVarRO(myBar,"Red", TW_TYPE_FLOAT, &gr,NULL);
+	TwAddVarRO(myBar,"Green", TW_TYPE_FLOAT, &gg,NULL);
+	TwAddVarRO(myBar,"Blue", TW_TYPE_FLOAT, &gb,NULL);
 
 	while (app.IsOpened())
 	{
 		float normalisedx = 0;
 		float normalisedy = 0;
+		nrOfObjects=rend.getNrOfModels();
+		nrOfLights=lh.getNrOfLights();
+		tradius=gui.getSliderRadius();
+		tdropoff=gui.getSliderDropoff();
+		topacity=gui.getSliderOpacity();
+		nrOfParticleSystems=particleHandler.getNrOfParticleSystems();
+		nrOfPaths=ph.getNrOfPaths();
+		gr=gui.getNormalizedColor().x;
+		gg=gui.getNormalizedColor().y;
+		gb=gui.getNormalizedColor().z;
+		
 
 		getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 		//events
@@ -489,7 +537,7 @@ int main(int argc, char **argv)
 								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
 								if(gui.isPlacingParticleSystems())
 								{
-									if(x!=-1)
+									if(x>0)
 									{
 										particleHandler.unselectAllParticleModels();
 										Particle p;
@@ -556,7 +604,7 @@ int main(int argc, char **argv)
 									float x=-1;
 									float z=1;
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									if(x!=-1)
+									if(x>0)
 									{
 										ph.addFlagToCurrentPath(vec3(x,0,-z));
 									}
@@ -577,7 +625,7 @@ int main(int argc, char **argv)
 									float x=-1;
 									float z=1;
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									if(x!=-1)
+									if(x>0)
 									{
 										if(m.getType()=="light")
 										{
@@ -626,10 +674,13 @@ int main(int argc, char **argv)
 									float x=-1;
 									float z=1;
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									Light l = gui.getActiveLight();
-									lh.deselectAllLights();
-									l.setPos(vec3(x,l.getPos().y,-z));
-									lh.addLight(l);
+									if(x>0)
+									{
+										Light l = gui.getActiveLight();
+										lh.deselectAllLights();
+										l.setPos(vec3(x,l.getPos().y,-z));
+										lh.addLight(l);
+									}
 								}
 								else
 								{
@@ -743,6 +794,7 @@ int main(int argc, char **argv)
 					gui.removeChar();
 				}
 			}
+			int handled = TwEventSFML(&event, 1,6);
 		}
 
 		//realtime input
@@ -903,7 +955,8 @@ int main(int argc, char **argv)
 				float x=-1;
 				float z=1;
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-				ph.drawFlag(vec3(x,0,-z));
+				if(x>0)
+					ph.drawFlag(vec3(x,0,-z));
 			}
 		}
 		if(gui.getState()==GUIstate::ROAD)
@@ -921,10 +974,13 @@ int main(int argc, char **argv)
 				float x=-1;
 				float z=1;
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-				Light l = gui.getActiveLight();
-				l.setPos(vec3(x,l.getPos().y,-z));
-				//l.select();
-				lh.drawLight(rend.getProjMatrix(),cam.getViewMatrix(),l);
+				if(x>0)
+				{
+					Light l = gui.getActiveLight();
+					l.setPos(vec3(x,l.getPos().y,-z));
+					//l.select();
+					lh.drawLight(rend.getProjMatrix(),cam.getViewMatrix(),l);
+				}
 			}
 		}
 		if(gui.getState()==GUIstate::MODEL &&gui.isInDrawWindow(normalisedx,normalisedy) )
@@ -933,7 +989,7 @@ int main(int argc, char **argv)
 			float x=-1;
 			float z=1;
 			terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-			if(x!=-1)
+			if(x>0)
 			{
 				m=gui.getActiveModel();
 				m.setPos(vec3(x,gui.getActiveModel().getPos().y,-z));
@@ -952,16 +1008,22 @@ int main(int argc, char **argv)
 				float x=-1;
 				float z=1;
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-				Particle p = gui.getActiveParticleModel();
-				p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
-				particleHandler.drawParticleModel(rend.getProjMatrix(),cam.getViewMatrix(),p);
+				if(x>0)
+				{
+					Particle p = gui.getActiveParticleModel();
+					p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
+					particleHandler.drawParticleModel(rend.getProjMatrix(),cam.getViewMatrix(),p);
+				}
 			}
 		}
 		gui.draw();
 
+		fps= 1.0f/clock.GetElapsedTime();
+		clock.Reset();
+		TwDraw();
 		app.Display();
 	}
-
+	TwTerminate();
 	lh.free();
 	
 	return EXIT_SUCCESS;

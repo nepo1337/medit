@@ -49,5 +49,6 @@ public:
 	void save(string path, string filename);
 	void assignLightAnotherLight(Light l);
 	void clear();
+	int getNrOfLights();
 };
 #endif // LIGHTHANDLER_H

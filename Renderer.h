@@ -38,7 +38,7 @@ public:
 	void unselectAllModels();
 	vector<Model> getModels();
 	void clear();
-	
+	int getNrOfModels();
 };
 
 #endif // RENDERER_H

@@ -464,3 +464,8 @@ void LightHandler::clear()
 {
 	this->lights.clear();
 }
+
+int LightHandler::getNrOfLights()
+{
+	return this->lights.size();
+}
