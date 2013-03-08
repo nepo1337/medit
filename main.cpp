@@ -25,6 +25,8 @@ using namespace glm;
 
 Intersection inters;
 const string path="maps/";
+int bindCounter=1;
+	
 
 void getNormalizedXY(int mouseX, int mouseY, int width, int height, float &x, float &y)
 {
@@ -46,296 +48,302 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 	ifstream stream;
 	string fullPath = path+filename+".txt";
 	stream.open(fullPath.c_str());
-	r.clear();
-	l.clear();
-	p.clear();
-	part.clear();
-	int mapsize=0;
-		
-	string bmp1="";
-	string bmp2="";
-	int width=0;
-	while(!stream.eof())
+	if(stream.is_open())
 	{
-		char buf[1024];
-		char key[1024];
-		stream.getline(buf, 1024);
-		sscanf(buf, "%s", key);
-
-		if(strcmp(key, "bmp1:") == 0)
+		r.clear();
+		l.clear();
+		p.clear();
+		part.clear();
+		int mapsize=0;
+		
+		int highBind=0;
+		string bmp1="";
+		string bmp2="";
+		int width=0;
+		while(!stream.eof())
 		{
-			char file[100];
-			sscanf(buf, "bmp1: %s", &file);
-			bmp1= string(file);
-		}
-		else if(strcmp(key, "bmp2:") == 0)
-		{
-			char file[100];
-			sscanf(buf, "bmp2: %s", &file);
-			bmp2= string(file);
-			
-			if(width == 128)
-				mapsize=1;
-			if(width==256)
-				mapsize=2;
-			terr.createNewMap(mapsize);
-			terr.loadMaps(path+bmp1,path+bmp2,path+filename+"gm.png");
-		}
-		else if(strcmp(key, "width:") == 0)
-		{
-			sscanf(buf, "width: %d", &width);
-		}		
-		else if(strcmp(key, "Surfaceplanes:") == 0)
-		{
-			string texture;
-			int surfCounter=-1;
-			bool done = false;
-			while(!done)
-			{
-				stream.getline(buf, 1024);
-				sscanf(buf, "%s", key);
-				
-				if(strcmp(key, "SF:") == 0)
-				{
-					char in[100];
-					sscanf(buf, "SF: %s", &in);
-					texture = string(in);
-					surfCounter++;
-				}
-				else if(strcmp(key, "end") == 0)
-				{
-					done = true;
-				}
-				else // Else its an actual road piece (at least we hope so because else we are screwed)
-				{
-					float rot,scale;
-					float x, z;
-					sscanf(buf, "%f %f %f %f", &rot, &x, &z,&scale);
-					terr.addSurface(vec3(x,0,z),rot,surfCounter,scale);
-					
-
-					//m_roads.push_back(g_graphicsEngine->createRoad(texture, FLOAT3(x, 0.0f, -z), rot));
-				}
-			}
-		}
-		else if(strcmp(key, "MODELS:") == 0)
-		{
-			string s;
-			bool done = false;
-			while(!done)
-			{
-				stream.getline(buf, 1024);
-				sscanf(buf, "%s", key);
-				
-				if(strcmp(key, "end") == 0)
-				{
-					done = true;
-				}
-				else
-				{
-					char in[100];
-					vec3 position;
-					vec3 rotation;
-					float scale;
-					int id = 0;
-					sscanf(buf, "%s %f %f %f %f %f %f %f %f", &in, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &scale,&id);
-					Model model;
-					string modelName = string(in);
-					int meshIndex = m.getMeshByName(modelName);
-					model.setMesh(m.getMeshInfo(meshIndex));
-					model.setBoundingBox(m.getBoundingBox(meshIndex));
-					model.setMeshName(m.getMeshName(meshIndex));
-					model.setPos(position);
-					model.rotateX(rotation.x);
-					model.rotateY(rotation.y);
-					model.rotateZ(rotation.z);
-					model.scaleXYZ(scale);
-					model.bindId(id);
-					r.addModel(model);
-				}
-			}
-		}
-		else if(strcmp(key, "LIGHTS:") == 0)
-		{
-			string s;
-			bool done = false;
-			while(!done)
-			{
-				stream.getline(buf, 1024);
-				sscanf(buf, "%s", key);
-				
-				if(strcmp(key, "end") == 0)
-				{
-					done = true;
-				}
-				else
-				{
-					char in[100];
-					sscanf(buf, "%s", &in);
-
-					if(strcmp(key, "AM") == 0)
-					{
-						vec3 direction;
-						vec3 color;
-						vec3 rot;
-						vec3 pos;
-
-						sscanf(buf, "AM %f %f %f %f %f %f %f %f %f %f %f %f", &direction.x, &direction.y, &direction.z, &color.x, &color.y, &color.z,&rot.x,&rot.y,&rot.z,&pos.x,&pos.y,&pos.z);
-						
-						Light tmpLight;
-						tmpLight.setColor(color);
-						tmpLight.setContrast(1.0f);
-						tmpLight.setPos(pos);
-						tmpLight.setRadius(0);
-						tmpLight.setLightType(LightType::AMBIENT);
-						tmpLight.rotateX(rot.x);
-						tmpLight.rotateY(rot.y);
-						tmpLight.rotateZ(rot.z);
-						l.addLight(tmpLight);
-					}
-					else if(strcmp(key, "PLS") == 0)
-					{
-						vec3 position;
-						vec3 rotation;
-						vec3 color;
-						float radius;
-						int id=0;
-						sscanf(buf, "PLS %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
-						
-						Light tmpLight;
-						tmpLight.setColor(color);
-						tmpLight.setContrast(1.0f);
-						tmpLight.setPos(position);
-						tmpLight.setRadius(radius);
-						tmpLight.setLightType(LightType::POINTLIGHTSHADOW);
-						tmpLight.rotateX(rotation.x);
-						tmpLight.rotateY(rotation.y);
-						tmpLight.rotateZ(rotation.z);
-						tmpLight.bindId(id);
-						l.addLight(tmpLight);
-
-					}
-					else if(strcmp(key, "PL") == 0)
-					{
-						vec3 position;
-						vec3 rotation;
-						vec3 color;
-						float radius;
-						int id=0;
-						sscanf(buf, "PL %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.y, &rotation.x, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
-						
-						Light tmpLight;
-						tmpLight.setColor(color);
-						tmpLight.setContrast(1.0f);
-						tmpLight.setPos(position);
-						tmpLight.setRadius(radius);
-						tmpLight.setLightType(LightType::POINTLIGHT);
-						tmpLight.rotateX(rotation.x);
-						tmpLight.rotateY(rotation.y);
-						tmpLight.rotateZ(rotation.z);
-						tmpLight.bindId(id);
-						l.addLight(tmpLight);
-					}
-					else if(strcmp(key, "SL") == 0)
-					{
-						vec3 position;
-						vec3 direction;
-						vec3 color;
-						vec3 rot;
-						sscanf(buf, "SL %f %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &direction.x, &direction.y, &direction.z, &color.x, &color.y, &color.z,&rot.x, &rot.y, &rot.z);
-						
-						Light tmpLight;
-						tmpLight.setColor(color);
-						tmpLight.setContrast(1.0f);
-						tmpLight.setPos(position);
-						tmpLight.setRadius(0);
-						tmpLight.setLightType(LightType::SPOTLIGHT);
-						tmpLight.rotateX(rot.x);
-						tmpLight.rotateY(rot.y);
-						tmpLight.rotateZ(rot.z);
-						l.addLight(tmpLight);
-					}
-				}
-			}
-		}
-		else if(strcmp(key, "path") == 0)
-		{
-			p.addPath();
+			char buf[1024];
+			char key[1024];
 			stream.getline(buf, 1024);
 			sscanf(buf, "%s", key);
 
-			int nrOfPoints = 0;
-			vec3 points[100];
-			while(strcmp(key, "end") != 0)
+			if(strcmp(key, "bmp1:") == 0)
 			{
-				float notInvertZ;
-				points[nrOfPoints]=vec3(0.0f);
-				sscanf(buf, "%f %f", &points[nrOfPoints].x, &points[nrOfPoints].z);
-				nrOfPoints++;
-				stream.getline(buf, 1024);
-				sscanf(buf, "%s", key);
+				char file[100];
+				sscanf(buf, "bmp1: %s", &file);
+				bmp1= string(file);
 			}
-
-			for(int i = 0; i < nrOfPoints; i++)
+			else if(strcmp(key, "bmp2:") == 0)
 			{
-				p.addFlagToCurrentPath(points[i]);
-			}
-
-		}
-		else if(strcmp(key, "PARTICLESYSTEMS:") == 0)
-		{
-			string s;
-			bool done = false;
-			while(!done)
-			{
-				stream.getline(buf, 1024);
-				sscanf(buf, "%s", key);
+				char file[100];
+				sscanf(buf, "bmp2: %s", &file);
+				bmp2= string(file);
 				
-				if(strcmp(key, "end") == 0)
+				if(width == 128)
+					mapsize=1;
+				if(width==256)
+					mapsize=2;
+				terr.createNewMap(mapsize);
+				terr.loadMaps(path+bmp1,path+bmp2,path+filename+"gm.png");
+			}
+			else if(strcmp(key, "width:") == 0)
+			{
+				sscanf(buf, "width: %d", &width);
+			}		
+			else if(strcmp(key, "Surfaceplanes:") == 0)
+			{
+				string texture;
+				int surfCounter=-1;
+				bool done = false;
+				while(!done)
 				{
-					done = true;
-				}
-				else
-				{
-					vec3 position;
-					vec3 rotation;
-					vec3 color;
-
-					sscanf(buf, "%s %f %f %f %f %f %f %f %f %f", &key, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z);
+					stream.getline(buf, 1024);
+					sscanf(buf, "%s", key);
 					
-					Particle particle;
-					particle.setPos(position);
-					particle.rotateX(rotation.x);
-					particle.rotateY(rotation.y);
-					particle.rotateZ(rotation.z);
-					particle.setColor(color);
-					string particleType=key;
-					if(particleType=="GLOWRING")
-						particle.setParticleType(ParticleType::GLOWRING);
-					if(particleType=="FIRE")
-						particle.setParticleType(ParticleType::FIRE);
-					if(particleType=="EMIT")
-						particle.setParticleType(ParticleType::EMIT);
-					if(particleType=="FLOW")
-						particle.setParticleType(ParticleType::FLOW);
-					if(particleType=="SMOKE")
-						particle.setParticleType(ParticleType::SMOKE);
-					part.addParticleModel(particle);
+					if(strcmp(key, "SF:") == 0)
+					{
+						char in[100];
+						sscanf(buf, "SF: %s", &in);
+						texture = string(in);
+						surfCounter++;
+					}
+					else if(strcmp(key, "end") == 0)
+					{
+						done = true;
+					}
+					else // Else its an actual road piece (at least we hope so because else we are screwed)
+					{
+						float rot,scale;
+						float x, z;
+						sscanf(buf, "%f %f %f %f", &rot, &x, &z,&scale);
+						terr.addSurface(vec3(x,0,z),rot,surfCounter,scale);
+						
 
-					//Create particle system
-					int lol = 0;
+						//m_roads.push_back(g_graphicsEngine->createRoad(texture, FLOAT3(x, 0.0f, -z), rot));
+					}
 				}
 			}
-		}
-		sscanf("bugfix", "%s", key);
-	}		
-	stream.close();
+			else if(strcmp(key, "MODELS:") == 0)
+			{
+				string s;
+				bool done = false;
+				while(!done)
+				{
+					stream.getline(buf, 1024);
+					sscanf(buf, "%s", key);
+					
+					if(strcmp(key, "end") == 0)
+					{
+						done = true;
+					}
+					else
+					{
+						char in[100];
+						vec3 position;
+						vec3 rotation;
+						float scale;
+						int id = 0;
+						sscanf(buf, "%s %f %f %f %f %f %f %f %f", &in, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &scale,&id);
+						Model model;
+						string modelName = string(in);
+						int meshIndex = m.getMeshByName(modelName);
+						model.setMesh(m.getMeshInfo(meshIndex));
+						model.setBoundingBox(m.getBoundingBox(meshIndex));
+						model.setMeshName(m.getMeshName(meshIndex));
+						model.setPos(position);
+						model.rotateX(rotation.x);
+						model.rotateY(rotation.y);
+						model.rotateZ(rotation.z);
+						model.scaleXYZ(scale);
+						model.bindId(id);
+						r.addModel(model);
+						if(id>bindCounter)
+							bindCounter=id;
+					}
+				}
+			}
+			else if(strcmp(key, "LIGHTS:") == 0)
+			{
+				string s;
+				bool done = false;
+				while(!done)
+				{
+					stream.getline(buf, 1024);
+					sscanf(buf, "%s", key);
+					
+					if(strcmp(key, "end") == 0)
+					{
+						done = true;
+					}
+					else
+					{
+						char in[100];
+						sscanf(buf, "%s", &in);
+
+						if(strcmp(key, "AM") == 0)
+						{
+							vec3 direction;
+							vec3 color;
+							vec3 rot;
+							vec3 pos;
+
+							sscanf(buf, "AM %f %f %f %f %f %f %f %f %f %f %f %f", &direction.x, &direction.y, &direction.z, &color.x, &color.y, &color.z,&rot.x,&rot.y,&rot.z,&pos.x,&pos.y,&pos.z);
+							
+							Light tmpLight;
+							tmpLight.setColor(color);
+							tmpLight.setContrast(1.0f);
+							tmpLight.setPos(pos);
+							tmpLight.setRadius(0);
+							tmpLight.setLightType(LightType::AMBIENT);
+							tmpLight.rotateX(rot.x);
+							tmpLight.rotateY(rot.y);
+							tmpLight.rotateZ(rot.z);
+							l.addLight(tmpLight);
+						}
+						else if(strcmp(key, "PLS") == 0)
+						{
+							vec3 position;
+							vec3 rotation;
+							vec3 color;
+							float radius;
+							int id=0;
+							sscanf(buf, "PLS %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
+							
+							Light tmpLight;
+							tmpLight.setColor(color);
+							tmpLight.setContrast(1.0f);
+							tmpLight.setPos(position);
+							tmpLight.setRadius(radius);
+							tmpLight.setLightType(LightType::POINTLIGHTSHADOW);
+							tmpLight.rotateX(rotation.x);
+							tmpLight.rotateY(rotation.y);
+							tmpLight.rotateZ(rotation.z);
+							tmpLight.bindId(id);
+							l.addLight(tmpLight);
+
+						}
+						else if(strcmp(key, "PL") == 0)
+						{
+							vec3 position;
+							vec3 rotation;
+							vec3 color;
+							float radius;
+							int id=0;
+							sscanf(buf, "PL %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.y, &rotation.x, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
+							
+							Light tmpLight;
+							tmpLight.setColor(color);
+							tmpLight.setContrast(1.0f);
+							tmpLight.setPos(position);
+							tmpLight.setRadius(radius);
+							tmpLight.setLightType(LightType::POINTLIGHT);
+							tmpLight.rotateX(rotation.x);
+							tmpLight.rotateY(rotation.y);
+							tmpLight.rotateZ(rotation.z);
+							tmpLight.bindId(id);
+							l.addLight(tmpLight);
+						}
+						else if(strcmp(key, "SL") == 0)
+						{
+							vec3 position;
+							vec3 direction;
+							vec3 color;
+							vec3 rot;
+							sscanf(buf, "SL %f %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &direction.x, &direction.y, &direction.z, &color.x, &color.y, &color.z,&rot.x, &rot.y, &rot.z);
+							
+							Light tmpLight;
+							tmpLight.setColor(color);
+							tmpLight.setContrast(1.0f);
+							tmpLight.setPos(position);
+							tmpLight.setRadius(0);
+							tmpLight.setLightType(LightType::SPOTLIGHT);
+							tmpLight.rotateX(rot.x);
+							tmpLight.rotateY(rot.y);
+							tmpLight.rotateZ(rot.z);
+							l.addLight(tmpLight);
+						}
+					}
+				}
+			}
+			else if(strcmp(key, "path") == 0)
+			{
+				p.addPath();
+				stream.getline(buf, 1024);
+				sscanf(buf, "%s", key);
+
+				int nrOfPoints = 0;
+				vec3 points[100];
+				while(strcmp(key, "end") != 0)
+				{
+					float notInvertZ;
+					points[nrOfPoints]=vec3(0.0f);
+					sscanf(buf, "%f %f", &points[nrOfPoints].x, &points[nrOfPoints].z);
+					nrOfPoints++;
+					stream.getline(buf, 1024);
+					sscanf(buf, "%s", key);
+				}
+
+				for(int i = 0; i < nrOfPoints; i++)
+				{
+					p.addFlagToCurrentPath(points[i]);
+				}
+
+			}
+			else if(strcmp(key, "PARTICLESYSTEMS:") == 0)
+			{
+				string s;
+				bool done = false;
+				while(!done)
+				{
+					stream.getline(buf, 1024);
+					sscanf(buf, "%s", key);
+					
+					if(strcmp(key, "end") == 0)
+					{
+						done = true;
+					}
+					else
+					{
+						vec3 position;
+						vec3 rotation;
+						vec3 color;
+
+						sscanf(buf, "%s %f %f %f %f %f %f %f %f %f", &key, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z);
+						
+						Particle particle;
+						particle.setPos(position);
+						particle.rotateX(rotation.x);
+						particle.rotateY(rotation.y);
+						particle.rotateZ(rotation.z);
+						particle.setColor(color);
+						string particleType=key;
+						if(particleType=="GLOWRING")
+							particle.setParticleType(ParticleType::GLOWRING);
+						if(particleType=="FIRE")
+							particle.setParticleType(ParticleType::FIRE);
+						if(particleType=="EMIT")
+							particle.setParticleType(ParticleType::EMIT);
+						if(particleType=="FLOW")
+							particle.setParticleType(ParticleType::FLOW);
+						if(particleType=="SMOKE")
+							particle.setParticleType(ParticleType::SMOKE);
+						part.addParticleModel(particle);
+
+						//Create particle system
+						int lol = 0;
+					}
+				}
+			}
+			sscanf("bugfix", "%s", key);
+		}	
+		bindCounter++;
+		stream.close();
+	}
 }
 
 
 int main(int argc, char **argv)
 {
-	int bindCounter=1;
 	int width,height;
 	Camera cam;
 	int mousedx=0;
