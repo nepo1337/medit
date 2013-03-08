@@ -3,6 +3,7 @@
 #include <glew.h>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 #include <MeshHandler.h>
 #include "glm/glm.hpp"
 #include "Model.h"
@@ -19,6 +20,7 @@
 #include "Particle.h"
 #include <stdio.h>
 #include <string.h>
+#include "AntTweakBar.h"
 
 using namespace std;
 using namespace glm;
@@ -348,6 +350,18 @@ int main(int argc, char **argv)
 	Camera cam;
 	int mousedx=0;
 	int mousedy=0;
+	int fps=0;
+	int nrOfObjects=0;
+	int nrOfLights=0;
+	float tdropoff=0.0f;
+	float topacity=0.0f;
+	float tradius=0.0f;
+	int nrOfPaths=0;
+	int nrOfParticleSystems=0;
+	float gr=0.0f;
+	float gg=0.0f;
+	float gb=0.0f;
+	sf::Clock clock;
 
 	//window options
 	width=1280;
@@ -365,7 +379,8 @@ int main(int argc, char **argv)
 	{
 		cout<<"ERROR starting GLEW: "<< glewGetErrorString(err);
 	}
-
+	
+	
 	//Start renderer after glewinit,GLSPprog needs it (could add init method for global renderer)
 	Renderer rend;
 	GUI gui;
@@ -412,172 +427,119 @@ int main(int argc, char **argv)
 	sf::Event event;
 
 	Model m;
+	
+	TwInit(TW_OPENGL_CORE,NULL);
+	TwWindowSize(width,height);
+	TwBar *myBar;
+	myBar = TwNewBar("info");
+	TwDefine(" info position='25 40' size='240 320' resizable=false movable=false help='Information about the map etc.' refresh=0.1 ");
+	TwAddButton(myBar, "gi", NULL, NULL, " label='General info' ");
+	TwAddVarRO(myBar,"fps ", TW_TYPE_INT32, &fps,NULL);
+	TwAddVarRO(myBar,"# Models ", TW_TYPE_INT32, &nrOfObjects,NULL);
+	TwAddVarRO(myBar,"# Lights ", TW_TYPE_INT32, &nrOfLights,NULL);
+	TwAddVarRO(myBar,"# Particlesystems ", TW_TYPE_INT32, &nrOfParticleSystems,NULL);
+	TwAddVarRO(myBar,"# Paths ", TW_TYPE_INT32, &nrOfPaths,NULL);
+	TwAddSeparator(myBar, "sep1", NULL);
+	TwAddButton(myBar, "di", NULL, NULL, " label='Brush info' ");
+	TwAddVarRO(myBar,"Radius", TW_TYPE_FLOAT, &tradius,NULL);
+	TwAddVarRO(myBar,"Dropoff", TW_TYPE_FLOAT, &tdropoff,NULL);
+	TwAddVarRO(myBar,"Opacity", TW_TYPE_FLOAT, &topacity,NULL);
+	TwAddSeparator(myBar, "sep2", NULL);
+	TwAddButton(myBar, "ci", NULL, NULL, " label='Color selected' ");
+	TwAddVarRO(myBar,"Red", TW_TYPE_FLOAT, &gr,NULL);
+	TwAddVarRO(myBar,"Green", TW_TYPE_FLOAT, &gg,NULL);
+	TwAddVarRO(myBar,"Blue", TW_TYPE_FLOAT, &gb,NULL);
 
 	while (app.IsOpened())
 	{
 		float normalisedx = 0;
 		float normalisedy = 0;
+		nrOfObjects=rend.getNrOfModels();
+		nrOfLights=lh.getNrOfLights();
+		tradius=gui.getSliderRadius();
+		tdropoff=gui.getSliderDropoff();
+		topacity=gui.getSliderOpacity();
+		nrOfParticleSystems=particleHandler.getNrOfParticleSystems();
+		nrOfPaths=ph.getNrOfPaths();
+		gr=gui.getNormalizedColor().x;
+		gg=gui.getNormalizedColor().y;
+		gb=gui.getNormalizedColor().z;
+		
 
 		getNormalizedXY(app.GetInput().GetMouseX(), app.GetInput().GetMouseY(),width,height,normalisedx, normalisedy);
 		//events
+		int handled;
 		while(app.GetEvent(event))
 		{
-			if(event.Type==sf::Event::Closed)
+			handled = TwEventSFML(&event, 1,6);
+			if(!handled)
 			{
-				app.Close();
-			}
-			if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::Escape))
-			{
-				app.Close();
-			}
-			if(event.Type==sf::Event::MouseMoved)
-			{
-				if(gui.getState()==GUIstate::PAINT)
+				if(event.Type==sf::Event::Closed)
 				{
-					vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-					terrain.setWorldXY(cam.getPos(),ray);
+					app.Close();
 				}
-			}
-
-
-			if(event.Type == sf::Event::Resized)
-			{
-				height = app.GetHeight();
-				width = app.GetWidth();
-				glViewport(0,0,width,height);
-				rend.updateProjMatrix(width,height);
-				terrain.updateProjMatrix(width,height);
-				ph.updateProjectionMatrix(width,height);
-			}
-			if(event.Type == sf::Event::MouseWheelMoved)
-			{
-				if(event.MouseWheel.Delta>0)
-					cam.zoomIn(event.MouseWheel.Delta*2);
-				else
-					cam.zoomOut(-event.MouseWheel.Delta*2);
-				rend.updateViewMatrix(cam.getViewMatrix());
-				terrain.updateViewMatrix(cam.getViewMatrix());
-				ph.updateViewMatrix(cam.getViewMatrix());
-			}
-
-			if(event.Type == sf::Event::MouseButtonPressed)
-			{
-				if(event.MouseButton.Button==sf::Mouse::Right)
+				if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::Escape))
 				{
-					gui.showMenu(true);
-					gui.setRightClickXY(normalisedx,normalisedy);
-					particleHandler.unselectAllParticleModels();
+					app.Close();
 				}
-			}
-
-			if(event.Type == sf::Event::MouseButtonPressed)
-			{
-				if(event.MouseButton.Button==sf::Mouse::Left)
+				if(event.Type==sf::Event::MouseMoved)
 				{
-					gui.setLeftClick(normalisedx,normalisedy);
-					terrain.setActiveTex(gui.getActiveTex());
-					
-
-					if(gui.checkDialogAnswer()=="GRID")
+					if(gui.getState()==GUIstate::PAINT)
 					{
-						terrain.showHideGridMap();
-						gui.resetDialogAns();
+						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+						terrain.setWorldXY(cam.getPos(),ray);
 					}
+				}
 
-					if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
+
+				if(event.Type == sf::Event::Resized)
+				{
+					height = app.GetHeight();
+					width = app.GetWidth();
+					glViewport(0,0,width,height);
+					rend.updateProjMatrix(width,height);
+					terrain.updateProjMatrix(width,height);
+					ph.updateProjectionMatrix(width,height);
+				}
+				if(event.Type == sf::Event::MouseWheelMoved)
+				{
+					if(event.MouseWheel.Delta>0)
+						cam.zoomIn(event.MouseWheel.Delta*2);
+					else
+						cam.zoomOut(-event.MouseWheel.Delta*2);
+					rend.updateViewMatrix(cam.getViewMatrix());
+					terrain.updateViewMatrix(cam.getViewMatrix());
+					ph.updateViewMatrix(cam.getViewMatrix());
+				}
+
+				if(event.Type == sf::Event::MouseButtonPressed)
+				{
+					if(event.MouseButton.Button==sf::Mouse::Right)
 					{
+						gui.showMenu(true);
+						gui.setRightClickXY(normalisedx,normalisedy);
+						particleHandler.unselectAllParticleModels();
+					}
+				}
+
+				if(event.Type == sf::Event::MouseButtonPressed)
+				{
+					if(event.MouseButton.Button==sf::Mouse::Left)
+					{
+						gui.setLeftClick(normalisedx,normalisedy);
+						terrain.setActiveTex(gui.getActiveTex());
 						
-						if(gui.getState()==GUIstate::PARTICLE)
-						{
-							if(gui.isInDrawWindow(normalisedx,normalisedy))
-							{
-								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-								float x=-1;
-								float z=1;
-								terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-								if(gui.isPlacingParticleSystems())
-								{
-									if(x!=-1)
-									{
-										particleHandler.unselectAllParticleModels();
-										Particle p;
-										p=gui.getActiveParticleModel();
-										p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
-										particleHandler.addParticleModel(p);
-										gui.setActiveParticleModel(particleHandler.getSelectedParticle());
-									}
-								}
-								else
-								{
-									particleHandler.selectParticles(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
-									gui.setActiveParticleModel(particleHandler.getSelectedParticle());
-								}
-							}
-						}
-						if(gui.getState()==GUIstate::ROAD)
-						{
-							if(gui.checkDialogAnswer()=="RS")
-							{
-								terrain.removeSelectedSurfaces();
-								gui.resetDialogAns();
-							}
-						}
-						if(gui.getState()==GUIstate::NONE)
-						{
-							if(gui.checkDialogAnswer()=="DEL") 
-							{
-								vector<Model> rm = rend.removeSelectedModels();
-								lh.removeLightsBoundToModels(rm);
-								vector<Model> tm =rend.getModels();
-								terrain.recalcGridAroundModel(rm,tm);
 
-								terrain.removeSelectedSurfaces();
-								gui.resetDialogAns();
-							}
-						}
-						if(gui.getState()==GUIstate::PARTICLE)
+						if(gui.checkDialogAnswer()=="GRID")
 						{
-							if(gui.checkDialogAnswer()=="DEL") 
-							{
-								particleHandler.removeSelectedParticles();
-								gui.resetDialogAns();
-							}
+							terrain.showHideGridMap();
+							gui.resetDialogAns();
 						}
 
-						if(gui.getState()==GUIstate::PATH)
+						if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 						{
-							if(gui.checkDialogAnswer()=="DEL")
-							{
-								ph.removeSelectedPaths();
-								gui.resetDialogAns();
-							}
-							if(gui.checkDialogAnswer()=="CRP")
-							{
-								ph.addPath();
-								gui.resetDialogAns();
-							}
-							if(gui.isInDrawWindow(normalisedx,normalisedy))
-							{
-								if(gui.isSelectingRoad())
-								{
-									vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-									float x=-1;
-									float z=1;
-									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									if(x!=-1)
-									{
-										ph.addFlagToCurrentPath(vec3(x,0,-z));
-									}
-								}
-								else
-								{
-									ph.selectPaths(normalisedx,normalisedy,cam.getPos());
-								}
-							}
-						}
-						if(gui.getState()==GUIstate::MODEL||gui.getState()==GUIstate::NONE)
-						{
-							if(gui.getState()==GUIstate::MODEL)
+							
+							if(gui.getState()==GUIstate::PARTICLE)
 							{
 								if(gui.isInDrawWindow(normalisedx,normalisedy))
 								{
@@ -585,170 +547,264 @@ int main(int argc, char **argv)
 									float x=-1;
 									float z=1;
 									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									if(x!=-1)
+									if(gui.isPlacingParticleSystems())
 									{
-										if(m.getType()=="light")
+										if(x>0)
 										{
-											m.bindId(bindCounter);
-											vec3 lpos = m.getPos();
-											lpos.y+=1;
-											Light tmpLight;
-											tmpLight.setColor(gui.getNormalizedColor());
-											tmpLight.setPos(lpos);
-											tmpLight.setRadius(gui.getSliderLightRadius());
-											tmpLight.bindId(bindCounter);
-											tmpLight.setContrast(gui.getContrast());
-											tmpLight.setLightType(LightType::POINTLIGHTSHADOW);
-											lh.addLight(tmpLight);
-											bindCounter++;
+											particleHandler.unselectAllParticleModels();
+											Particle p;
+											p=gui.getActiveParticleModel();
+											p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
+											particleHandler.addParticleModel(p);
+											gui.setActiveParticleModel(particleHandler.getSelectedParticle());
 										}
-										rend.addModel(m);
-										terrain.setWorldXY(cam.getPos(),ray);
-										terrain.makeGridUnderModel(m);
 									}
+									else
+									{
+										particleHandler.selectParticles(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+										gui.setActiveParticleModel(particleHandler.getSelectedParticle());
+									}
+								}
+							}
+							if(gui.getState()==GUIstate::ROAD)
+							{
+								if(gui.checkDialogAnswer()=="RS")
+								{
+									terrain.removeSelectedSurfaces();
+									gui.resetDialogAns();
 								}
 							}
 							if(gui.getState()==GUIstate::NONE)
 							{
-								if(gui.isInDrawWindow(normalisedx,normalisedy))
+								if(gui.checkDialogAnswer()=="DEL") 
 								{
-									rend.selectModel(normalisedx,normalisedy,cam.getPos());
+									vector<Model> rm = rend.removeSelectedModels();
+									lh.removeLightsBoundToModels(rm);
+									vector<Model> tm =rend.getModels();
+									terrain.recalcGridAroundModel(rm,tm);
 
+									terrain.removeSelectedSurfaces();
+									gui.resetDialogAns();
 								}
 							}
-						}
-						if(gui.getState()==GUIstate::ROAD)
-						{
-							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-							terrain.setWorldXY(cam.getPos(),ray);
-							terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
-						}
-						
-						if(gui.getState()==GUIstate::LIGHT)
-						{
-							if(gui.isInDrawWindow(normalisedx,normalisedy))
+							if(gui.getState()==GUIstate::PARTICLE)
 							{
-								if(gui.isPlacingLightMode())
+								if(gui.checkDialogAnswer()=="DEL") 
 								{
-									vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-									float x=-1;
-									float z=1;
-									terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-									Light l = gui.getActiveLight();
-									lh.deselectAllLights();
-									l.setPos(vec3(x,l.getPos().y,-z));
-									lh.addLight(l);
+									particleHandler.removeSelectedParticles();
+									gui.resetDialogAns();
 								}
-								else
+							}
+
+							if(gui.getState()==GUIstate::PATH)
+							{
+								if(gui.checkDialogAnswer()=="DEL")
 								{
-									int lightPos=lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
-									if(lightPos>=0)
+									ph.removeSelectedPaths();
+									gui.resetDialogAns();
+								}
+								if(gui.checkDialogAnswer()=="CRP")
+								{
+									ph.addPath();
+									gui.resetDialogAns();
+								}
+								if(gui.isInDrawWindow(normalisedx,normalisedy))
+								{
+									if(gui.isSelectingRoad())
 									{
-										Light tmpl = lh.getSelectedLight();
-										gui.setSliderLightRadius(tmpl.getRadius());
-										gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
-										gui.setActiveLightModel(tmpl);
+										vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+										float x=-1;
+										float z=1;
+										terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+										if(x>0)
+										{
+											ph.addFlagToCurrentPath(vec3(x,0,-z));
+										}
+									}
+									else
+									{
+										ph.selectPaths(normalisedx,normalisedy,cam.getPos());
 									}
 								}
 							}
-							if(gui.checkDialogAnswer()=="DEL")
+							if(gui.getState()==GUIstate::MODEL||gui.getState()==GUIstate::NONE)
 							{
-								lh.removeSelectedLights();
+								if(gui.getState()==GUIstate::MODEL)
+								{
+									if(gui.isInDrawWindow(normalisedx,normalisedy))
+									{
+										vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+										float x=-1;
+										float z=1;
+										terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+										if(x>0)
+										{
+											if(m.getType()=="light")
+											{
+												m.bindId(bindCounter);
+												vec3 lpos = m.getPos();
+												lpos.y+=1;
+												Light tmpLight;
+												tmpLight.setColor(gui.getNormalizedColor());
+												tmpLight.setPos(lpos);
+												tmpLight.setRadius(gui.getSliderLightRadius());
+												tmpLight.bindId(bindCounter);
+												tmpLight.setContrast(gui.getContrast());
+												tmpLight.setLightType(LightType::POINTLIGHTSHADOW);
+												lh.addLight(tmpLight);
+												bindCounter++;
+											}
+											rend.addModel(m);
+											terrain.setWorldXY(cam.getPos(),ray);
+											terrain.makeGridUnderModel(m);
+										}
+									}
+								}
+								if(gui.getState()==GUIstate::NONE)
+								{
+									if(gui.isInDrawWindow(normalisedx,normalisedy))
+									{
+										rend.selectModel(normalisedx,normalisedy,cam.getPos());
+
+									}
+								}
+							}
+							if(gui.getState()==GUIstate::ROAD)
+							{
+								vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+								terrain.setWorldXY(cam.getPos(),ray);
+								terrain.selectTexSurfaces(0.5,cam.getPos(),ray);
+							}
+							
+							if(gui.getState()==GUIstate::LIGHT)
+							{
+								if(gui.isInDrawWindow(normalisedx,normalisedy))
+								{
+									if(gui.isPlacingLightMode())
+									{
+										vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+										float x=-1;
+										float z=1;
+										terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
+										if(x>0)
+										{
+											Light l = gui.getActiveLight();
+											lh.deselectAllLights();
+											l.setPos(vec3(x,l.getPos().y,-z));
+											lh.addLight(l);
+										}
+									}
+									else
+									{
+										int lightPos=lh.selectLight(normalisedx,normalisedy,cam.getPos(),rend.getProjMatrix(),cam.getViewMatrix());
+										if(lightPos>=0)
+										{
+											Light tmpl = lh.getSelectedLight();
+											gui.setSliderLightRadius(tmpl.getRadius());
+											gui.setNormalizedColor(tmpl.getColor(),tmpl.getContrast());
+											gui.setActiveLightModel(tmpl);
+										}
+									}
+								}
+								if(gui.checkDialogAnswer()=="DEL")
+								{
+									lh.removeSelectedLights();
+								}
+							}
+						}
+
+						if(gui.isSaveMapDialogUp())
+						{
+							if(gui.checkDialogAnswer()=="svOK")
+							{
+								save(gui.getInputText(),terrain,rend,ph,lh,particleHandler);
+								gui.hideSaveMapDialog();
+							}
+							if(gui.checkDialogAnswer()=="svC")
+							{
+								gui.hideSaveMapDialog();
+							}
+						}
+						if(gui.isNewMapDialogUp())
+						{
+							if(gui.checkDialogAnswer()=="nmCS")
+							{
+								terrain.createNewMap(0);
+								rend.clear();
+								ph.clear();
+								lh.clear();
+								particleHandler.clear();
+								gui.hideNewMapDialog();
+							}
+							
+							if(gui.checkDialogAnswer()=="nmCM")
+							{
+								terrain.createNewMap(1);
+								rend.clear();
+								ph.clear();
+								lh.clear();
+								particleHandler.clear();
+								gui.hideNewMapDialog();
+							}
+							
+							if(gui.checkDialogAnswer()=="nmCL")
+							{
+								terrain.createNewMap(2);
+								rend.clear();
+								ph.clear();
+								lh.clear();
+								particleHandler.clear();
+								gui.hideNewMapDialog();
+							}
+							if(gui.checkDialogAnswer()=="nmOK")
+							{
+								terrain.createNewMap(0);
+								rend.clear();
+								ph.clear();
+								lh.clear();
+								particleHandler.clear();
+								gui.hideNewMapDialog();
+							}
+							if(gui.checkDialogAnswer()=="nmC")
+							{
+								gui.hideNewMapDialog();
+							}
+						}
+						if(gui.isLoadMapDialogUp())
+						{
+							if(gui.checkDialogAnswer()=="lmOK")
+							{
+								load(gui.getInputText(),terrain,rend,ph,lh,particleHandler,mh);
+								gui.hideLoadMapDialog();
+							}
+							if(gui.checkDialogAnswer()=="lmC")
+							{
+								gui.hideLoadMapDialog();
 							}
 						}
 					}
+				}
 
-					if(gui.isSaveMapDialogUp())
+				if(event.Type == sf::Event::MouseButtonReleased)
+				{
+					if(event.MouseButton.Button==sf::Mouse::Right)
 					{
-						if(gui.checkDialogAnswer()=="svOK")
-						{
-							save(gui.getInputText(),terrain,rend,ph,lh,particleHandler);
-							gui.hideSaveMapDialog();
-						}
-						if(gui.checkDialogAnswer()=="svC")
-						{
-							gui.hideSaveMapDialog();
-						}
-					}
-					if(gui.isNewMapDialogUp())
-					{
-						if(gui.checkDialogAnswer()=="nmCS")
-						{
-							terrain.createNewMap(0);
-							rend.clear();
-							ph.clear();
-							lh.clear();
-							particleHandler.clear();
-							gui.hideNewMapDialog();
-						}
-						
-						if(gui.checkDialogAnswer()=="nmCM")
-						{
-							terrain.createNewMap(1);
-							rend.clear();
-							ph.clear();
-							lh.clear();
-							particleHandler.clear();
-							gui.hideNewMapDialog();
-						}
-						
-						if(gui.checkDialogAnswer()=="nmCL")
-						{
-							terrain.createNewMap(2);
-							rend.clear();
-							ph.clear();
-							lh.clear();
-							particleHandler.clear();
-							gui.hideNewMapDialog();
-						}
-						if(gui.checkDialogAnswer()=="nmOK")
-						{
-							terrain.createNewMap(0);
-							rend.clear();
-							ph.clear();
-							lh.clear();
-							particleHandler.clear();
-							gui.hideNewMapDialog();
-						}
-						if(gui.checkDialogAnswer()=="nmC")
-						{
-							gui.hideNewMapDialog();
-						}
-					}
-					if(gui.isLoadMapDialogUp())
-					{
-						if(gui.checkDialogAnswer()=="lmOK")
-						{
-							load(gui.getInputText(),terrain,rend,ph,lh,particleHandler,mh);
-							gui.hideLoadMapDialog();
-						}
-						if(gui.checkDialogAnswer()=="lmC")
-						{
-							gui.hideLoadMapDialog();
-						}
+						gui.showMenu(false);
+						rend.unselectAllModels();
 					}
 				}
-			}
-
-			if(event.Type == sf::Event::MouseButtonReleased)
-			{
-				if(event.MouseButton.Button==sf::Mouse::Right)
+				//if the gui excpects text input
+				if(gui.isInTextMode())
 				{
-					gui.showMenu(false);
-					rend.unselectAllModels();
-				}
-			}
-			//if the gui excpects text input
-			if(gui.isInTextMode())
-			{
-				if(event.Type == sf::Event::KeyPressed)
-				{
-					if(int(event.Key.Code)>=97&&event.Key.Code<=122)
-						gui.addChar(char(event.Key.Code));
-				}
-				if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::Back))
-				{
-					gui.removeChar();
+					if(event.Type == sf::Event::KeyPressed)
+					{
+						if(int(event.Key.Code)>=97&&event.Key.Code<=122)
+							gui.addChar(char(event.Key.Code));
+					}
+					if((event.Type == sf::Event::KeyPressed) && (event.Key.Code == sf::Key::Back))
+					{
+						gui.removeChar();
+					}
 				}
 			}
 		}
@@ -757,44 +813,46 @@ int main(int argc, char **argv)
 		
 		if(app.GetInput().IsMouseButtonDown(sf::Mouse::Left))
 		{
-
-			if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
+			if(!handled)
 			{
-				if(gui.isInDrawWindow(normalisedx,normalisedy))
+				if(!gui.isSaveMapDialogUp()&&!gui.isLoadMapDialogUp()&&!gui.isNewMapDialogUp())
 				{
-					if(gui.getState()==GUIstate::PAINT)
+					if(gui.isInDrawWindow(normalisedx,normalisedy))
 					{
-						terrain.setTerState(TerrState::PAINT);
-						terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
-					}
-					if(gui.getState()==GUIstate::ROAD)
+						if(gui.getState()==GUIstate::PAINT)
+						{
+							terrain.setTerState(TerrState::PAINT);
+							terrain.paint(cam.getPos(),inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos()));
+						}
+						if(gui.getState()==GUIstate::ROAD)
+						{
+							terrain.setTerState(TerrState::DRAWSURFACE);
+							vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
+							terrain.addSurface(cam.getPos(),ray, gui.getActiveSurfaceTexHandle());
+						}
+					} 
+					else 
 					{
-						terrain.setTerState(TerrState::DRAWSURFACE);
-						vec3 ray = inters.getClickRay(app.GetInput().GetMouseX(),app.GetInput().GetMouseY(),cam.getViewMatrix(),rend.getProjMatrix(),width,height,cam.getPos());
-						terrain.addSurface(cam.getPos(),ray, gui.getActiveSurfaceTexHandle());
+						gui.moveSliders(normalisedx,normalisedy);
+						if(gui.getState()==GUIstate::PAINT)
+						{
+							terrain.setRadius(gui.getSliderRadius());
+							terrain.setOpacity(gui.getSliderOpacity());
+							terrain.setDropoff(gui.getSliderDropoff());
+						}
+						if(gui.getState()==GUIstate::ROAD)
+						{
+							terrain.setRoadSpacing(gui.getRoadSliderSpacing());
+							terrain.setRoadScale(gui.getRoadSliderScale());
+						}
+						if(gui.getState()==GUIstate::PARTICLE)
+						{
+							particleHandler.assignParticleNewParticle(gui.getActiveParticleModel());
+						}
+						
+						if(gui.getState()==GUIstate::LIGHT)
+							lh.assignLightAnotherLight(gui.getActiveLight());
 					}
-				} 
-				else 
-				{
-					gui.moveSliders(normalisedx,normalisedy);
-					if(gui.getState()==GUIstate::PAINT)
-					{
-						terrain.setRadius(gui.getSliderRadius());
-						terrain.setOpacity(gui.getSliderOpacity());
-						terrain.setDropoff(gui.getSliderDropoff());
-					}
-					if(gui.getState()==GUIstate::ROAD)
-					{
-						terrain.setRoadSpacing(gui.getRoadSliderSpacing());
-						terrain.setRoadScale(gui.getRoadSliderScale());
-					}
-					if(gui.getState()==GUIstate::PARTICLE)
-					{
-						particleHandler.assignParticleNewParticle(gui.getActiveParticleModel());
-					}
-					
-					if(gui.getState()==GUIstate::LIGHT)
-						lh.assignLightAnotherLight(gui.getActiveLight());
 				}
 			}
 		}
@@ -911,7 +969,8 @@ int main(int argc, char **argv)
 				float x=-1;
 				float z=1;
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-				ph.drawFlag(vec3(x,0,-z));
+				if(x>0)
+					ph.drawFlag(vec3(x,0,-z));
 			}
 		}
 		if(gui.getState()==GUIstate::ROAD)
@@ -929,10 +988,13 @@ int main(int argc, char **argv)
 				float x=-1;
 				float z=1;
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-				Light l = gui.getActiveLight();
-				l.setPos(vec3(x,l.getPos().y,-z));
-				//l.select();
-				lh.drawLight(rend.getProjMatrix(),cam.getViewMatrix(),l);
+				if(x>0)
+				{
+					Light l = gui.getActiveLight();
+					l.setPos(vec3(x,l.getPos().y,-z));
+					//l.select();
+					lh.drawLight(rend.getProjMatrix(),cam.getViewMatrix(),l);
+				}
 			}
 		}
 		if(gui.getState()==GUIstate::MODEL &&gui.isInDrawWindow(normalisedx,normalisedy) )
@@ -941,7 +1003,7 @@ int main(int argc, char **argv)
 			float x=-1;
 			float z=1;
 			terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-			if(x!=-1)
+			if(x>0)
 			{
 				m=gui.getActiveModel();
 				m.setPos(vec3(x,gui.getActiveModel().getPos().y,-z));
@@ -960,16 +1022,22 @@ int main(int argc, char **argv)
 				float x=-1;
 				float z=1;
 				terrain.rayIntersectTerrain(cam.getPos(), ray, x, z);
-				Particle p = gui.getActiveParticleModel();
-				p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
-				particleHandler.drawParticleModel(rend.getProjMatrix(),cam.getViewMatrix(),p);
+				if(x>0)
+				{
+					Particle p = gui.getActiveParticleModel();
+					p.setPos(vec3(x,gui.getActiveParticleModel().getPos().y,-z));
+					particleHandler.drawParticleModel(rend.getProjMatrix(),cam.getViewMatrix(),p);
+				}
 			}
 		}
 		gui.draw();
 
+		fps= 1.0f/clock.GetElapsedTime();
+		clock.Reset();
+		TwDraw();
 		app.Display();
 	}
-
+	TwTerminate();
 	lh.free();
 	
 	return EXIT_SUCCESS;

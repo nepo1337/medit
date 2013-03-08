@@ -138,7 +138,8 @@ void PathHandler::drawPaths()
 	this->lineRenderer.use();
 	//draw the lines between paths
 	mat4 mm = mat4(1.0f);
-	glLineWidth(5);
+	glLineWidth(3);
+	glDisable(GL_DEPTH_TEST);
 	for(unsigned int i=0;i<this->Paths.size();i++)
 	{
 		this->lineRenderer.setUniform("ro",this->Paths[i].getColor().x);
@@ -151,7 +152,7 @@ void PathHandler::drawPaths()
 		glBindVertexArray(this->Paths[i].getVaohToLines());
 		glDrawArrays(GL_LINE_STRIP,0,this->Paths[i].getNrOfFlags());
 	}
-	
+	glEnable(GL_DEPTH_TEST);
 	glLineWidth(1);
 	for(unsigned int i=0;i<this->Paths.size();i++)
 	{
@@ -302,4 +303,9 @@ void PathHandler::save(string path, string filename)
 void PathHandler::clear()
 {
 	this->Paths.clear();
+}
+
+int PathHandler::getNrOfPaths()
+{
+	return this->Paths.size();
 }

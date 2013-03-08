@@ -38,6 +38,7 @@ public:
 	void assignParticleNewParticle(Particle p);
 	void save(string path, string filename);
 	void clear();
+	int getNrOfParticleSystems();
 };
 
 #endif // PARTICLEHANDLER_H

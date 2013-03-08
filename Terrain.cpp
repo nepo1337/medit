@@ -470,16 +470,19 @@ void Terrain::draw()
 	}
 	
 	glLineWidth(4);
-	this->surfaceBboxShader.setUniform("ro",0.1f);
-	this->surfaceBboxShader.setUniform("go",0.6f);
-	this->surfaceBboxShader.setUniform("bo",0.8f);
-	if(this->drawCircle)
+	if(worldClickX>0)
 	{
-		this->radiusMarker.setPos(vec3(this->worldClickX,0,-this->worldClickZ));
-		mat4 mvp = this->projMatrix*this->viewMatrix*translate(vec3(this->worldClickX,0,-this->worldClickZ))*scale(mat4(1.0f),vec3(this->radiusMarker.getScale()));
-		this->surfaceTexShader.setUniform("MVP",mvp);
-		glBindVertexArray(this->radiusMarker.getVaoh());
-		glDrawArrays(GL_LINE_STRIP,0,this->radiusMarker.getNrOfLines());
+		this->surfaceBboxShader.setUniform("ro",0.1f);
+		this->surfaceBboxShader.setUniform("go",0.6f);
+		this->surfaceBboxShader.setUniform("bo",0.8f);
+		if(this->drawCircle)
+		{
+			this->radiusMarker.setPos(vec3(this->worldClickX,0,-this->worldClickZ));
+			mat4 mvp = this->projMatrix*this->viewMatrix*translate(vec3(this->worldClickX,0,-this->worldClickZ))*scale(mat4(1.0f),vec3(this->radiusMarker.getScale()));
+			this->surfaceTexShader.setUniform("MVP",mvp);
+			glBindVertexArray(this->radiusMarker.getVaoh());
+			glDrawArrays(GL_LINE_STRIP,0,this->radiusMarker.getNrOfLines());
+		}
 	}
 	
 	glDisable(GL_BLEND);
@@ -575,7 +578,7 @@ void Terrain::paint(vec3 origin, vec3 ray)
 
 			//if the the ray hit any of the triangles
 		//go through the blendmaps and update blend values
-		if(x!=1)
+		if(x>0)
 		{
 			//lowest x,y values, in case of drawing partially outside
 			//used to create a new image which can replace parts of the texture on the GFX side
