@@ -145,7 +145,7 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 						vec3 rotation;
 						float scale;
 						int id = 0;
-						sscanf(buf, "%s %f %f %f %f %f %f %f %f", &in, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &scale,&id);
+						sscanf(buf, "%s %f %f %f %f %f %f %f %d", &in, &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &scale,&id);
 						Model model;
 						string modelName = string(in);
 						int meshIndex = m.getMeshByName(modelName);
@@ -209,7 +209,7 @@ void load(string filename, Terrain &terr, Renderer &r, PathHandler& p, LightHand
 							vec3 color;
 							float radius;
 							int id=0;
-							sscanf(buf, "PLS %f %f %f %f %f %f %f %f %f %f %f", &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
+							sscanf(buf, "PLS %f %f %f %f %f %f %f %f %f %f %d", &position.x, &position.y, &position.z, &rotation.x, &rotation.y, &rotation.z, &color.x, &color.y, &color.z, &radius,&id);
 							
 							Light tmpLight;
 							tmpLight.setColor(color);
@@ -432,7 +432,7 @@ int main(int argc, char **argv)
 	TwWindowSize(width,height);
 	TwBar *myBar;
 	myBar = TwNewBar("info");
-	TwDefine(" info position='25 40' size='240 320' resizable=false movable=false help='Information about the map etc.' refresh=0.1 ");
+	TwDefine(" info position='25 40' size='240 320' help='Information about the map etc.' refresh=0.1 ");
 	TwAddButton(myBar, "gi", NULL, NULL, " label='General info' ");
 	TwAddVarRO(myBar,"fps ", TW_TYPE_INT32, &fps,NULL);
 	TwAddVarRO(myBar,"# Models ", TW_TYPE_INT32, &nrOfObjects,NULL);
